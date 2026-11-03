@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rubik Casino & Card Club - Classic Games</title>
+  <meta name="description" content="Classic and simple casino card games portal. Play authentic Persian Hokm, Shelem, global hit UNO, and Grandmaster Chess online or offline vs smart AI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body class="casino-theme">
+
+  <!-- Classic Casino Ambient Felt & Vignette -->
+  <div class="casino-felt-bg" aria-hidden="true"></div>
+  <div class="casino-felt-vignette" aria-hidden="true"></div>
+  <div class="casino-suits-watermark" aria-hidden="true">
+    <span>♠</span><span>♥</span><span>♦</span><span>♣</span>
+  </div>
+
+  <!-- Classic Casino Header -->
+  <header class="hub-header">
+    <div class="header-left">
+      <a href="/" class="brand-wrapper">
+        <div class="brand-logo-casino">
+          <span class="logo-core">♠</span>
+          <div class="logo-ring"></div>
+        </div>
+        <div class="brand-title-group">
+          <div class="casino-est-tag">
+            <span class="tag-status-dot"></span>
+            <span class="tag-text">EST. 2026 // CLASSIC EDITION</span>
+          </div>
+          <h1 class="casino-brand-title" data-i18n="siteTitle">RUBIK CASINO CLUB</h1>
+          <div class="brand-tagline" data-i18n="tagline">Classic Card & Board Games</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center Casino Status (Desktop) -->
+    <div class="header-center-hud">
+      <div class="hud-item">
+        <span class="hud-label">TABLES:</span>
+        <span class="hud-value gold-bright">ONLINE ●</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">DECK:</span>
+        <span class="hud-value ivory-white">52 CARDS ♠</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">GAMEPLAY:</span>
+        <span class="hud-value emerald-glow">FAIR PLAY ⭐</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="hub-btn-casino" id="btn-hub-sound" title="Toggle Audio Feedback">
+        <span class="casino-btn-icon">🔊</span>
+        <span data-i18n="soundOn">Sound: ON</span>
+      </button>
+      <button class="hub-btn-casino" id="btn-hub-lang" title="Toggle Language (EN / FA)">
+        <span class="casino-btn-icon">🌐</span>
+        <span id="lang-btn-label">English</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section (Classic Casino Salon) -->
+  <section class="hub-hero">
+    <div class="hero-badge">
+      <span class="hero-chip-icon">♠</span>
+      <span data-i18n="heroBadge">CLASSIC CASINO & CARD SALON</span>
+      <span class="hero-chip-icon">♣</span>
+    </div>
+
+    <h2 class="hero-title" data-i18n="heroTitle">
+      Timeless Casino & Card Games
+    </h2>
+
+    <p class="hero-subtitle" data-i18n="heroSubtitle">
+      Experience authentic Persian card masters and timeless classics with intelligent AI opponents and live multiplayer tables. Play Hokm, Shelem, UNO, and Chess directly in your browser with zero installs and instant play.
+    </p>
+
+    <!-- Platform Highlights (Casino Chips Style) -->
+    <div class="hero-hud-chips">
+      <div class="hud-chip">
+        <span class="chip-dot gold"></span>
+        <span data-i18n="featureZeroInstall">⚡ Instant Play (Zero Install)</span>
+      </div>
+      <div class="hud-chip">
+        <span class="chip-dot green"></span>
+        <span data-i18n="featureMultiplayer">♠ Live Multiplayer Tables</span>
+      </div>
+      <div class="hud-chip">
+        <span class="chip-dot amber"></span>
+        <span data-i18n="featureNeuralAI">🤖 Smart AI Opponents</span>
+      </div>
+      <div class="hud-chip">
+        <span class="chip-dot white"></span>
+        <span data-i18n="featureClocks">⏱️ Official Match Clocks</span>
+      </div>
+    </div>
+
+    <!-- Quick Room Code Join Bar -->
+    <div class="quick-join-card" id="quick-join-card">
+      <div class="quick-join-label">
+        <span class="quick-join-icon">🎲</span>
+        <div class="quick-join-text">
+          <span class="quick-join-title" data-i18n="quickJoinTitle">DIRECT TABLE ACCESS</span>
+          <span class="quick-join-desc" data-i18n="quickJoinLabel">Enter table room code:</span>
+        </div>
+      </div>
+      <form class="quick-join-form" id="form-quick-join">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="input-quick-room" 
+            class="input-room-code" 
+            placeholder="ABCD" 
+            maxlength="6" 
+            autocomplete="off" 
+            spellcheck="false"
+          >
+        </div>
+        <button type="submit" class="btn-join-room" data-i18n="quickJoinBtn">
+          <span>JOIN TABLE</span>
+          <span class="btn-arrow">➔</span>
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Main Game Catalog Section -->
+  <main class="section-container">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="section-icon">👑</span>
+        <div>
+          <span class="section-main-heading" data-i18n="featuredGames">Available Tables</span>
+          <div class="section-sub-heading" data-i18n="featuredGamesSub">Select a table to play solo vs AI or create an online multiplayer room</div>
+        </div>
+      </div>
+      <div class="section-count">
+        <span class="count-tag-label" data-i18n="activeCoresLabel">STATUS:</span>
+        <span id="games-count-badge" class="count-badge-val">4 Tables Ready</span>
+      </div>
+    </div>
+
+    <!-- Dynamic Game Cards Grid (Populated by hub.js) -->
+    <div class="games-grid" id="games-grid">
+      <!-- Cards rendered dynamically from GAMES registry in hub.js -->
+    </div>
+
+    <!-- Modular Developer Callout Banner -->
+    <div class="add-game-banner">
+      <div class="banner-text-group">
+        <div class="banner-title">
+          <span class="banner-icon">🎴</span>
+          <span data-i18n="devBannerTitle">Modular Card Engine // Add Custom Games</span>
+        </div>
+        <p class="banner-desc" data-i18n="devBannerDesc">
+          Built with an ultra-lightweight, native framework-free architecture. Drop your custom HTML5/JS game module into <code class="banner-code-badge">public/games/&lt;id&gt;/</code> and register it in <code class="banner-code-badge">hub.js</code> to link it into the casino lounge!
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Rules / Guide Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-content-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">📜</span>
+          <div>
+            <div class="modal-sys-label">// OFFICIAL CASINO GUIDE //</div>
+            <div class="modal-title" id="modal-game-title">Game Rules</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-rules" title="Close Guide">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-game-body">
+        <!-- Injected via hub.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Classic Casino Footer -->
+  <footer class="hub-footer">
+    <div class="footer-grid-top">
+      <div class="footer-brand-side">
+        <div class="footer-logo">♠ RUBIK CASINO & CARD CLUB ♣</div>
+        <p class="footer-desc" data-i18n="footerText">
+          Pure Native Web Stack — HTML5, CSS3, & Web Audio API. Zero dependencies, ultra-fast 60FPS performance across desktop and mobile browsers.
+        </p>
+      </div>
+      <div class="footer-badges-side">
+        <span class="footer-tech-tag">⚡ INSTANT PLAY</span>
+        <span class="footer-tech-tag">🔒 FAIR & SECURE</span>
+        <span class="footer-tech-tag">🌐 MULTIPLAYER READY</span>
+      </div>
+    </div>
+    <div class="footer-suits-row">♠ ♥ ♦ ♣ &bull; ♔ ♕ ♖ ♗ ♘ ♙ &bull; 🔴 🔵 🟢 🟡</div>
+    <div class="footer-copyright">
+      <span>&copy; 2026 Rubik Casino & Card Club. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script src="hub.js"></script>
+</body>
+</html>

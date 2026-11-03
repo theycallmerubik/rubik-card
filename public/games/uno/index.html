@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>UNO - Rubik Card Club</title>
+  <meta name="description" content="Play classic UNO card game online with friends or offline vs smart bots.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-bar">
+    <div class="header-left">
+      <a href="/" class="btn-hub-return" title="Return to Game Hub">
+        <span>◀</span>
+        <span class="hub-label" data-i18n="menuHubTitle">هاب بازی‌ها</span>
+      </a>
+      <div class="brand-title">
+        <span class="uno-brand-badge">UNO!</span>
+        <span class="game-name" data-i18n="gameTitle">بازی اونو</span>
+      </div>
+    </div>
+
+    <!-- Center Active Color & Match Info Pill -->
+    <div class="top-uno-pill" id="top-uno-pill">
+      <div class="active-color-dot" id="active-color-dot"></div>
+      <span class="active-color-label" id="active-color-label" data-i18n="activeColorLabel">رنگ فعال:</span>
+      <span class="active-color-name" id="active-color-name">---</span>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-right">
+      <div class="header-desktop-actions">
+        <button class="btn-icon" id="btn-sound" title="Toggle Sound">🔊</button>
+        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)">🌐</button>
+        <button class="btn-icon" id="btn-rules" title="راهنما و قوانین">📜</button>
+        <button class="btn-icon" id="btn-chat" title="پیام‌ها و گزارش بازی">💬</button>
+        <button class="btn-icon btn-menu-trigger" id="btn-menu" title="منوی اصلی">🏠</button>
+      </div>
+      <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" aria-label="Open Navigation">☰</button>
+      <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
+        <button class="mobile-nav-item" id="btn-mob-sound">
+          <span class="mob-nav-icon" id="mob-sound-icon">🔊</span>
+          <span data-i18n="soundLabel">صدا</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-lang">
+          <span class="mob-nav-icon">🌐</span>
+          <span id="mob-lang-text">فارسی / EN</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-rules">
+          <span class="mob-nav-icon">📜</span>
+          <span data-i18n="rulesTitle">راهنما و قوانین</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-menu">
+          <span class="mob-nav-icon">🏠</span>
+          <span data-i18n="menuModalTitle">منوی اصلی</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="notification-bubble" id="notification-bubble"></div>
+
+  <!-- Main UNO Game Area -->
+  <main class="table-container">
+    <div class="uno-table" id="uno-table">
+
+      <!-- Direction Indicator Ring (Around Center) -->
+      <div class="direction-indicator clockwise" id="direction-indicator" title="Direction of Play">
+        <div class="direction-arrow arrow-top">➔</div>
+        <div class="direction-arrow arrow-right">➔</div>
+        <div class="direction-arrow arrow-bottom">➔</div>
+        <div class="direction-arrow arrow-left">➔</div>
+      </div>
+
+      <!-- Center Table Deck & Discard Pile -->
+      <div class="center-play-area">
+        <!-- Draw Pile (Face Down) -->
+        <div class="draw-pile-box" id="draw-pile" title="کارت بکشید (Draw Card)">
+          <div class="uno-card-back">
+            <span class="card-back-oval">UNO</span>
+          </div>
+          <span class="pile-count-badge" id="draw-count-badge">108</span>
+          <span class="pile-stack-badge" id="draw-stack-badge" style="display:none;">+2</span>
+        </div>
+
+        <!-- Discard Pile (Top Card) -->
+        <div class="discard-pile-box" id="discard-pile">
+          <div class="empty-pile-placeholder" id="empty-discard-hint">--</div>
+        </div>
+      </div>
+
+      <!-- SEAT 0: SOUTH (YOU) -->
+      <div class="player-seat seat-south" id="seat-0">
+        <div class="take-control-banner" id="take-control-banner" style="display:none;">
+          <span class="take-control-text" id="take-control-text" data-i18n="aiPlayingForYou">🤖 ربات به جای شما بازی می‌کند</span>
+          <button class="take-control-btn" id="btn-take-control" data-i18n="takeControlBtn">🎮 بازپس‌گیری کنترل</button>
+        </div>
+
+        <div class="player-card-badge" id="badge-0">
+          <span class="status-dot online" id="status-0" title="Online status"></span>
+          <span class="player-crown" id="crown-0" style="display:none;">👑</span>
+          <span class="player-name" id="name-0">You</span>
+          <span class="uno-call-badge" id="uno-badge-0" style="display:none;">UNO!</span>
+          <span class="player-card-count" id="count-0">7</span>
+        </div>
+
+        <!-- Local Player Turn Controls (Above hand so never hidden under chat) -->
+        <div class="player-action-bar" id="player-action-bar">
+          <button class="btn-uno-shout" id="btn-uno-shout" style="display:none;" title="اعلام اونو!">
+            🔥 UNO!
+          </button>
+          <button class="btn-action-pass" id="btn-action-pass" style="display:none;" data-i18n="passBtn">
+            رد کردن نوبت
+          </button>
+          <button class="btn-action-catch" id="btn-action-catch" style="display:none;" data-i18n="unoCatchBtn" title="اعلام جریمه اونو!">
+            ⚠️ جریمه اونو!
+          </button>
+        </div>
+
+        <!-- Local Player's Interactive Hand -->
+        <div class="player-hand-container" id="player-hand-container">
+          <div class="player-hand" id="hand-0">
+            <!-- Cards rendered here dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SEAT 1: WEST (LEFT) -->
+      <div class="player-seat seat-west" id="seat-1">
+        <div class="player-card-badge" id="badge-1">
+          <span class="status-dot online" id="status-1" title="Online status"></span>
+          <span class="player-crown" id="crown-1" style="display:none;">👑</span>
+          <span class="player-name" id="name-1">Bot 1</span>
+          <span class="uno-call-badge" id="uno-badge-1" style="display:none;">UNO!</span>
+          <span class="player-card-count" id="count-1">7</span>
+        </div>
+        <div class="opponent-hand-fan" id="hand-1"></div>
+      </div>
+
+      <!-- SEAT 2: NORTH (TOP) -->
+      <div class="player-seat seat-north" id="seat-2">
+        <div class="player-card-badge" id="badge-2">
+          <span class="status-dot online" id="status-2" title="Online status"></span>
+          <span class="player-crown" id="crown-2" style="display:none;">👑</span>
+          <span class="player-name" id="name-2">Bot 2</span>
+          <span class="uno-call-badge" id="uno-badge-2" style="display:none;">UNO!</span>
+          <span class="player-card-count" id="count-2">7</span>
+        </div>
+        <div class="opponent-hand-fan" id="hand-2"></div>
+      </div>
+
+      <!-- SEAT 3: EAST (RIGHT) -->
+      <div class="player-seat seat-east" id="seat-3">
+        <div class="player-card-badge" id="badge-3">
+          <span class="status-dot online" id="status-3" title="Online status"></span>
+          <span class="player-crown" id="crown-3" style="display:none;">👑</span>
+          <span class="player-name" id="name-3">Bot 3</span>
+          <span class="uno-call-badge" id="uno-badge-3" style="display:none;">UNO!</span>
+          <span class="player-card-count" id="count-3">7</span>
+        </div>
+        <div class="opponent-hand-fan" id="hand-3"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Color Chooser Modal (When Wild Card is Played) -->
+  <div class="modal-overlay" id="modal-color-chooser">
+    <div class="modal-box color-chooser-box">
+      <div class="modal-title">🎨 <span data-i18n="chooseColorTitle">انتخاب رنگ بعدی</span></div>
+      <p class="modal-text" data-i18n="chooseColorPrompt">کارت ویژه بازی شد! رنگ دلخواه خود را برای ادامه بازی انتخاب کنید:</p>
+      
+      <div class="color-options-grid">
+        <button type="button" class="btn-color-choice color-red" data-color="red">
+          <span class="color-swatch"></span>
+          <span data-i18n="colorRed">قرمز (Red)</span>
+        </button>
+        <button type="button" class="btn-color-choice color-blue" data-color="blue">
+          <span class="color-swatch"></span>
+          <span data-i18n="colorBlue">آبی (Blue)</span>
+        </button>
+        <button type="button" class="btn-color-choice color-green" data-color="green">
+          <span class="color-swatch"></span>
+          <span data-i18n="colorGreen">سبز (Green)</span>
+        </button>
+        <button type="button" class="btn-color-choice color-yellow" data-color="yellow">
+          <span class="color-swatch"></span>
+          <span data-i18n="colorYellow">زرد (Yellow)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round Result Modal -->
+  <div class="modal-overlay" id="modal-round-result">
+    <div class="modal-box round-result-box">
+      <div class="modal-title" id="round-winner-title">🎉 پایان راند!</div>
+      <div class="modal-text" id="round-winner-desc">برنده راند مشخص شد.</div>
+      
+      <div class="scores-summary-table" id="scores-summary-table">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="btn-primary" id="btn-next-round" style="flex:1;" data-i18n="nextRoundBtn">ادامه راند بعد</button>
+        <button class="btn-secondary" id="btn-result-menu" data-i18n="mainMenuBtn">منوی اصلی</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Menu Modal -->
+  <div class="modal-overlay" id="modal-main-menu">
+    <div class="modal-box menu-modal-box">
+      <div class="menu-header">
+        <div class="menu-brand-icon">🎴</div>
+        <h2 class="menu-title" data-i18n="mainMenuTitle">بازی کارتی اونو (UNO)</h2>
+        <p class="menu-subtitle" data-i18n="mainMenuSubtitle">بازی آنلاین و آفلاین اونو با قوانین استاندارد</p>
+      </div>
+
+      <div class="menu-grid">
+        <button class="menu-card" id="btn-menu-solo">
+          <div class="menu-card-icon">🤖</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuSoloTitle">بازی تک‌نفره با ربات‌ها</h3>
+            <p data-i18n="menuSoloDesc">بازی آفلاین و سریع با ۳ هوش مصنوعی هوشمند</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-online">
+          <div class="menu-card-icon">🌐</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuOnlineTitle">چندنفره آنلاین و شبکه محلی</h3>
+            <p data-i18n="menuOnlineDesc">ساخت اتاق اختصاصی و بازی با دوستان</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-rules">
+          <div class="menu-card-icon">📜</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuRulesTitle">قوانین و راهنمای بازی</h3>
+            <p data-i18n="menuRulesDesc">آموزش کامل قوانین اونو، کارت‌های ویژه و امتیازات</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+      </div>
+
+      <div class="menu-footer-actions">
+        <button class="btn-secondary" id="btn-menu-resume" style="display:none;" data-i18n="resumeGame">ادامه بازی جاری</button>
+        <a href="/" class="btn-secondary" data-i18n="menuHubTitle">بازگشت به هاب</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer / Online Room Modal -->
+  <div class="modal-overlay" id="modal-multiplayer">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-title">🌐 <span data-i18n="multiplayerTitle">بازی چندنفره آنلاین / شبکه محلی</span></div>
+      <p class="modal-text" data-i18n="multiplayerDesc">اتاق بسازید یا با کد اتاق به جمع دوستانتان بپیوندید.</p>
+
+      <!-- Lobby View (When inside a room) -->
+      <div id="mp-lobby-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px;">
+          <div>
+            <span style="color:var(--text-muted); font-size:0.85rem;" data-i18n="roomCodeLabel">کد اتاق:</span>
+            <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); margin-left:8px;" id="mp-room-code">----</span>
+          </div>
+          <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 کپی لینک اتاق</button>
+        </div>
+
+        <!-- Dedicated Lobby Name Edit Bar -->
+        <div class="lobby-name-bar" id="lobby-name-bar">
+          <span class="lobby-name-label" data-i18n="yourNameLabel">نام شما:</span>
+          <div class="lobby-name-controls">
+            <input type="text" id="lobby-name-input" class="form-input lobby-name-input" maxlength="15" placeholder="Player">
+            <button type="button" class="btn-secondary lobby-name-save-btn" id="btn-save-lobby-name" data-i18n="saveNameBtn">ثبت نام</button>
+          </div>
+        </div>
+
+        <div class="lobby-host-hint" id="lobby-host-hint" style="display:none;" data-i18n="hostRearrangeHint">
+          👑 میزبان: با دکمه‌های «⇄ جابجایی» یا کشیدن بازیکنان می‌توانید ترتیب صندلی‌ها را تنظیم کنید.
+        </div>
+
+        <div class="lobby-seats" id="lobby-seats-container">
+          <!-- 4 seats rendered dynamically -->
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px; align-items:center;">
+          <button class="btn-primary" id="btn-start-online-game" style="flex:1;" data-i18n="startGameBtn">شروع بازی</button>
+          <div class="lobby-waiting-msg" id="lobby-waiting-msg" style="display:none; flex:1; text-align:center; padding:8px; font-weight:700; color:var(--text-muted); font-size:0.9rem;" data-i18n="waitingForHost">در انتظار شروع بازی توسط میزبان...</div>
+          <button class="btn-secondary" id="btn-leave-room" data-i18n="leaveRoomBtn">خروج از اتاق</button>
+        </div>
+      </div>
+
+      <!-- Entry View (Create / Join) -->
+      <div id="mp-entry-view">
+        <div class="form-group">
+          <label class="form-label" data-i18n="yourNameLabel">نام شما:</label>
+          <input type="text" class="form-input" id="input-player-name" value="Player" maxlength="15">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+          <button class="btn-primary" id="btn-create-room" data-i18n="createRoomBtn">ساخت اتاق جدید</button>
+          <button class="btn-secondary" id="btn-show-join" data-i18n="joinRoomBtn">ورود به اتاق</button>
+        </div>
+
+        <div id="mp-join-fields" style="display:none; margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:14px;">
+          <div class="form-group">
+            <label class="form-label" data-i18n="enterRoomCodeLabel">کد ۴ حرفی اتاق را وارد کنید:</label>
+            <input type="text" class="form-input" id="input-room-code" placeholder="ABCD" maxlength="6" style="text-transform:uppercase; font-size:1.2rem; font-weight:700; text-align:center;">
+          </div>
+          <button class="btn-primary" id="btn-confirm-join" style="width:100%; margin-top:8px;" data-i18n="joinBtn">ورود به اتاق</button>
+        </div>
+
+        <div style="margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:14px;">
+          <button class="btn-secondary" id="btn-play-offline" style="width:100%;" data-i18n="playOfflineBots">🤖 بازی آفلاین با ربات‌ها (بدون نیاز به سرور)</button>
+        </div>
+
+        <button class="btn-secondary" id="btn-close-mp" style="width:100%; margin-top:10px;" data-i18n="closeBtn">بستن</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-box" style="max-width: 620px; text-align: right;">
+      <div class="modal-title">📜 <span data-i18n="rulesTitle">راهنما و قوانین بازی اونو (UNO)</span></div>
+      <div class="modal-text" id="rules-content" style="max-height:60vh; overflow-y:auto; line-height:1.7;">
+        <h4>۱. هدف بازی</h4>
+        <p>هدف هر بازیکن این است که هرچه سریع‌تر تمام کارت‌های دست خود را تمام کند و با کارت‌های باقیمانده دست حریفان امتیاز کسب نماید. اولین بازیکنی که به ۵۰۰ امتیاز برسد برنده مسابقه می‌شود.</p>
+        <h4>۲. جریان و نوبت بازی</h4>
+        <p>به هر بازیکن ۷ کارت داده می‌شود. یک کارت از دسته کارت‌ها رو شده و روی میز قرار می‌گیرد. بازیکنان به نوبت در جهت بازی (پیش‌فرض ساعت‌گرد) باید کارتی بازی کنند که از نظر <strong>رنگ</strong>، <strong>عدد</strong> یا <strong>نماد</strong> با کارت روی زمین همخوانی داشته باشد.</p>
+        <h4>۳. کارت‌های ویژه و اکشن</h4>
+        <p>• <strong>کارت رد نوبت (Skip - ⊘):</strong> نوبت نفر بعدی می‌سوزد.<br>
+        • <strong>کارت تغییر جهت (Reverse - ⇄):</strong> جهت بازی برعکس می‌شود (ساعت‌گرد به پادساعت‌گرد و برعکس).<br>
+        • <strong>کارت +۲ (Draw Two):</strong> بازیکن بعدی باید ۲ کارت بکشد و نوبتش می‌سوزد.<br>
+        • <strong>کارت انتخاب رنگ (Wild - 🌈):</strong> روی هر کارتی قابل بازی است و بازیکن رنگ جدید را تعیین می‌کند.<br>
+        • <strong>کارت +۴ ویژه (Wild Draw 4):</strong> هم رنگ را تغییر می‌دهد و هم نفر بعدی باید ۴ کارت کشیده و نوبتش بسوزد!</p>
+        <h4>۴. قانون گفتن «اونو!» (UNO)</h4>
+        <p>زمانی که تنها ۲ کارت در دست دارید و قصد بازی کردن یکی از آن‌ها را دارید، باید دکمه <strong>UNO!</strong> را بزنید تا اعلام کنید تنها ۱ کارت در دست دارید. اگر یادتان برود و بازیکنی مچ شما را بگیرد، ۲ کارت جریمه می‌کشید!</p>
+        <h4>۵. کارت کشیدن و پاس</h4>
+        <p>اگر کارتی برای بازی ندارید، روی کارت‌های مخزن وسط میز کلیک کنید تا یک کارت بکشید. اگر کارت کشیده شده قابل بازی بود می‌توانید بازی کنید یا پاس بدهید.</p>
+      </div>
+      <button class="btn-primary" id="btn-close-rules" style="margin-top:14px;" data-i18n="closeBtn">بستن</button>
+    </div>
+  </div>
+
+  <!-- Chat Drawer / Log -->
+  <div class="chat-drawer" id="chat-drawer">
+    <div class="chat-header" id="chat-header">
+      <div class="chat-header-title">
+        <span>💬 <span data-i18n="chatTitle">گزارش و چت بازی</span></span>
+        <span class="chat-badge" id="chat-badge" style="display:none;">0</span>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-mute-btn" id="btn-chat-mute" title="قطع صدای پیام‌ها" aria-label="Mute chat notifications">🔔</button>
+        <span id="chat-toggle-icon">▲</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg system">Game initialized. Good luck!</div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="پیامی بنویسید..." maxlength="100">
+      <button class="btn-secondary" id="btn-send-chat" style="padding:4px 10px;">➤</button>
+    </div>
+  </div>
+
+  <!-- Floating Chat Notification Toast -->
+  <div class="chat-toast" id="chat-toast" style="display:none;">
+    <div class="chat-toast-inner">
+      <span class="chat-toast-icon">💬</span>
+      <div class="chat-toast-content">
+        <div class="chat-toast-sender" id="chat-toast-sender">Player</div>
+        <div class="chat-toast-text" id="chat-toast-text">Message</div>
+      </div>
+      <button class="chat-toast-close" id="chat-toast-close" title="Close" aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

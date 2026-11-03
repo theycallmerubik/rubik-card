@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hokm Card Game | بازی پاسور حکم</title>
+  <meta name="description" content="Lightweight responsive Hokm card game built with pure HTML, CSS, JS, and UTF-8 characters. Play offline vs bots or online multiplayer.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation & Scoreboard -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span class="brand-icon">👑</span>
+      <span class="brand-text-main" data-i18n="gameTitle">Hokm</span>
+    </div>
+
+    <div class="top-actions">
+      <a href="/" class="icon-btn" id="btn-hub" title="Main Menu / All Games" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">🏠</a>
+      <button class="icon-btn" id="btn-menu" title="Game Menu">⚙️</button>
+      <button class="icon-btn" id="btn-multiplayer" title="Play with Friends / Multiplayer">👥</button>
+      <button class="icon-btn" id="btn-sound" title="Toggle Sound">🔊</button>
+      <button class="icon-btn" id="btn-lang" title="Language (EN/FA)">فا</button>
+      <button class="icon-btn" id="btn-rules" title="Game Rules">ℹ️</button>
+      <button class="icon-btn" id="btn-newgame" title="New Game">🔄</button>
+    </div>
+  </header>
+
+  <!-- Card Table -->
+  <main class="table-container">
+    <!-- Top notification banner (sits under header, never covers cards) -->
+    <div class="notification-bubble" id="notification-bubble">
+      Welcome to Hokm!
+    </div>
+
+    <div class="felt-ring"></div>
+
+    <div class="table-surface">
+      <!-- Top Seat: Partner (North - Team 0) -->
+      <div class="seat seat-north team-0-player" id="seat-2">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-2" title="Online status"></span>
+          <span class="player-crown" id="crown-2" style="display:none;">👑</span>
+          <span class="player-name" id="name-2">Partner</span>
+          <span class="player-card-count" id="count-2">13</span>
+        </div>
+        <div class="hand-backs" id="backs-2"></div>
+      </div>
+
+      <!-- Left Seat: Opponent (West - Team 1) -->
+      <div class="seat seat-west team-1-player" id="seat-1">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-1" title="Online status"></span>
+          <span class="player-crown" id="crown-1" style="display:none;">👑</span>
+          <span class="player-name" id="name-1">West</span>
+          <span class="player-card-count" id="count-1">13</span>
+        </div>
+        <div class="hand-backs" id="backs-1"></div>
+      </div>
+
+      <!-- Center Arena: Merged Table Sign (Scoreboard 0:0 + Hokm Indicator) & Trick Area -->
+      <div class="center-arena">
+        <div class="table-sign" id="table-sign">
+          <div class="table-scores">
+            <span class="score-team-0-num" id="score-team-0">0</span>
+            <span class="score-colon">:</span>
+            <span class="score-team-1-num" id="score-team-1">0</span>
+          </div>
+          <div class="table-hokm-row" id="hokm-badge" style="display:none;">
+            <span class="hokm-suit-icon" id="hokm-suit-icon">♠</span>
+            <span class="hokm-suit-name" id="hokm-suit-name">Spades</span>
+          </div>
+        </div>
+
+        <div class="trick-carpet">
+          <div class="trick-slot north" id="trick-slot-2"></div>
+          <div class="trick-slot west" id="trick-slot-1"></div>
+          <div class="trick-slot east" id="trick-slot-3"></div>
+          <div class="trick-slot south" id="trick-slot-0"></div>
+        </div>
+      </div>
+
+      <!-- Right Seat: Opponent (East - Team 1) -->
+      <div class="seat seat-east team-1-player" id="seat-3">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-3" title="Online status"></span>
+          <span class="player-crown" id="crown-3" style="display:none;">👑</span>
+          <span class="player-name" id="name-3">East</span>
+          <span class="player-card-count" id="count-3">13</span>
+        </div>
+        <div class="hand-backs" id="backs-3"></div>
+      </div>
+
+      <!-- Bottom Seat: Human Player (South - Team 0) -->
+      <div class="seat seat-south team-0-player" id="seat-0">
+        <div class="take-control-banner" id="take-control-banner" style="display:none;">
+          <span class="take-control-text" id="take-control-text" data-i18n="aiPlayingForYou">🤖 AI is playing for you</span>
+          <button class="take-control-btn" id="btn-take-control" data-i18n="takeControlBtn">🎮 Take Back Control</button>
+        </div>
+
+        <div class="player-card-badge" style="margin-bottom: 2px;">
+          <span class="status-dot online" id="status-0" title="Online status"></span>
+          <span class="player-crown" id="crown-0" style="display:none;">👑</span>
+          <span class="player-name" id="name-0">You</span>
+          <span class="player-card-count" id="count-0">13</span>
+        </div>
+
+        <div class="player-hand-container">
+          <div class="hand-cards" id="player-hand">
+            <!-- Cards rendered dynamically via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Won Tricks Stacks (Visual hands won by each team) -->
+      <div class="tricks-pile pile-team-0" id="tricks-pile-0" title="Click to view tricks won">
+        <div class="pile-header">
+          <span class="pile-dot team-0-dot">●</span>
+          <span class="pile-label" data-i18n="team1Short">T1</span>:
+          <span class="pile-count" id="pile-count-0">0</span>
+        </div>
+        <div class="pile-stack" id="pile-stack-0"></div>
+        <span class="pile-badge-hint" data-i18n="viewTricksHint">View</span>
+      </div>
+
+      <div class="tricks-pile pile-team-1" id="tricks-pile-1" title="Click to view tricks won">
+        <div class="pile-header">
+          <span class="pile-dot team-1-dot">●</span>
+          <span class="pile-label" data-i18n="team2Short">T2</span>:
+          <span class="pile-count" id="pile-count-1">0</span>
+        </div>
+        <div class="pile-stack" id="pile-stack-1"></div>
+        <span class="pile-badge-hint" data-i18n="viewTricksHint">View</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Main Menu Modal (Start Screen) -->
+  <div class="modal-overlay active" id="modal-main-menu">
+    <div class="modal-box menu-modal-box">
+      <div class="menu-header">
+        <div class="menu-crown">👑</div>
+        <h1 class="menu-title" data-i18n="mainMenuTitle">Hokm Card Game</h1>
+        <div class="menu-subtitle" data-i18n="mainMenuSubtitle">بازی آنلاین و آفلاین حکم</div>
+        <div class="menu-cards-decor">♠ ♥ ♦ ♣</div>
+      </div>
+
+      <div class="menu-actions">
+        <button class="menu-btn menu-btn-resume" id="btn-menu-resume" style="display:none;">
+          <span class="menu-btn-icon">▶️</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="resumeGame">Resume Game</strong>
+            <small data-i18n="resumeGameDesc">Return to your ongoing match</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-solo" id="btn-menu-solo">
+          <span class="menu-btn-icon">🤖</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuSoloTitle">Solo vs Smart Bots</strong>
+            <small data-i18n="menuSoloDesc">Instant offline play (no internet needed)</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-online" id="btn-menu-online">
+          <span class="menu-btn-icon">🌐</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuOnlineTitle">Online & LAN Multiplayer</strong>
+            <small data-i18n="menuOnlineDesc">Create room or play with friends</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-rules" id="btn-menu-rules">
+          <span class="menu-btn-icon">📜</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuRulesTitle">Game Rules</strong>
+            <small data-i18n="menuRulesDesc">How to play Hokm, scoring, and Kot</small>
+          </div>
+        </button>
+
+        <a class="menu-btn menu-btn-hub" href="/" style="text-decoration:none;">
+          <span class="menu-btn-icon">🏠</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuHubTitle">All Games Hub</strong>
+            <small data-i18n="menuHubDesc">Return to Main Game Menu</small>
+          </div>
+        </a>
+      </div>
+
+      <div class="menu-footer">
+        <button class="menu-chip-btn" id="btn-menu-lang">
+          <span id="menu-lang-icon">🌐</span>
+          <span id="menu-lang-label">فارسی</span>
+        </button>
+        <button class="menu-chip-btn" id="btn-menu-sound">
+          <span id="menu-sound-icon">🔊</span>
+          <span id="menu-sound-label">Sound On</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hokm Selection Modal (When player is Hakem) -->
+  <div class="modal-overlay" id="modal-hokm-picker">
+    <div class="hokm-picker-frame" id="hokm-picker-frame">
+      <div class="modal-box hokm-modal-box" id="hokm-picker-box">
+        <div class="modal-title">👑 <span data-i18n="youAreHakem">You are Hakem!</span></div>
+        <p class="modal-text" data-i18n="chooseHokmPrompt">Inspect your first 5 cards and choose the Trump suit (Hokm):</p>
+        
+        <div class="first-five-cards" id="first-five-preview">
+          <!-- 5 cards rendered here -->
+        </div>
+
+        <div class="suit-picker-grid">
+          <button class="suit-btn black" data-suit="S">
+            <span class="suit-char">♠</span>
+            <span data-i18n="suitSpades">Spades (پیک)</span>
+          </button>
+          <button class="suit-btn red" data-suit="H">
+            <span class="suit-char">♥</span>
+            <span data-i18n="suitHearts">Hearts (دل)</span>
+          </button>
+          <button class="suit-btn red" data-suit="D">
+            <span class="suit-char">♦</span>
+            <span data-i18n="suitDiamonds">Diamonds (خشت)</span>
+          </button>
+          <button class="suit-btn black" data-suit="C">
+            <span class="suit-char">♣</span>
+            <span data-i18n="suitClubs">Clubs (گشنیز)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round Over / Game Over Modal -->
+  <div class="modal-overlay" id="modal-round-result">
+    <div class="modal-box">
+      <div class="modal-title" id="round-result-title">Round Complete!</div>
+      <div class="modal-text" id="round-result-desc">Team 1 won the round!</div>
+      <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold-primary); margin: 8px 0;" id="round-result-scores">
+        Team 1: 1  -  Team 2: 0
+      </div>
+      <button class="btn-primary" id="btn-next-round" data-i18n="continueBtn">Continue</button>
+    </div>
+  </div>
+
+  <!-- Multiplayer / Online Room Modal -->
+  <div class="modal-overlay" id="modal-multiplayer">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-title">🌐 <span data-i18n="multiplayerTitle">Play Online / LAN</span></div>
+      <p class="modal-text" data-i18n="multiplayerDesc">Play with friends on other PCs or phones, or practice solo with smart bots.</p>
+
+      <div id="mp-lobby-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px;">
+          <div>
+            <span style="color:var(--text-muted); font-size:0.85rem;" data-i18n="roomCodeLabel">Room Code:</span>
+            <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); margin-left:8px;" id="mp-room-code">----</span>
+          </div>
+          <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 Copy Link</button>
+        </div>
+
+        <div class="lobby-name-bar" id="lobby-name-bar">
+          <span class="lobby-name-label" data-i18n="yourNameLabel">Your Name:</span>
+          <div class="lobby-name-controls">
+            <input type="text" id="lobby-name-input" class="form-input lobby-name-input" maxlength="15" placeholder="Player">
+            <button type="button" class="btn-secondary lobby-name-save-btn" id="btn-save-lobby-name" data-i18n="saveNameBtn">Save</button>
+          </div>
+        </div>
+
+        <div class="lobby-host-hint" id="lobby-host-hint" style="display:none;" data-i18n="hostRearrangeHint">
+          👑 Host: Click "⇄ Swap" or "⇄ Switch Team", or drag players to rearrange teams.
+        </div>
+
+        <div class="lobby-seats" id="lobby-seats-container">
+          <!-- 4 seats rendered here -->
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:8px; align-items:center;">
+          <button class="btn-primary" id="btn-start-online-game" style="flex:1;" data-i18n="startGameBtn">Start Game</button>
+          <div class="lobby-waiting-msg" id="lobby-waiting-msg" style="display:none; flex:1; text-align:center; padding:8px; font-weight:700; color:var(--text-muted); font-size:0.9rem;" data-i18n="waitingForHost">Waiting for host to start...</div>
+          <button class="btn-secondary" id="btn-leave-room" data-i18n="leaveRoomBtn">Leave</button>
+        </div>
+      </div>
+
+      <div id="mp-entry-view">
+        <div class="form-group">
+          <label class="form-label" data-i18n="yourNameLabel">Your Name:</label>
+          <input type="text" class="form-input" id="input-player-name" value="Player" maxlength="15">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+          <button class="btn-primary" id="btn-create-room" data-i18n="createRoomBtn">Create Room</button>
+          <button class="btn-secondary" id="btn-show-join" data-i18n="joinRoomBtn">Join Room</button>
+        </div>
+
+        <div id="mp-join-fields" style="display:none; margin-top:14px;" class="form-group">
+          <label class="form-label" data-i18n="enterRoomCodeLabel">Enter 4-Character Room Code:</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" class="form-input" id="input-room-code" placeholder="e.g. ABCD" maxlength="6" style="text-transform:uppercase;">
+            <button class="btn-primary" id="btn-confirm-join" data-i18n="joinBtn">Join</button>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:18px 0;">
+
+        <button class="btn-secondary" id="btn-play-offline" style="width:100%;" data-i18n="playOfflineBots">
+          🤖 Play Offline vs Bots (No Server Needed)
+        </button>
+      </div>
+
+      <button class="btn-secondary" id="btn-close-mp" style="margin-top:6px;" data-i18n="closeBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Last Trick Inspector Modal -->
+  <div class="modal-overlay" id="modal-last-trick">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-title">🃏 <span data-i18n="lastTrickTitle">Last Hand Played</span></div>
+      <p class="modal-text" id="last-trick-winner-desc">No tricks played yet this round.</p>
+      
+      <div class="last-trick-cards-grid" id="last-trick-cards-container">
+        <!-- The 4 cards rendered with player labels & winning indicator -->
+      </div>
+
+      <button class="btn-primary" id="btn-close-last-trick" style="margin-top:8px;" data-i18n="closeBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Rules / Help Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-title">📜 <span data-i18n="rulesTitle">Hokm Game Rules</span></div>
+      <div class="rules-list" id="rules-content">
+        <!-- Injected via i18n -->
+      </div>
+      <button class="btn-primary" id="btn-close-rules" data-i18n="closeBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- In-Game Chat / Log Drawer -->
+  <div class="chat-drawer" id="chat-drawer">
+    <div class="chat-header" id="chat-header">
+      <div class="chat-header-title">
+        <span>💬 <span data-i18n="chatTitle">Game Chat & Log</span></span>
+        <span class="chat-badge" id="chat-badge" style="display:none;">0</span>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-mute-btn" id="btn-chat-mute" title="Mute chat notifications" aria-label="Mute chat notifications">🔔</button>
+        <span id="chat-toggle-icon">▲</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg system">Game initialized. Good luck!</div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="Type a message..." maxlength="100">
+      <button class="btn-secondary" id="btn-send-chat" style="padding:4px 10px;">➤</button>
+    </div>
+  </div>
+
+  <!-- Floating Chat Notification Toast -->
+  <div class="chat-toast" id="chat-toast" style="display:none;">
+    <div class="chat-toast-inner">
+      <span class="chat-toast-icon">💬</span>
+      <div class="chat-toast-content">
+        <div class="chat-toast-sender" id="chat-toast-sender">Player</div>
+        <div class="chat-toast-text" id="chat-toast-text">Message</div>
+      </div>
+      <button class="chat-toast-close" id="chat-toast-close" title="Close" aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

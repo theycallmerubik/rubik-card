@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shelem Card Game | بازی پاسور شلم</title>
+  <meta name="description" content="Play authentic Persian Shelem card game online and offline with smart bots, bidding, contracts, and zero external dependencies.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation & Scoreboard -->
+  <header class="top-bar">
+    <div class="brand-title">
+      <span class="brand-icon">🃏</span>
+      <span class="brand-text-main" data-i18n="gameTitle">Shelem</span>
+    </div>
+
+    <div class="top-actions">
+      <button class="icon-btn" id="btn-menu" title="Main Menu">☰</button>
+      <a href="/" class="icon-btn" id="btn-hub" title="Game Hub / Main Menu" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">🏠</a>
+      <button class="icon-btn" id="btn-multiplayer" title="Online & LAN Multiplayer">🌐</button>
+      <button class="icon-btn" id="btn-leaderboard" title="Leaderboard & Points History">📊</button>
+      <button class="icon-btn" id="btn-settings" title="Game Settings">⚙️</button>
+      <button class="icon-btn" id="btn-sound" title="Toggle Sound">🔊</button>
+      <button class="icon-btn" id="btn-lang" title="Language (EN/FA)">EN</button>
+      <button class="icon-btn" id="btn-rules" title="Game Rules">ℹ️</button>
+      <button class="icon-btn" id="btn-newgame" title="New Game">🔄</button>
+    </div>
+  </header>
+
+  <!-- Card Table -->
+  <main class="table-container">
+    <!-- Top notification banner -->
+    <div class="notification-bubble" id="notification-bubble" data-i18n="welcomeMsg">
+      خوش آمدید! برای شروع بازی آماده شوید.
+    </div>
+
+    <div class="felt-ring"></div>
+
+    <div class="table-surface">
+      <!-- Top Seat: Partner (North - Team 0) -->
+      <div class="seat seat-north team-0-player" id="seat-2">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-2"></span>
+          <span class="player-crown" id="crown-2" style="display:none;">👑</span>
+          <span class="player-name" id="name-2">Partner</span>
+          <span class="player-card-count" id="count-2">12</span>
+        </div>
+        <div class="hand-backs" id="backs-2"></div>
+      </div>
+
+      <!-- Left Seat: Opponent (West - Team 1) -->
+      <div class="seat seat-west team-1-player" id="seat-1">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-1"></span>
+          <span class="player-crown" id="crown-1" style="display:none;">👑</span>
+          <span class="player-name" id="name-1">West</span>
+          <span class="player-card-count" id="count-1">12</span>
+        </div>
+        <div class="hand-backs" id="backs-1"></div>
+      </div>
+
+      <!-- Center Arena: Merged Table Sign & Trick Carpet -->
+      <div class="center-arena">
+        <div class="table-sign" id="table-sign">
+          <div class="table-scores">
+            <span class="score-team-0-num" id="score-team-0">0</span>
+            <span class="score-colon">:</span>
+            <span class="score-team-1-num" id="score-team-1">0</span>
+          </div>
+          <div class="shelem-contract-indicator" id="contract-indicator" style="display:none;">
+            <span id="contract-suit-icon">♠</span>
+            <span id="contract-label" data-i18n="contractInitial">تعهد: ---</span>
+          </div>
+          <div class="round-points-row" id="round-points-row" style="display:none;">
+            <span><span data-i18n="pileTeam1">ت۱</span>: <b id="pts-team-0">0</b></span>
+            <span><span data-i18n="pileTeam2">ت۲</span>: <b id="pts-team-1">0</b></span>
+          </div>
+        </div>
+
+        <!-- Table Widow Cards Decor (shown face down during bidding as decor) -->
+        <div class="table-widow-decor" id="table-widow-decor" style="display:none;">
+          <div class="widow-decor-badge">
+            <span class="widow-decor-icon">🃏</span>
+            <span class="widow-decor-title" data-i18n="widowTableDecor">کارت‌های زمین</span>
+          </div>
+          <div class="widow-decor-cards" id="widow-decor-cards"></div>
+        </div>
+
+        <div class="trick-carpet">
+          <div class="trick-slot north" id="trick-slot-2"></div>
+          <div class="trick-slot west" id="trick-slot-1"></div>
+          <div class="trick-slot east" id="trick-slot-3"></div>
+          <div class="trick-slot south" id="trick-slot-0"></div>
+        </div>
+      </div>
+
+      <!-- Right Seat: Opponent (East - Team 1) -->
+      <div class="seat seat-east team-1-player" id="seat-3">
+        <div class="player-card-badge">
+          <span class="status-dot online" id="status-3"></span>
+          <span class="player-crown" id="crown-3" style="display:none;">👑</span>
+          <span class="player-name" id="name-3">East</span>
+          <span class="player-card-count" id="count-3">12</span>
+        </div>
+        <div class="hand-backs" id="backs-3"></div>
+      </div>
+
+      <!-- Bottom Seat: Human Player (South - Team 0) -->
+      <div class="seat seat-south team-0-player" id="seat-0">
+        <div class="take-control-banner" id="take-control-banner" style="display:none;">
+          <span class="take-control-text" id="take-control-text" data-i18n="aiPlayingForYou">🤖 ربات به جای شما بازی می‌کند</span>
+          <button class="take-control-btn" id="btn-take-control" data-i18n="takeControlBtn">🎮 بازپس‌گیری کنترل</button>
+        </div>
+
+        <div class="player-card-badge" style="margin-bottom: 2px;">
+          <span class="status-dot online" id="status-0"></span>
+          <span class="player-crown" id="crown-0" style="display:none;">👑</span>
+          <span class="player-name" id="name-0">شما</span>
+          <span class="player-card-count" id="count-0">12</span>
+        </div>
+
+        <div class="player-hand-container">
+          <div class="hand-cards" id="player-hand"></div>
+        </div>
+      </div>
+
+      <!-- Won Tricks Stacks -->
+      <div class="tricks-pile pile-team-0" id="tricks-pile-0" title="Click to view last hand played">
+        <div class="pile-header">
+          <span class="pile-dot team-0-dot">●</span>
+          <span class="pile-label" data-i18n="pileTeam1">ت۱</span>:
+          <span class="pile-count" id="pile-count-0">0</span>
+        </div>
+        <div class="pile-stack" id="pile-stack-0">
+          <div class="shelem-card-stack">
+            <div class="stack-card stack-card-1"></div>
+            <div class="stack-card stack-card-2"></div>
+            <div class="stack-card stack-card-3"></div>
+          </div>
+        </div>
+        <span class="pile-badge-hint" data-i18n="viewTricksHint">مشاهده</span>
+      </div>
+
+      <div class="tricks-pile pile-team-1" id="tricks-pile-1" title="Click to view last hand played">
+        <div class="pile-header">
+          <span class="pile-dot team-1-dot">●</span>
+          <span class="pile-label" data-i18n="pileTeam2">ت۲</span>:
+          <span class="pile-count" id="pile-count-1">0</span>
+        </div>
+        <div class="pile-stack" id="pile-stack-1">
+          <div class="shelem-card-stack">
+            <div class="stack-card stack-card-1"></div>
+            <div class="stack-card stack-card-2"></div>
+            <div class="stack-card stack-card-3"></div>
+          </div>
+        </div>
+        <span class="pile-badge-hint" data-i18n="viewTricksHint">مشاهده</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bidding Modal -->
+  <div class="modal-overlay" id="modal-bidding">
+    <div class="modal-box bidding-modal-box" id="bidding-modal-box">
+      <div class="modal-timer-track">
+        <div class="modal-timer-bar" id="bidding-timer-bar"></div>
+      </div>
+      <div class="modal-title">🗣️ <span data-i18n="biddingTitle">مرحله خواندن تعهد (شلم)</span></div>
+      <div class="bidding-turn-banner" id="bidding-turn-banner">
+        <span class="turn-status-text" id="bidding-turn-text">نوبت تعهد: ---</span>
+      </div>
+      <p class="modal-text" id="bidding-modal-prompt" data-i18n="biddingPrompt">بر اساس برگ‌های دست خود تعهد امتیاز دهید یا پاس بگویید:</p>
+
+      <!-- Player Hand preview inside Bidding Modal -->
+      <div class="bidding-hand-container">
+        <div class="bidding-hand-label" data-i18n="yourHandLabel">برگ‌های دست شما (۱۲ برگ):</div>
+        <div class="bidding-hand-cards" id="bidding-hand-preview"></div>
+      </div>
+
+      <div class="current-bid-display">
+        <div class="bid-info-item">
+          <span class="bid-info-label" data-i18n="highestBidLabel">بالاترین تعهد:</span>
+          <span class="bid-info-val" id="highest-bid-val">---</span>
+        </div>
+        <div class="bid-info-item">
+          <span class="bid-info-label" data-i18n="bidderLabel">پیشنهاد دهنده:</span>
+          <span class="bid-info-val" id="highest-bidder-name">---</span>
+        </div>
+      </div>
+
+      <div class="bidding-quick-buttons" id="bidding-quick-buttons">
+        <!-- Buttons 100 to 165 generated dynamically -->
+      </div>
+
+      <div class="bidding-action-row">
+        <button class="btn-pass" id="btn-pass-bid" data-i18n="passBtn">✋ پاس (Pass)</button>
+        <button class="btn-bid-step btn-bid-shelem" id="btn-bid-shelem" data-bid="330">🔥 شلم (۳۳۰)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Widow Discard Modal (Tash / زمین) -->
+  <div class="modal-overlay" id="modal-widow-discard">
+    <div class="modal-box widow-modal-box" id="widow-modal-box">
+      <div class="modal-timer-track">
+        <div class="modal-timer-bar" id="widow-timer-bar"></div>
+      </div>
+      <div class="modal-title">🎴 <span id="widow-modal-title" data-i18n="widowTitle">برداشتن زمین و انداختن ۴ برگ</span></div>
+      <p class="modal-text" id="widow-modal-prompt" data-i18n="widowPrompt">شما تعهد را بردید! ۴ برگ زمین به دست شما اضافه شد. ۴ برگ بی‌ارزش را برای انداختن انتخاب کنید:</p>
+
+      <div class="widow-cards-grid" id="widow-cards-grid">
+        <!-- 16 cards rendered here -->
+      </div>
+
+      <div class="widow-prompt-row">
+        <div class="widow-counter">
+          <span data-i18n="selectedCount">انتخاب شده:</span>
+          <span id="discard-selected-count">0</span> / <span id="discard-total-count">4</span>
+        </div>
+        <button class="btn-primary" id="btn-confirm-discard" disabled data-i18n="confirmDiscardBtn">تأیید و انداختن برگ‌ها</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Round Result Modal -->
+  <div class="modal-overlay" id="modal-round-result">
+    <div class="modal-box">
+      <div class="modal-title" id="round-result-title" data-i18n="roundCompleteTitle">پایان دور!</div>
+      <div class="modal-text" id="round-result-desc">امتیازات محاسبه شد.</div>
+      <div style="font-size: 1.4rem; font-weight: 800; color: var(--gold-primary); margin: 12px 0;" id="round-result-scores">
+        0 - 0
+      </div>
+      <button class="btn-primary" id="btn-next-round" data-i18n="continueBtn">ادامه دور بعد</button>
+    </div>
+  </div>
+
+  <!-- Main Menu Modal (Start Screen) -->
+  <div class="modal-overlay active" id="modal-main-menu">
+    <div class="modal-box menu-modal-box">
+      <div class="menu-header">
+        <div class="menu-crown">👑</div>
+        <h1 class="menu-title" data-i18n="mainMenuTitle">بازی پاسور شلم</h1>
+        <div class="menu-subtitle" data-i18n="mainMenuSubtitle">بازی آنلاین و آفلاین شلم</div>
+        <div class="menu-cards-decor">♠ ♥ ♦ ♣</div>
+      </div>
+
+      <div class="menu-actions">
+        <button class="menu-btn menu-btn-resume" id="btn-menu-resume" style="display:none;">
+          <span class="menu-btn-icon">▶️</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="resumeGame">ادامه بازی</strong>
+            <small data-i18n="resumeGameDesc">بازگشت به بازی در حال انجام</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-solo" id="btn-menu-solo">
+          <span class="menu-btn-icon">🤖</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuSoloTitle">تک‌نفره با ربات‌های هوشمند</strong>
+            <small data-i18n="menuSoloDesc">بازی آفلاین بدون نیاز به اینترنت</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-online" id="btn-menu-online">
+          <span class="menu-btn-icon">🌐</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuOnlineTitle">چندنفره آنلاین و شبکه محلی</strong>
+            <small data-i18n="menuOnlineDesc">ساخت اتاق و بازی با دوستان</small>
+          </div>
+        </button>
+
+        <button class="menu-btn menu-btn-rules" id="btn-menu-rules">
+          <span class="menu-btn-icon">📜</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuRulesTitle">قوانین و راهنمای بازی</strong>
+            <small data-i18n="menuRulesDesc">آموزش بازی، نحوه تعهد و شلم</small>
+          </div>
+        </button>
+
+        <a class="menu-btn menu-btn-hub" href="/" style="text-decoration:none;">
+          <span class="menu-btn-icon">🏠</span>
+          <div class="menu-btn-text">
+            <strong data-i18n="menuHubTitle">منوی بازی‌ها (هاب)</strong>
+            <small data-i18n="menuHubDesc">بازگشت به منوی اصلی و فهرست بازی‌ها</small>
+          </div>
+        </a>
+      </div>
+
+      <div class="menu-footer">
+        <button class="menu-chip-btn" id="btn-menu-lang">
+          <span id="menu-lang-icon">🌐</span>
+          <span id="menu-lang-label">English</span>
+        </button>
+        <button class="menu-chip-btn" id="btn-menu-sound">
+          <span id="menu-sound-icon">🔊</span>
+          <span id="menu-sound-label">Sound On</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer / Online Room Modal -->
+  <div class="modal-overlay" id="modal-multiplayer">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-title">🌐 <span data-i18n="multiplayerTitle">بازی چندنفره آنلاین / شبکه محلی</span></div>
+      <p class="modal-text" data-i18n="multiplayerDesc">می‌توانید با دوستان خود در شبکه محلی یا سرور بازی کنید، یا به‌صورت آفلاین با ربات‌ها رقابت نمایید.</p>
+
+      <div id="mp-lobby-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px;">
+          <div>
+            <span style="color:var(--text-muted); font-size:0.85rem;" data-i18n="roomCodeLabel">کد اتاق:</span>
+            <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); margin-left:8px;" id="mp-room-code">----</span>
+          </div>
+          <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 کپی لینک اتاق</button>
+        </div>
+
+        <div class="lobby-name-bar" id="lobby-name-bar">
+          <span class="lobby-name-label" data-i18n="yourNameLabel">نام شما:</span>
+          <div class="lobby-name-controls">
+            <input type="text" id="lobby-name-input" class="form-input lobby-name-input" maxlength="15" placeholder="Player">
+            <button type="button" class="btn-secondary lobby-name-save-btn" id="btn-save-lobby-name" data-i18n="saveNameBtn">ثبت نام</button>
+          </div>
+        </div>
+
+        <div class="lobby-host-hint" id="lobby-host-hint" style="display:none;" data-i18n="hostRearrangeHint">
+          👑 میزبان: با دکمه‌های «⇄ جابجایی» یا کشیدن بازیکنان می‌توانید ترکیب تیم‌ها را تنظیم کنید.
+        </div>
+
+        <div class="lobby-seats" id="lobby-seats-container">
+          <!-- 4 seats rendered dynamically -->
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:8px; align-items:center;">
+          <button class="btn-primary" id="btn-start-online-game" style="flex:1;" data-i18n="startGameBtn">شروع بازی</button>
+          <div class="lobby-waiting-msg" id="lobby-waiting-msg" style="display:none; flex:1; text-align:center; padding:8px; font-weight:700; color:var(--text-muted); font-size:0.9rem;" data-i18n="waitingForHost">در انتظار شروع بازی توسط میزبان...</div>
+          <button class="btn-secondary" id="btn-leave-room" data-i18n="leaveRoomBtn">خروج از اتاق</button>
+        </div>
+      </div>
+
+      <div id="mp-entry-view">
+        <div class="form-group">
+          <label class="form-label" data-i18n="yourNameLabel">نام شما:</label>
+          <input type="text" class="form-input" id="input-player-name" value="Player" maxlength="15">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+          <button class="btn-primary" id="btn-create-room" data-i18n="createRoomBtn">ساخت اتاق جدید</button>
+          <button class="btn-secondary" id="btn-show-join" data-i18n="joinRoomBtn">ورود به اتاق</button>
+        </div>
+
+        <div id="mp-join-fields" style="display:none; margin-top:14px;" class="form-group">
+          <label class="form-label" data-i18n="enterRoomCodeLabel">کد ۴ حرفی اتاق را وارد کنید:</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" class="form-input" id="input-room-code" placeholder="ABCD" maxlength="6" style="text-transform:uppercase;">
+            <button class="btn-primary" id="btn-confirm-join" data-i18n="joinBtn">ورود</button>
+          </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:18px 0;">
+
+        <button class="btn-secondary" id="btn-play-offline" style="width:100%;" data-i18n="playOfflineBots">
+          🤖 بازی آفلاین با ربات‌ها (بدون نیاز به سرور)
+        </button>
+      </div>
+
+      <button class="btn-secondary" id="btn-close-mp" style="margin-top:6px;" data-i18n="closeBtn">بستن</button>
+    </div>
+  </div>
+
+  <!-- Last Trick Inspector Modal -->
+  <div class="modal-overlay" id="modal-last-trick">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-title">🃏 <span data-i18n="lastTrickTitle">آخرین دست بازی‌شده</span></div>
+      <p class="modal-text" id="last-trick-winner-desc">هنوز دستی در این دور بازی نشده است.</p>
+      
+      <div class="last-trick-cards-grid" id="last-trick-cards-container">
+        <!-- The 4 cards rendered with player labels & winning indicator -->
+      </div>
+
+      <button class="btn-primary" id="btn-close-last-trick" style="margin-top:8px;" data-i18n="closeBtn">بستن</button>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-box" style="max-width: 600px; text-align: right;">
+      <div class="modal-title">📜 <span data-i18n="rulesTitle">راهنما و قوانین بازی شلم</span></div>
+      <div class="modal-text" id="rules-content" style="max-height:60vh; overflow-y:auto; line-height:1.7;">
+        <h4>۱. هدف بازی</h4>
+        <p>شلم یک بازی ۴ نفره تیمی است (شما و یار روبرو در برابر دو حریف). تیمی که زودتر به امتیاز ۱۱۶۵ برسد برنده مسابقه می‌شود.</p>
+        <h4>۲. مرحله خواندن تعهد</h4>
+        <p>بازیکنان به نوبت از ۱۰۰ به بالا (در گام‌های ۵ تایی: ۱۰۰، ۱۰۵، ۱۱۰...) تعهد می‌دهند. بالاترین تعهدکننده حاکم می‌شود و ۴ برگ زمین را برمی‌دارد.</p>
+        <h4>۳. زمین و انتخاب حکم</h4>
+        <p>حاکم ۴ برگ به دست خود اضافه کرده (۱۶ برگ) و ۴ برگ را به دلخواه حذف می‌کند. سپس خال حکم را تعیین می‌نماید.</p>
+        <h4>۴. ارزش دست‌ها و کارت‌های امتیازدار (مجموع ۱۶۵ یا ۲۰۰)</h4>
+        <p>• <strong>امتیاز هر دست:</strong> هر دستی که برده می‌شود ۵ امتیاز به صورت پیش‌فرض دارد (۱۳ دست = ۶۵ امتیاز).<br>
+        • <strong>کارت‌های بونس (امتیازدار):</strong> هر برگ ۵: ۵ امتیاز | هر برگ ۱۰: ۱۰ امتیاز | هر تک (A): ۱۰ امتیاز (مجموع ۱۰۰ امتیاز).<br>
+        • <strong>جوکرها (در صورت بازی با جوکر):</strong> جوکر قرمز: ۲۰ امتیاز | جوکر سیاه: ۱۵ امتیاز.<br>
+        • <em>(شاه، بی‌بی، سرباز و اعداد ۲ تا ۹ امتیاز اضافی ندارند و بردن آنها همان ۵ امتیاز پایه دست را می‌دهد).</em><br>
+        • برنده دست آخر، کارت‌های زمین را به همراه ۵ امتیاز پایه دست زمین تصاحب می‌کند.<br>
+        • مجموع کل امتیازات دور: ۱۶۵ امتیاز (بدون جوکر) یا ۲۰۰ امتیاز (با ۲ جوکر).</p>
+        <h4>۵. محاسبه امتیاز و نمره منفی</h4>
+        <p>اگر تیم حاکم به تعهد خود برسد، امتیازات کسب شده به حساب آنها افزوده می‌شود. اگر به تعهد نرسند، به اندازه تعهد امتیاز منفی می‌خورند!</p>
+      </div>
+      <button class="btn-primary" id="btn-close-rules" style="margin-top:14px;" data-i18n="closeBtn">بستن</button>
+    </div>
+  </div>
+
+  <!-- Pre-Game Settings Modal -->
+  <div class="modal-overlay" id="modal-game-settings">
+    <div class="modal-box settings-modal-box">
+      <div class="modal-title">⚙️ <span data-i18n="settingsTitle">تنظیمات بازی شلم</span></div>
+      <p class="modal-text" data-i18n="settingsPrompt">قوانین و اهداف بازی را قبل از شروع مشخص کنید:</p>
+
+      <!-- Deck Mode (Jokers) -->
+      <div class="settings-group">
+        <div class="settings-group-title">
+          <span>🃏</span>
+          <span data-i18n="deckModeTitle">نوع دست کارت (جوکر)</span>
+        </div>
+        <div class="settings-chips-grid">
+          <button type="button" class="btn-setting-chip active" id="chip-deck-no-jokers" data-deck="standard">
+            <span data-i18n="deckStandardTitle">بدون جوکر (۵۲ برگ)</span>
+            <small data-i18n="deckStandardDesc">مجموع ۱۶۵ امتیاز • ۴ برگ زمین</small>
+          </button>
+          <button type="button" class="btn-setting-chip" id="chip-deck-jokers" data-deck="jokers">
+            <span data-i18n="deckJokersTitle">با ۲ جوکر (۵۴ برگ)</span>
+            <small data-i18n="deckJokersDesc">مجموع ۲۰۰ امتیاز • ۶ برگ زمین</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Winning Goal Points -->
+      <div class="settings-group">
+        <div class="settings-group-title">
+          <span>🏆</span>
+          <span data-i18n="winningGoalTitle">هدف امتیاز برد مسابقه</span>
+        </div>
+        <div class="settings-chips-grid">
+          <button type="button" class="btn-setting-chip" id="chip-goal-900" data-goal="900">
+            <span data-i18n="goal900">900 امتیاز</span>
+            <small data-i18n="goalFast">دست سریع</small>
+          </button>
+          <button type="button" class="btn-setting-chip active" id="chip-goal-1165" data-goal="1165">
+            <span data-i18n="goal1165">1165 امتیاز</span>
+            <small data-i18n="goalClassic">کلاسیک اصیل</small>
+          </button>
+          <button type="button" class="btn-setting-chip" id="chip-goal-1200" data-goal="1200">
+            <span data-i18n="goal1200">1200 امتیاز</span>
+            <small data-i18n="goalStandard">استاندارد</small>
+          </button>
+          <button type="button" class="btn-setting-chip" id="chip-goal-custom" data-goal="custom">
+            <span data-i18n="goalCustom">سفارشی</span>
+            <small data-i18n="goalCustomDesc">تعیین دلخواه</small>
+          </button>
+        </div>
+
+        <div class="custom-goal-row" id="custom-goal-row" style="display:none;">
+          <span data-i18n="customGoalLabel">امتیاز دلخواه:</span>
+          <input type="number" id="input-custom-goal" class="custom-goal-input" value="1500" min="300" max="5000" step="50">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+        <button class="btn-primary" id="btn-start-with-settings" style="flex:1;" data-i18n="startGameBtn">شروع بازی 🎮</button>
+        <button class="btn-pass" id="btn-close-settings" style="display:none;" data-i18n="cancelBtn">انصراف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard & Points History Modal -->
+  <div class="modal-overlay" id="modal-leaderboard">
+    <div class="modal-box leaderboard-modal-box">
+      <div class="modal-title">📊 <span data-i18n="leaderboardTitle">جدول و تاریخچه امتیازات</span></div>
+      
+      <div class="leaderboard-standings">
+        <div class="standings-team-card">
+          <div class="standings-team-name" data-i18n="team1Short">تیم ۱ (شما و یار)</div>
+          <div class="standings-team-score" id="lb-score-team-0">0</div>
+        </div>
+        <div class="standings-vs">VS</div>
+        <div class="standings-team-card">
+          <div class="standings-team-name" data-i18n="team2Short">تیم ۲ (حریفان)</div>
+          <div class="standings-team-score" id="lb-score-team-1">0</div>
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-bottom:8px;" id="lb-match-meta"></div>
+
+      <div class="leaderboard-table-wrap">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th data-i18n="thRound">دور</th>
+              <th data-i18n="thContract">تعهد</th>
+              <th data-i18n="thTrump">حکم</th>
+              <th data-i18n="thT1Pts">امتیاز ت۱</th>
+              <th data-i18n="thT2Pts">امتیاز ت۲</th>
+              <th data-i18n="thOutcome">نتیجه</th>
+              <th data-i18n="thTotal">مجموع کل</th>
+            </tr>
+          </thead>
+          <tbody id="table-leaderboard-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+        <div class="leaderboard-empty-hint" id="lb-empty-hint" data-i18n="noRoundsYet">
+          هنوز دستی به پایان نرسیده است. پس از پایان هر دست، گزارش امتیازات در اینجا ثبت می‌شود.
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-close-leaderboard" style="margin-top:14px;" data-i18n="closeBtn">بستن</button>
+    </div>
+  </div>
+
+  <!-- Chat Drawer -->
+  <div class="chat-drawer" id="chat-drawer">
+    <div class="chat-header" id="chat-header">
+      <div class="chat-header-title">
+        <span>💬 <span data-i18n="chatTitle">پیام‌ها و گزارش بازی</span></span>
+        <span class="chat-badge" id="chat-badge" style="display:none;">0</span>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-mute-btn" id="btn-chat-mute" title="Mute chat notifications" aria-label="Mute chat notifications">🔔</button>
+        <span id="chat-toggle-icon">▲</span>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg system" data-i18n="chatInitMsg">بازی شلم آماده شد. موفق باشید!</div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="پیامی بنویسید..." maxlength="100">
+      <button class="btn-secondary" id="btn-send-chat" style="padding:4px 10px;">➤</button>
+    </div>
+  </div>
+
+  <!-- Floating Chat Toast Notification -->
+  <div class="chat-toast" id="chat-toast" style="display:none;">
+    <div class="chat-toast-inner">
+      <span class="chat-toast-icon">💬</span>
+      <div class="chat-toast-content">
+        <div class="chat-toast-sender" id="chat-toast-sender">Player</div>
+        <div class="chat-toast-text" id="chat-toast-text">Message</div>
+      </div>
+      <button class="chat-toast-close" id="chat-toast-close" title="Close" aria-label="Close">✕</button>
+    </div>
+  </div>
+
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
