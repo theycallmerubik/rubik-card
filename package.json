@@ -1,17 +1,18 @@
 {
   "name": "rubik-card-club",
   "version": "1.0.0",
-  "description": "Lightweight, responsive classic casino & card game portal featuring Hokm, Shelem, UNO, and Chess with offline AI and real-time WebSocket multiplayer.",
+  "description": "Lightweight, responsive classic casino & card game portal featuring Hokm, Shelem, UNO, Chess, and Backgammon with offline AI and real-time WebSocket multiplayer.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "node -e \"require('./public/logic.js'); require('./public/games/shelem/logic.js'); require('./public/games/uno/logic.js'); require('./public/games/chess/logic.js'); console.log('All game logic tests passed!');\""
+    "test": "node -e \"require('./public/logic.js'); require('./public/games/shelem/logic.js'); require('./public/games/uno/logic.js'); require('./public/games/chess/logic.js'); require('./public/games/backgammon/logic.js'); console.log('All game logic tests passed!');\"",
+    "start": "node server.js"
   },
   "keywords": [
     "hokm",
     "shelem",
     "uno",
     "chess",
+    "backgammon",
     "card-game",
     "board-game",
     "casino",

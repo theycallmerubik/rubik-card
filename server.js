@@ -12,6 +12,7 @@ const logic = require('./public/logic.js');
 const shelemLogic = require('./public/games/shelem/logic.js');
 const unoLogic = require('./public/games/uno/logic.js');
 const chessLogic = require('./public/games/chess/logic.js');
+const backgammonLogic = require('./public/games/backgammon/logic.js');
 
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
@@ -59,6 +60,7 @@ const server = http.createServer((req, res) => {
   if (reqPath === '/shelem' || reqPath === '/shelem/') reqPath = '/games/shelem/index.html';
   if (reqPath === '/uno' || reqPath === '/uno/') reqPath = '/games/uno/index.html';
   if (reqPath === '/chess' || reqPath === '/chess/') reqPath = '/games/chess/index.html';
+  if (reqPath === '/backgammon' || reqPath === '/backgammon/') reqPath = '/games/backgammon/index.html';
 
   if (reqPath === '/api/server-info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -124,6 +126,7 @@ class OnlineRoom {
     this.game = null;
     this.status = 'LOBBY'; // LOBBY, PLAYING, FINISHED
     this.turnTimer = null;
+    this.turnStartTime = null;
 
     // 4 seats:
     // Team 0: Seats 0 (South) & 2 (North)
@@ -1942,6 +1945,7 @@ class OnlineChessRoom {
     this.hostSocketId = hostWs.id;
     this.status = 'LOBBY'; // LOBBY, PLAYING, FINISHED
     this.turnTimer = null;
+    this.turnStartTime = null;
     this.clockInterval = null;
     this.disconnectTimers = [null, null];
 
@@ -2321,6 +2325,462 @@ class OnlineChessRoom {
   }
 }
 
+class OnlineBackgammonRoom {
+  constructor(code, hostWs, hostName = 'Host', settings = {}) {
+    this.code = code;
+    this.gameType = 'backgammon';
+    this.hostSocketId = hostWs.id;
+    this.status = 'LOBBY'; // LOBBY, PLAYING, FINISHED
+    this.turnTimer = null;
+    this.turnStartTime = null;
+
+    this.seats = [
+      { name: hostName, originalName: hostName, isBot: false, socketId: hostWs.id, connected: true, ready: true, color: 'w', consecutiveAfkTurns: 0, isAfk: false },
+      { name: 'Bot 2', originalName: 'Bot 2', isBot: true, socketId: null, connected: true, ready: true, color: 'b', consecutiveAfkTurns: 0, isAfk: false }
+    ];
+
+    this.clients = new Set();
+    this.addClient(hostWs);
+
+    this.gameState = backgammonLogic.getInitialBoard();
+    this.turn = 'w';
+    this.currentDice = [1, 1];
+    this.movesRemaining = [];
+    this.hasRolled = false;
+    this.history = [];
+    this.difficulty = (settings && settings.difficulty) || 'medium';
+  }
+
+  addClient(ws) {
+    this.clients.add(ws);
+    ws.roomCode = this.code;
+  }
+
+  removeClient(ws) {
+    this.clients.delete(ws);
+    const seatIdx = this.seats.findIndex(s => s.socketId === ws.id);
+    if (seatIdx !== -1) {
+      const seat = this.seats[seatIdx];
+      seat.connected = false;
+      seat.socketId = null;
+      if (this.hostSocketId === ws.id) {
+        const nextHuman = this.seats.find(s => s.socketId && s.connected && !s.isBot);
+        if (nextHuman) this.hostSocketId = nextHuman.socketId;
+      }
+      if (this.status === 'PLAYING') {
+        seat.isAfk = true;
+        this.broadcast({
+          type: 'CHAT',
+          sender: 'System',
+          text: `${seat.name} disconnected. AI has taken over.`
+        });
+        this.broadcastGameState();
+        this.checkTurn();
+      } else {
+        seat.isBot = true;
+        seat.name = `Bot ${seatIdx + 1}`;
+        this.broadcastLobby();
+      }
+    }
+    if (this.clients.size === 0) {
+      this.clearTurnTimer();
+      rooms.delete(this.code);
+    }
+  }
+
+  getSeatIndexForSocket(socketId) {
+    return this.seats.findIndex(s => s.socketId === socketId);
+  }
+
+  clearTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+  }
+
+  broadcast(message) {
+    const payload = JSON.stringify(message);
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(payload);
+      }
+    }
+  }
+
+  broadcastLobby() {
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        const isHost = (ws.id === this.hostSocketId);
+        ws.send(JSON.stringify({
+          type: 'LOBBY_UPDATE',
+          roomCode: this.code,
+          gameType: 'backgammon',
+          hostId: this.hostSocketId,
+          isHost,
+          yourSeat,
+          status: this.status,
+          seats: this.seats.map((s, idx) => ({
+            seat: idx,
+            name: s.name,
+            color: s.color,
+            isBot: s.isBot,
+            isOccupied: s.socketId !== null,
+            isOnline: s.isBot ? true : s.connected,
+            isHost: s.socketId === this.hostSocketId,
+            isMe: s.socketId === ws.id,
+            ready: s.ready
+          }))
+        }));
+      }
+    }
+  }
+
+  broadcastGameState(extraData = {}) {
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const seat = this.getSeatIndexForSocket(ws.id);
+        const isHost = (ws.id === this.hostSocketId);
+        ws.send(JSON.stringify({
+          type: 'GAME_STATE',
+          ...extraData,
+          state: {
+            gameType: 'backgammon',
+            status: this.status,
+            mySeat: seat,
+            turn: this.turn,
+            gameState: this.gameState,
+            currentDice: this.currentDice,
+            movesRemaining: this.movesRemaining,
+            hasRolled: this.hasRolled,
+            history: this.history,
+            lastMove: extraData.lastMove || null,
+            players: this.seats.map((s, idx) => ({
+              seat: idx,
+              name: s.name,
+              color: s.color,
+              isBot: !!s.isBot,
+              isOnline: s.isBot ? true : s.connected,
+              isAfk: !!s.isAfk,
+              isHost: s.socketId === this.hostSocketId,
+              isMe: s.socketId === ws.id
+            })),
+            isHost,
+            turnDuration: 30,
+            turnStartTime: this.turnStartTime || Date.now()
+          }
+        }));
+      }
+    }
+  }
+
+  startGame() {
+    this.status = 'PLAYING';
+    this.clearTurnTimer();
+    this.gameState = backgammonLogic.getInitialBoard();
+    this.turn = 'w';
+    this.currentDice = [1, 1];
+    this.movesRemaining = [];
+    this.hasRolled = false;
+    this.history = [];
+
+    this.seats.forEach((s, idx) => {
+      const isHumanConnected = Boolean(
+        s.socketId && s.connected && !s.isBot &&
+        [...this.clients].some(c => c.id === s.socketId && c.readyState === WebSocket.OPEN)
+      );
+      if (!isHumanConnected) {
+        s.isBot = true;
+        s.socketId = null;
+        s.connected = true;
+        s.name = `Bot ${idx + 1}`;
+      } else {
+        s.isBot = false;
+        s.connected = true;
+        s.isAfk = false;
+      }
+    });
+
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: 'Backgammon match started! White moves first.'
+    });
+
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+
+  checkTurn() {
+    this.clearTurnTimer();
+    if (this.status !== 'PLAYING') return;
+
+    this.turnStartTime = Date.now();
+
+    const currentSeatIdx = this.turn === 'w' ? 0 : 1;
+    const seat = this.seats[currentSeatIdx];
+    if (!seat) return;
+
+    if (seat.isBot || seat.isAfk) {
+      this.turnTimer = setTimeout(() => {
+        if (this.status !== 'PLAYING') return;
+        this.executeBotTurn();
+      }, 900);
+      return;
+    }
+
+    this.turnTimer = setTimeout(() => {
+      if (this.status !== 'PLAYING') return;
+      seat.consecutiveAfkTurns = (seat.consecutiveAfkTurns || 0) + 1;
+      if (seat.consecutiveAfkTurns >= 3) {
+        seat.isAfk = true;
+      }
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: `${seat.name} timed out. Auto-playing turn.`
+      });
+      this.executeBotTurn();
+    }, 30000);
+  }
+
+  executeBotTurn() {
+    if (this.status !== 'PLAYING') return;
+    this.clearTurnTimer();
+
+    const rollRes = backgammonLogic.rollDice();
+    this.currentDice = rollRes.dice;
+    this.movesRemaining = rollRes.movesRemaining;
+    this.hasRolled = true;
+
+    const botSeatIdx = this.turn === 'w' ? 0 : 1;
+    const botName = this.seats[botSeatIdx] ? this.seats[botSeatIdx].name : 'Bot';
+
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${botName} rolled: [${this.currentDice[0]}-${this.currentDice[1]}]`
+    });
+
+    // Broadcast dice roll so client displays rolling dice animation
+    this.broadcastGameState();
+
+    const botMoves = backgammonLogic.chooseBotTurn(this.gameState, this.turn, this.movesRemaining, this.difficulty);
+
+    if (!botMoves || botMoves.length === 0) {
+      this.turnTimer = setTimeout(() => {
+        if (this.status !== 'PLAYING') return;
+        this.broadcast({
+          type: 'CHAT',
+          sender: 'System',
+          text: `No legal moves available for ${botName}! Turn passes.`
+        });
+        this.turn = this.turn === 'w' ? 'b' : 'w';
+        this.hasRolled = false;
+        this.movesRemaining = [];
+        this.broadcastGameState();
+        this.checkTurn();
+      }, 1200);
+      return;
+    }
+
+    // Step-by-step playback with smooth pacing
+    let moveIdx = 0;
+    const stepMove = () => {
+      if (this.status !== 'PLAYING') return;
+      if (moveIdx >= botMoves.length) {
+        this.turnTimer = setTimeout(() => {
+          if (this.status !== 'PLAYING') return;
+          this.turn = this.turn === 'w' ? 'b' : 'w';
+          this.hasRolled = false;
+          this.movesRemaining = [];
+          this.broadcastGameState();
+          this.checkTurn();
+        }, 650);
+        return;
+      }
+
+      const m = botMoves[moveIdx];
+      const movingColor = this.turn;
+      backgammonLogic.applySingleMove(this.gameState, this.turn, m);
+
+      // Decrement die
+      const dieIdx = this.movesRemaining.indexOf(m.die);
+      if (dieIdx !== -1) {
+        this.movesRemaining.splice(dieIdx, 1);
+      } else if (this.movesRemaining.length > 0) {
+        this.movesRemaining.shift();
+      }
+
+      const movePayload = { ...m, color: movingColor };
+      const checkWin = backgammonLogic.checkGameOver(this.gameState);
+      if (checkWin.gameOver) {
+        this.status = 'FINISHED';
+        this.broadcastGameState({ lastMove: movePayload });
+        this.broadcast({
+          type: 'GAME_OVER',
+          result: checkWin
+        });
+        return;
+      }
+
+      this.broadcastGameState({ lastMove: movePayload });
+      moveIdx++;
+      this.turnTimer = setTimeout(stepMove, 700);
+    };
+
+    // Allow 800ms for dice rolling animation before starting checker moves
+    this.turnTimer = setTimeout(stepMove, 800);
+  }
+
+  handleRollDice(ws) {
+    if (this.status !== 'PLAYING') return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const expectedSeat = this.turn === 'w' ? 0 : 1;
+    if (seatIdx !== expectedSeat) {
+      ws.send(JSON.stringify({ type: 'ERROR', message: 'Not your turn' }));
+      return;
+    }
+    if (this.hasRolled) return;
+
+    this.clearTurnTimer();
+    const rollRes = backgammonLogic.rollDice();
+    this.currentDice = rollRes.dice;
+    this.movesRemaining = rollRes.movesRemaining;
+    this.hasRolled = true;
+
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${this.seats[seatIdx].name} rolled: [${this.currentDice[0]}-${this.currentDice[1]}]`
+    });
+
+    const legalTurns = backgammonLogic.getAllLegalTurns(this.gameState, this.turn, this.movesRemaining);
+    if (!legalTurns || legalTurns.length === 0 || legalTurns[0].length === 0) {
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: `No legal moves available for ${this.seats[seatIdx].name}! Turn passes.`
+      });
+      this.broadcastGameState();
+      setTimeout(() => {
+        if (this.status !== 'PLAYING') return;
+        this.turn = this.turn === 'w' ? 'b' : 'w';
+        this.hasRolled = false;
+        this.movesRemaining = [];
+        this.broadcastGameState();
+        this.checkTurn();
+      }, 1500);
+      return;
+    }
+
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+
+  handleMove(ws, data) {
+    if (this.status !== 'PLAYING' || !this.hasRolled) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const expectedSeat = this.turn === 'w' ? 0 : 1;
+    if (seatIdx !== expectedSeat) return;
+
+    const from = data.from;
+    const to = data.to;
+
+    // Check which die allows this move
+    const uniqueDice = [...new Set(this.movesRemaining)];
+    let matchedDie = null;
+    let matchedMove = null;
+
+    for (const die of uniqueDice) {
+      const legal = backgammonLogic.isSingleMoveLegal(this.gameState, this.turn, from, die);
+      if (legal && legal.to === to) {
+        matchedDie = die;
+        matchedMove = legal;
+        break;
+      }
+    }
+
+    if (!matchedMove) return;
+
+    this.clearTurnTimer();
+    const movingColor = this.turn;
+    backgammonLogic.applySingleMove(this.gameState, this.turn, matchedMove);
+    const dieIdx = this.movesRemaining.indexOf(matchedDie);
+    if (dieIdx !== -1) this.movesRemaining.splice(dieIdx, 1);
+
+    const movePayload = { ...matchedMove, color: movingColor };
+
+    const checkWin = backgammonLogic.checkGameOver(this.gameState);
+    if (checkWin.gameOver) {
+      this.status = 'FINISHED';
+      this.broadcastGameState({ lastMove: movePayload });
+      this.broadcast({
+        type: 'GAME_OVER',
+        result: checkWin
+      });
+      return;
+    }
+
+    if (this.movesRemaining.length === 0) {
+      this.turn = this.turn === 'w' ? 'b' : 'w';
+      this.hasRolled = false;
+      this.movesRemaining = [];
+      this.broadcastGameState({ lastMove: movePayload });
+      this.checkTurn();
+      return;
+    }
+
+    // Check if remaining dice have moves
+    const remainingLegal = backgammonLogic.getPossibleSingleMoves(this.gameState, this.turn, this.movesRemaining);
+    if (remainingLegal.length === 0) {
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: `No further legal moves possible. Turn passes.`
+      });
+      this.broadcastGameState({ lastMove: movePayload });
+      setTimeout(() => {
+        if (this.status !== 'PLAYING') return;
+        this.turn = this.turn === 'w' ? 'b' : 'w';
+        this.hasRolled = false;
+        this.movesRemaining = [];
+        this.broadcastGameState();
+        this.checkTurn();
+      }, 1200);
+      return;
+    }
+
+    this.broadcastGameState({ lastMove: movePayload });
+    this.checkTurn();
+  }
+
+  handleResign(ws) {
+    if (this.status !== 'PLAYING') return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const winnerColor = seatIdx === 0 ? 'b' : 'w';
+    this.status = 'FINISHED';
+    this.clearTurnTimer();
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${this.seats[seatIdx].name} resigned.`
+    });
+    this.broadcast({
+      type: 'GAME_OVER',
+      result: {
+        gameOver: true,
+        winner: winnerColor,
+        winType: 'normal'
+      }
+    });
+  }
+}
+
 let socketIdCounter = 1;
 
 wss.on('connection', (ws) => {
@@ -2357,6 +2817,8 @@ function handleClientMessage(ws, data) {
       room = new OnlineUnoRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else if (gameType === 'chess') {
       room = new OnlineChessRoom(code, ws, data.playerName || 'Player 1', data.settings);
+    } else if (gameType === 'backgammon') {
+      room = new OnlineBackgammonRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else {
       room = new OnlineRoom(code, ws, data.playerName || 'Player 1');
     }
@@ -2459,7 +2921,7 @@ function handleClientMessage(ws, data) {
       isAfk: false,
       afkRoundsCount: 0,
       permanentAi: false,
-      color: room.gameType === 'chess' ? (freeSeatIdx === 0 ? 'w' : 'b') : undefined
+      color: (room.gameType === 'chess' || room.gameType === 'backgammon') ? (freeSeatIdx === 0 ? 'w' : 'b') : undefined
     };
 
     room.addClient(ws);
@@ -2592,7 +3054,7 @@ function handleClientMessage(ws, data) {
     room.seats[seatA] = room.seats[seatB];
     room.seats[seatB] = temp;
 
-    if (room.gameType === 'chess') {
+    if (room.gameType === 'chess' || room.gameType === 'backgammon') {
       if (room.seats[0]) room.seats[0].color = 'w';
       if (room.seats[1]) room.seats[1].color = 'b';
     }
@@ -2909,7 +3371,7 @@ function handleClientMessage(ws, data) {
       }
     }
 
-    if (room.gameType === 'chess') {
+    if (room.gameType === 'chess' || room.gameType === 'backgammon') {
       if (room.status === 'PLAYING') {
         room.clearTurnTimer();
         room.checkTurn();
@@ -2933,6 +3395,30 @@ function handleClientMessage(ws, data) {
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'chess') return;
     room.handleChessResign(ws);
+    return;
+  }
+
+  if (type === 'BACKGAMMON_ROLL_DICE' || type === 'BG_ROLL') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'backgammon') return;
+    room.handleRollDice(ws);
+    return;
+  }
+
+  if (type === 'BACKGAMMON_MOVE' || type === 'BG_MOVE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'backgammon') return;
+    room.handleMove(ws, data);
+    return;
+  }
+
+  if (type === 'BACKGAMMON_RESIGN' || type === 'BG_RESIGN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'backgammon') return;
+    room.handleResign(ws);
     return;
   }
 

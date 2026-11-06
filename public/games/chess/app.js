@@ -64,6 +64,8 @@
       mainMenuSubtitle: 'بازی آنلاین و آفلاین شطرنج استاندارد با هوش مصنوعی و تحلیل حرکات',
       menuSoloTitle: 'بازی تک‌نفره با هوش مصنوعی',
       menuSoloDesc: 'بازی سریع و آفلاین با ربات هوشمند در ۳ سطح سختی',
+      menuPassPlayTitle: 'بازی دو نفره روی یک دستگاه',
+      menuPassPlayDesc: 'بازی دونفره آفلاین به نوبت روی همین دستگاه',
       menuOnlineTitle: 'چندنفره آنلاین و شبکه محلی',
       menuOnlineDesc: 'ساخت اتاق شطرنج و دعوت دوستان برای رقابت زنده',
       menuRulesTitle: 'آموزش و قوانین شطرنج',
@@ -154,6 +156,8 @@
       mainMenuSubtitle: 'Online & offline standard chess with smart bot and move analysis',
       menuSoloTitle: 'Solo Match vs AI',
       menuSoloDesc: 'Fast offline match vs chess bot with 3 difficulty levels',
+      menuPassPlayTitle: 'Pass & Play (2 Players)',
+      menuPassPlayDesc: 'Play offline turn-by-turn with a friend on this device',
       menuOnlineTitle: 'Multiplayer Online / LAN',
       menuOnlineDesc: 'Create a custom room and invite friends to play live',
       menuRulesTitle: 'Rules & Guidelines',
@@ -289,6 +293,7 @@
 
     dom.modalMainMenu = document.getElementById('modal-main-menu');
     dom.btnMenuSolo = document.getElementById('btn-menu-solo');
+    dom.btnMenuPassPlay = document.getElementById('btn-menu-passplay');
     dom.btnMenuOnline = document.getElementById('btn-menu-online');
     dom.btnMenuRules = document.getElementById('btn-menu-rules');
     dom.btnMenuResume = document.getElementById('btn-menu-resume');
@@ -1289,6 +1294,38 @@
     resetGame();
   }
 
+  function startPassPlayGame() {
+    mode = 'PASS_PLAY';
+    mySeat = 0;
+    myColor = 'w';
+    isBoardFlipped = false;
+    selectedTimeControl = 0;
+    stopClientClock();
+
+    if (dom.topTimer) dom.topTimer.style.display = 'none';
+    if (dom.bottomTimer) dom.bottomTimer.style.display = 'none';
+
+    if (dom.modalMainMenu) dom.modalMainMenu.classList.remove('active');
+    if (dom.modalSoloSetup) dom.modalSoloSetup.classList.remove('active');
+    if (dom.modalMultiplayer) dom.modalMultiplayer.classList.remove('active');
+    if (dom.btnMenuResume) dom.btnMenuResume.style.display = 'inline-flex';
+    if (dom.difficultyBar) dom.difficultyBar.style.display = 'none';
+    if (dom.btnUndoMove) dom.btnUndoMove.style.display = 'flex';
+    if (dom.btnHintMove) dom.btnHintMove.style.display = 'flex';
+
+    if (dom.bottomPlayerName) dom.bottomPlayerName.textContent = (currentLang === 'fa') ? 'بازیکن ۱ (سفید ⚪)' : 'Player 1 (White ⚪)';
+    if (dom.topPlayerName) dom.topPlayerName.textContent = (currentLang === 'fa') ? 'بازیکن ۲ (سیاه ⚫)' : 'Player 2 (Black ⚫)';
+    if (dom.bottomColorMarker) dom.bottomColorMarker.className = 'player-color-marker white';
+    if (dom.topColorMarker) dom.topColorMarker.className = 'player-color-marker black';
+    if (dom.topAvatar) dom.topAvatar.textContent = '👤';
+    if (dom.bottomAvatar) dom.bottomAvatar.textContent = '👤';
+
+    updatePlayerOnlineStatus('bottom', true);
+    updatePlayerOnlineStatus('top', true);
+
+    resetGame();
+  }
+
   // --- EVENT LISTENERS ---
   function setupEventListeners() {
     if (dom.btnSound) {
@@ -1346,6 +1383,7 @@
     }
 
     if (dom.btnMenuSolo) dom.btnMenuSolo.addEventListener('click', openSoloSetupModal);
+    if (dom.btnMenuPassPlay) dom.btnMenuPassPlay.addEventListener('click', startPassPlayGame);
     if (dom.btnMenuOnline) dom.btnMenuOnline.addEventListener('click', openMultiplayerModal);
     if (dom.btnMenuRules) {
       dom.btnMenuRules.addEventListener('click', () => {

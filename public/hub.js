@@ -252,6 +252,60 @@
           <p>پات (بن‌بست بدون کیش)، عدم کفایت مهره، یا قانون ۵۰ حرکت مساوی را رقم می‌زند. اتمام زمان ساعت نیز منجر به باخت با زمان می‌شود.</p>
         `
       }
+    },
+    {
+      id: 'backgammon',
+      icon: '🎲',
+      suits: '⚪ ⚫ 🎲 🪵',
+      status: 'available',
+      title: {
+        en: 'Backgammon',
+        fa: 'تخته نرد'
+      },
+      subtitle: {
+        en: 'Authentic Persian Marquetry & Strategy',
+        fa: 'شاهکار اصیل ایرانی // نبرد تاس و تدبیر'
+      },
+      players: {
+        en: '2 Players (White vs Black)',
+        fa: '۲ نفره (سفید در برابر سیاه)'
+      },
+      tags: {
+        en: ['3D Animated Dice', 'Pip Counter', 'Gammon & Backgammon (Mars)', 'Smart AI Engine', 'Online LAN Rooms'],
+        fa: ['تاس‌های سه‌بعدی متحرک', 'محاسبه پیپ', 'مارس و ویش‌مارس', 'ربات هوشمند', 'اتاق‌های آنلاین و شبکه']
+      },
+      desc: {
+        en: 'The immortal Persian board game of kings. Features standard 24-point Khatam marquetry board, dice animations, pip counting, bar re-entries, blot hitting, bearing off, Mars & Vish-Mars victory detection, undo, AI hints, and online multiplayer rooms.',
+        fa: 'کهن‌ترین و اصیل‌ترین بازی تخته‌ای ایران‌زمین. شبیه‌سازی کامل تخته خاتم‌کاری ۲۴ خانه‌ای، انیمیشن تاس‌ها، شمارش پیپ، ورود از پیشخوان، زدن تک‌خال، بستن خانه‌ها، خارج کردن مهره‌ها، ثبت پیروزی‌های مارس و ویش‌مارس، راهنمای هوشمند و رقابت آنلاین.'
+      },
+      playUrl: '/games/backgammon/',
+      onlineUrl: '/games/backgammon/#online',
+      rules: {
+        en: `
+          <h4>1. Objective & Layout</h4>
+          <p>Backgammon is a 2-player board game with 24 triangular points. Each player commands 15 checkers. White moves counter-clockwise (24 down to 1) and Black moves clockwise (1 up to 24). The objective is to bring all 15 checkers into your home board and bear them off.</p>
+          <h4>2. Dice Movement</h4>
+          <p>Roll two dice on your turn. Doubles award four moves of that value. Players must use all possible dice moves if legal moves exist.</p>
+          <h4>3. Hitting Blots & The Bar</h4>
+          <p>A single checker on a point is a blot. If an opponent checker lands on it, it is hit and sent to the Bar. Checkers on the bar must re-enter before any other checkers can move.</p>
+          <h4>4. Bearing Off & Mars (Gammon)</h4>
+          <p>• <strong>Normal Win (1 Pt)</strong>: Loser bore off at least one checker.<br>
+          • <strong>Mars / Gammon (2 Pts)</strong>: Loser bore off 0 checkers.<br>
+          • <strong>Vish-Mars / Backgammon (3 Pts)</strong>: Loser bore off 0 checkers and has a checker on the bar or in the winner's home board.</p>
+        `,
+        fa: `
+          <h4>۱. هدف بازی و صفحه</h4>
+          <p>تخته نرد یک بازی ۲ نفره با ۲۴ خانه مثلثی است. هر بازیکن ۱۵ مهره دارد. سفید خلاف جهت عقربه‌ها (از ۲۴ به سمت ۱) و سیاه در جهت عقربه‌ها (از ۱ به ۲۴) حرکت می‌کنند. هدف این است که تمام مهره‌ها را به خانه خودی رسانده و سپس خارج کنید.</p>
+          <h4>۲. حرکت با تاس</h4>
+          <p>در هر دور ۲ تاس ریخته می‌شود. جفت آوردن ۴ حرکت با آن مقدار به همراه دارد. بازیکن موظف است در صورت امکان از هر دو تاس استفاده کند.</p>
+          <h4>۳. زدن تک‌خال و پیشخوان (بار)</h4>
+          <p>تک مهره در هر خانه آسیب‌پذیر (گشاد) است. فرود مهره حریف روی آن باعث زده شدن و رفتن به پیشخوان می‌شود. مهره در پیشخوان باید قبل از هر حرکت دیگری وارد بازی شود.</p>
+          <h4>۴. خارج کردن مهره‌ها و پیروزی مارس</h4>
+          <p>• <strong>برد عادی (۱ امتیاز)</strong>: حریف حداقل یک مهره خارج کرده باشد.<br>
+          • <strong>مارس (۲ امتیاز)</strong>: حریف هیچ مهره‌ای خارج نکرده باشد.<br>
+          • <strong>ویش‌مارس / سگ‌مارس (۳ امتیاز)</strong>: حریف مهره خارج نکرده و مهره‌ای در پیشخوان یا خانه برنده داشته باشد.</p>
+        `
+      }
     }
   ];
 
@@ -268,7 +322,7 @@
       soundOff: 'Sound: OFF',
       heroBadge: 'CLASSIC CASINO & CARD SALON',
       heroTitle: 'Timeless Casino & Card Games',
-      heroSubtitle: 'Experience authentic Persian card masters and timeless classics with intelligent AI opponents and live multiplayer tables. Play Hokm, Shelem, UNO, and Chess directly in your browser with zero installs and instant play.',
+      heroSubtitle: 'Experience authentic Persian card masters and timeless classics with intelligent AI opponents and live multiplayer tables. Play Hokm, Shelem, Backgammon, UNO, and Chess directly in your browser with zero installs and instant play.',
       featureZeroInstall: '⚡ Instant Play (Zero Install)',
       featureMultiplayer: '♠ Live Multiplayer Tables',
       featureNeuralAI: '🤖 Smart AI Opponents',
@@ -301,7 +355,7 @@
       soundOff: 'صدا: خاموش',
       heroBadge: 'سالن اصیل بازی‌های کارتی و رومیزی',
       heroTitle: 'تجربه اصیل بازی‌های کلاسیک پاسور و رومیزی',
-      heroSubtitle: 'پشت میزهای سبز بنشینید و از بازی‌های اصیل پاسور ایرانی (حکم و شلم)، بازی جهانی اونو و شطرنج لذت ببرید. امکان بازی انفرادی با هوش مصنوعی یا رقابت زنده در میزهای چندنفره با دوستان، بدون نیاز به نصب و کاملاً روان.',
+      heroSubtitle: 'پشت میزهای سبز بنشینید و از بازی‌های اصیل پاسور و رومیزی شامل حکم، شلم، تخته نرد، بازی جهانی اونو و شطرنج لذت ببرید. امکان بازی انفرادی با هوش مصنوعی یا رقابت زنده در میزهای چندنفره با دوستان، بدون نیاز به نصب و کاملاً روان.',
       featureZeroInstall: '⚡ اجرای آنی (بدون نصب)',
       featureMultiplayer: '♠ میزهای زنده چندنفره',
       featureNeuralAI: '🤖 هوش مصنوعی قدرتمند',
@@ -587,6 +641,8 @@
         window.location.href = `/games/uno/#${code}`;
       } else if (data && data.gameType === 'chess') {
         window.location.href = `/games/chess/#${code}`;
+      } else if (data && data.gameType === 'backgammon') {
+        window.location.href = `/games/backgammon/#${code}`;
       } else {
         window.location.href = `/games/hokm/#${code}`;
       }

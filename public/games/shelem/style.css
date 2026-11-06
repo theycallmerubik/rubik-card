@@ -1346,8 +1346,7 @@ main.table-container {
 .lobby-name-save-btn:hover {
   background: rgba(255, 209, 102, 0.2);
   color: #fff;
-}
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 /* Lobby Teams Grid & Seats */
@@ -1402,6 +1401,7 @@ main.table-container {
   position: relative;
   transition: all 0.2s ease;
   user-select: none;
+  height: 100%;
 }
 
 .lobby-seat-card.draggable {
@@ -1542,7 +1542,7 @@ main.table-container {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: var(--gold-primary);
 }
@@ -1964,7 +1964,7 @@ body.rtl .lobby-seat-card.team-1 {
   }
 
   .table-sign {
-    top: -58px;
+    top: -75px;
     padding: 2px 14px;
     border-radius: 14px;
   }
