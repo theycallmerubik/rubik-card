@@ -13,6 +13,7 @@ const shelemLogic = require('./public/games/shelem/logic.js');
 const unoLogic = require('./public/games/uno/logic.js');
 const chessLogic = require('./public/games/chess/logic.js');
 const backgammonLogic = require('./public/games/backgammon/logic.js');
+const dotsAndBoxesLogic = require('./public/games/dots-and-boxes/logic.js');
 
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
@@ -61,6 +62,7 @@ const server = http.createServer((req, res) => {
   if (reqPath === '/uno' || reqPath === '/uno/') reqPath = '/games/uno/index.html';
   if (reqPath === '/chess' || reqPath === '/chess/') reqPath = '/games/chess/index.html';
   if (reqPath === '/backgammon' || reqPath === '/backgammon/') reqPath = '/games/backgammon/index.html';
+  if (reqPath === '/dots-and-boxes' || reqPath === '/dots-and-boxes/' || reqPath === '/dots' || reqPath === '/dots/') reqPath = '/games/dots-and-boxes/index.html';
 
   if (reqPath === '/api/server-info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -2781,6 +2783,282 @@ class OnlineBackgammonRoom {
   }
 }
 
+class OnlineDotsAndBoxesRoom {
+  constructor(code, hostWs, hostName = 'Host', settings = {}) {
+    this.code = code;
+    this.gameType = 'dots-and-boxes';
+    this.hostSocketId = hostWs.id;
+    this.status = 'LOBBY';
+    this.turnTimer = null;
+    this.turnStartTime = null;
+    this.disconnectTimers = [null, null];
+
+    this.rows = settings && settings.rows ? parseInt(settings.rows, 10) : 4;
+    this.cols = settings && settings.cols ? parseInt(settings.cols, 10) : 4;
+    this.timeControl = settings && settings.timeControl !== undefined ? parseInt(settings.timeControl, 10) : 30;
+    this.difficulty = (settings && settings.difficulty) || 'medium';
+
+    this.seats = [
+      { name: hostName, originalName: hostName, isBot: false, socketId: hostWs.id, connected: true, ready: true, consecutiveAfkTurns: 0, isAfk: false },
+      { name: 'Bot 2', originalName: 'Bot 2', isBot: true, socketId: null, connected: true, ready: true, consecutiveAfkTurns: 0, isAfk: false }
+    ];
+
+    this.clients = new Set();
+    this.addClient(hostWs);
+
+    this.gameState = dotsAndBoxesLogic.createInitialState(this.rows, this.cols);
+  }
+
+  addClient(ws) {
+    this.clients.add(ws);
+    ws.roomCode = this.code;
+  }
+
+  removeClient(ws) {
+    this.clients.delete(ws);
+    const seatIdx = this.seats.findIndex(s => s.socketId === ws.id);
+    if (seatIdx !== -1) {
+      const seat = this.seats[seatIdx];
+      seat.connected = false;
+      if (this.status === 'PLAYING') {
+        seat.isAfk = true;
+        this.broadcastGameState();
+
+        if (!seat.isBot) {
+          if (this.disconnectTimers[seatIdx]) {
+            clearTimeout(this.disconnectTimers[seatIdx]);
+          }
+          this.broadcast({
+            type: 'CHAT',
+            sender: 'System',
+            text: `${seat.name} disconnected. They have 5 minutes to reconnect or forfeit the match.`
+          });
+
+          this.disconnectTimers[seatIdx] = setTimeout(() => {
+            if (this.status === 'PLAYING' && !seat.connected) {
+              const opponentIdx = seatIdx === 0 ? 1 : 0;
+              const opponentSeat = this.seats[opponentIdx];
+              this.status = 'FINISHED';
+              this.clearTurnTimer();
+              this.broadcast({
+                type: 'CHAT',
+                sender: 'System',
+                text: `${seat.name} was offline for 5 minutes. ${opponentSeat.name} wins by forfeit!`
+              });
+              this.broadcast({
+                type: 'GAME_OVER',
+                result: {
+                  gameOver: true,
+                  winner: opponentIdx + 1,
+                  reason: 'forfeit'
+                }
+              });
+            }
+          }, 5 * 60 * 1000);
+        }
+      }
+    }
+  }
+
+  getSeatIndexForSocket(socketId) {
+    return this.seats.findIndex(s => s.socketId === socketId);
+  }
+
+  broadcast(message) {
+    const raw = JSON.stringify(message);
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(raw);
+      }
+    }
+  }
+
+  broadcastLobby() {
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        const isHost = this.hostSocketId === ws.id;
+        ws.send(JSON.stringify({
+          type: 'LOBBY_UPDATE',
+          roomCode: this.code,
+          gameType: this.gameType,
+          isHost,
+          yourSeat,
+          seats: this.seats.map((s, idx) => ({
+            seat: idx,
+            name: s.name,
+            isBot: s.isBot,
+            connected: s.connected,
+            ready: s.ready,
+            isHost: s.socketId === this.hostSocketId,
+            isOnline: s.connected && !s.isBot,
+            isMe: s.socketId === ws.id,
+            color: idx === 0 ? 'p1' : 'p2'
+          })),
+          settings: {
+            rows: this.rows,
+            cols: this.cols,
+            timeControl: this.timeControl
+          }
+        }));
+      }
+    }
+  }
+
+  broadcastGameState() {
+    this.broadcast({
+      type: 'DOTS_STATE_UPDATE',
+      state: this.gameState,
+      seats: this.seats.map(s => ({ name: s.name, isBot: s.isBot, connected: s.connected })),
+      timeControl: this.timeControl
+    });
+  }
+
+  clearTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+  }
+
+  startTurnTimer() {
+    this.clearTurnTimer();
+    if (this.timeControl <= 0) return;
+
+    this.turnStartTime = Date.now();
+    this.turnTimer = setTimeout(() => {
+      this.handleTurnTimeout();
+    }, this.timeControl * 1000);
+  }
+
+  handleTurnTimeout() {
+    if (this.status !== 'PLAYING') return;
+    const available = dotsAndBoxesLogic.getAvailableMoves(this.gameState);
+    if (available.length > 0) {
+      const autoMove = available[Math.floor(Math.random() * available.length)];
+      this.applyAndBroadcastMove(autoMove);
+    }
+  }
+
+  startGame() {
+    this.status = 'PLAYING';
+    this.gameState = dotsAndBoxesLogic.createInitialState(this.rows, this.cols);
+
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        ws.send(JSON.stringify({
+          type: 'GAME_STARTED',
+          gameType: 'dots-and-boxes',
+          rows: this.rows,
+          cols: this.cols,
+          turn: this.gameState.turn,
+          yourSeat,
+          timeControl: this.timeControl,
+          seats: this.seats.map(s => ({ name: s.name, isBot: s.isBot, connected: s.connected }))
+        }));
+      }
+    }
+
+    this.startTurnTimer();
+    this.checkTurn();
+  }
+
+  checkTurn() {
+    if (this.status !== 'PLAYING') return;
+    const currentSeatIdx = this.gameState.turn === 1 ? 0 : 1;
+    const seat = this.seats[currentSeatIdx];
+
+    if (seat && (seat.isBot || seat.isAfk)) {
+      setTimeout(() => {
+        if (this.status !== 'PLAYING') return;
+        const curIdx = this.gameState.turn === 1 ? 0 : 1;
+        if (curIdx !== currentSeatIdx) return;
+
+        const botMove = dotsAndBoxesLogic.chooseBotMove(this.gameState, this.difficulty);
+        if (botMove) {
+          this.applyAndBroadcastMove(botMove);
+        }
+      }, 500);
+    }
+  }
+
+  handleMove(ws, data) {
+    if (this.status !== 'PLAYING') return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+
+    const currentSeatIdx = this.gameState.turn === 1 ? 0 : 1;
+    if (seatIdx !== currentSeatIdx) {
+      ws.send(JSON.stringify({ type: 'ERROR', message: 'Not your turn' }));
+      return;
+    }
+
+    const { move } = data;
+    if (!dotsAndBoxesLogic.isValidMove(this.gameState, move)) {
+      ws.send(JSON.stringify({ type: 'ERROR', message: 'Invalid move' }));
+      return;
+    }
+
+    this.applyAndBroadcastMove(move);
+  }
+
+  applyAndBroadcastMove(move) {
+    const res = dotsAndBoxesLogic.applyMove(this.gameState, move);
+    if (!res.valid) return;
+
+    this.broadcast({
+      type: 'DOTS_MOVE_RESULT',
+      move,
+      completedBoxes: res.completedBoxes,
+      scores: res.scores,
+      turn: this.gameState.turn,
+      isGameOver: res.isGameOver,
+      winner: res.winner
+    });
+
+    if (res.isGameOver) {
+      this.status = 'FINISHED';
+      this.clearTurnTimer();
+      this.broadcast({
+        type: 'GAME_OVER',
+        result: {
+          gameOver: true,
+          winner: res.winner,
+          scores: res.scores
+        }
+      });
+      return;
+    }
+
+    this.startTurnTimer();
+    this.checkTurn();
+  }
+
+  handleResign(ws) {
+    if (this.status !== 'PLAYING') return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+
+    const winner = seatIdx === 0 ? 2 : 1;
+    this.status = 'FINISHED';
+    this.clearTurnTimer();
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${this.seats[seatIdx].name} resigned.`
+    });
+    this.broadcast({
+      type: 'GAME_OVER',
+      result: {
+        gameOver: true,
+        winner,
+        reason: 'resigned'
+      }
+    });
+  }
+}
+
 let socketIdCounter = 1;
 
 wss.on('connection', (ws) => {
@@ -2819,6 +3097,8 @@ function handleClientMessage(ws, data) {
       room = new OnlineChessRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else if (gameType === 'backgammon') {
       room = new OnlineBackgammonRoom(code, ws, data.playerName || 'Player 1', data.settings);
+    } else if (gameType === 'dots-and-boxes') {
+      room = new OnlineDotsAndBoxesRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else {
       room = new OnlineRoom(code, ws, data.playerName || 'Player 1');
     }
@@ -3057,6 +3337,10 @@ function handleClientMessage(ws, data) {
     if (room.gameType === 'chess' || room.gameType === 'backgammon') {
       if (room.seats[0]) room.seats[0].color = 'w';
       if (room.seats[1]) room.seats[1].color = 'b';
+    }
+    if (room.gameType === 'dots-and-boxes') {
+      if (room.seats[0]) room.seats[0].color = 'p1';
+      if (room.seats[1]) room.seats[1].color = 'p2';
     }
 
     room.broadcast({
@@ -3418,6 +3702,22 @@ function handleClientMessage(ws, data) {
     if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'backgammon') return;
+    room.handleResign(ws);
+    return;
+  }
+
+  if (type === 'DOTS_MOVE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'dots-and-boxes') return;
+    room.handleMove(ws, data);
+    return;
+  }
+
+  if (type === 'DOTS_RESIGN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'dots-and-boxes') return;
     room.handleResign(ws);
     return;
   }

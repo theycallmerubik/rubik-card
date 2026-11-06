@@ -306,6 +306,56 @@
           • <strong>ویش‌مارس / سگ‌مارس (۳ امتیاز)</strong>: حریف مهره خارج نکرده و مهره‌ای در پیشخوان یا خانه برنده داشته باشد.</p>
         `
       }
+    },
+    {
+      id: 'dots-and-boxes',
+      icon: '🍱',
+      suits: '🔴 🔵 ▫️ ⬛',
+      status: 'available',
+      title: {
+        en: 'Dots & Boxes',
+        fa: 'نقطه و خط'
+      },
+      subtitle: {
+        en: 'Strategic Grid & Box Capture Duel',
+        fa: 'نبرد کلاسیک تسخیر خانه‌ها // تفکر استراتژیک'
+      },
+      players: {
+        en: '2 Players (Red vs Blue)',
+        fa: '۲ نفره (قرمز در برابر آبی)'
+      },
+      tags: {
+        en: ['Custom Grids (3x3 to 5x5)', 'Chain Capture Combos', 'Double-Cross AI Strategy', 'Turn Clocks', 'Online LAN Rooms'],
+        fa: ['زمین‌های ۳×۳ تا ۵×۵', 'زنجیره‌های تصاحب خانه', 'هوش مصنوعی دابل‌کراس', 'ساعت نوبت', 'اتاق‌های آنلاین شبکه']
+      },
+      desc: {
+        en: 'The beloved classic pen-and-paper strategy game brought to life with glowing responsive boards, combo audio chimes, chain analysis AI, turn timers, and real-time multiplayer rooms. Connect dots, complete 1x1 boxes to earn bonus turns, and conquer the grid!',
+        fa: 'بازی نوستالژیک و پرطرفدار نقطه و خط با گرافیک مدرن نئونی، صداگذاری جذاب، هوش مصنوعی پیشرفته با درک زنجیره‌ها، ساعت شمارش معکوس و اتاق‌های آنلاین شبکه. نقطه‌ها را وصل کنید، خانه‌ها را تصاحب کرده و با نوبت‌های جایزه برنده شوید!'
+      },
+      playUrl: '/games/dots-and-boxes/',
+      onlineUrl: '/games/dots-and-boxes/#online',
+      rules: {
+        en: `
+          <h4>1. Objective</h4>
+          <p>Dots and Boxes is played on a grid of dots. The objective is to complete and claim the most 1×1 squares.</p>
+          <h4>2. Drawing Lines</h4>
+          <p>Players alternate turns connecting two adjacent dots with a single horizontal or vertical line.</p>
+          <h4>3. Claiming Boxes & Bonus Turns</h4>
+          <p>Completing the fourth side of a box claims it with your color (+1 point) and <strong>grants an immediate bonus turn</strong>. Chaining multiple box captures in one sequence is key to victory!</p>
+          <h4>4. Double-Cross Strategy</h4>
+          <p>In strategic play, players avoid giving away 3rd sides. Sacrificing the last 2 boxes of a corridor can force the opponent to open the next major chain.</p>
+        `,
+        fa: `
+          <h4>۱. هدف بازی</h4>
+          <p>بازی روی شبکه‌ای از نقطه‌ها انجام می‌شود. هدف این است که با کشیدن خطوط، بیشترین تعداد خانه‌های ۱×۱ را تصاحب کنید.</p>
+          <h4>۲. کشیدن خطوط</h4>
+          <p>هر بازیکن در نوبت خود یک خط افقی یا عمودی بین دو نقطه مجاور رسم می‌کند.</p>
+          <h4>۳. تصاحب خانه و نوبت جایزه</h4>
+          <p>بازیکنی که چهارمین ضلع یک خانه را ببندد، آن خانه را با رنگ خود تصاحب کرده (+۱ امتیاز) و <strong>بلافاصله یک نوبت جایزه دریافت می‌کند</strong>.</p>
+          <h4>۴. استراتژی دابل‌کراس</h4>
+          <p>از دادن ضلع سوم به حریف بپرهیزید. در مراحل پایانی، قربانی کردن هوشمندانه ۲ خانه از یک زنجیره کنترل زنجیره بعدی را به شما هدیه می‌دهد!</p>
+        `
+      }
     }
   ];
 
@@ -643,6 +693,8 @@
         window.location.href = `/games/chess/#${code}`;
       } else if (data && data.gameType === 'backgammon') {
         window.location.href = `/games/backgammon/#${code}`;
+      } else if (data && data.gameType === 'dots-and-boxes') {
+        window.location.href = `/games/dots-and-boxes/#${code}`;
       } else {
         window.location.href = `/games/hokm/#${code}`;
       }

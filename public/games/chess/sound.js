@@ -7,7 +7,8 @@
 class ChessSoundEngine {
   constructor() {
     this.ctx = null;
-    this.muted = false;
+    const saved = localStorage.getItem('rubik_card_sound');
+    this.muted = saved === 'false';
   }
 
   init() {
@@ -28,11 +29,21 @@ class ChessSoundEngine {
 
   toggleMute() {
     this.muted = !this.muted;
+    try {
+      localStorage.setItem('rubik_card_sound', (!this.muted).toString());
+      localStorage.setItem('hokm_sound_enabled', (!this.muted).toString());
+      localStorage.setItem('uno_sound_enabled', (!this.muted).toString());
+    } catch (_) {}
     return this.muted;
   }
 
   setMuted(m) {
     this.muted = !!m;
+    try {
+      localStorage.setItem('rubik_card_sound', (!this.muted).toString());
+      localStorage.setItem('hokm_sound_enabled', (!this.muted).toString());
+      localStorage.setItem('uno_sound_enabled', (!this.muted).toString());
+    } catch (_) {}
   }
 
   // Wooden Move Tap

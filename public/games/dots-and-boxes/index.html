@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dots and Boxes (نقطه و خط) - Rubik Card Club</title>
+  <meta name="description" content="Play classic Dots and Boxes online with friends or offline vs smart AI. Responsive HTML5 grid, turn timers, combo detection, and sound effects.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-bar">
+    <div class="header-left">
+      <a href="/" class="btn-hub-return" title="Return to Game Hub">
+        <span>◀</span>
+        <span class="hub-label" data-i18n="menuHubTitle">هاب بازی‌ها</span>
+      </a>
+      <div class="brand-title">
+        <span class="dots-brand-badge">🍱 DOTS &amp; BOXES</span>
+        <span class="game-name" data-i18n="gameTitle">بازی نقطه و خط</span>
+      </div>
+    </div>
+
+    <!-- Center Turn Indicator Pill -->
+    <div class="top-turn-pill" id="top-turn-pill">
+      <div class="turn-color-dot p1" id="top-turn-dot"></div>
+      <span class="top-status-text" id="top-status-text" data-i18n="p1ToMove">نوبت: بازیکن ۱ (قرمز)</span>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-right">
+      <div class="header-desktop-actions">
+        <button class="btn-icon" id="btn-sound" title="Toggle Sound">🔊</button>
+        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)">🌐</button>
+        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین">👥</button>
+        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما">📜</button>
+        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت">💬</button>
+        <button class="btn-icon btn-menu-trigger" id="btn-menu" title="منوی اصلی">🏠</button>
+      </div>
+      <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" aria-label="Open Navigation">☰</button>
+      <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
+        <button class="mobile-nav-item" id="btn-mob-menu">
+          <span class="mob-nav-icon">🏠</span>
+          <span data-i18n="mainMenuTitle">منوی اصلی</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-multiplayer">
+          <span class="mob-nav-icon">👥</span>
+          <span data-i18n="multiplayerBtn">چندنفره آنلاین</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-sound">
+          <span class="mob-nav-icon" id="mob-sound-icon">🔊</span>
+          <span data-i18n="soundLabel">صدا</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-lang">
+          <span class="mob-nav-icon">🌐</span>
+          <span id="mob-lang-text">فارسی / EN</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-rules">
+          <span class="mob-nav-icon">📜</span>
+          <span data-i18n="rulesTitle">راهنما و قوانین</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="notification-bubble" id="notification-bubble"></div>
+
+  <!-- Main Playing Area -->
+  <main class="dots-main-layout" id="dots-main-layout" data-turn="1">
+    <div class="game-container">
+
+      <!-- Top Player Bar (P2 / Blue / Bot) -->
+      <div class="player-bar p2-bar" id="p2-player-bar">
+        <div class="player-info">
+          <div class="player-avatar-wrap">
+            <span class="player-avatar" id="p2-avatar">🤖</span>
+          </div>
+          <div class="player-meta">
+            <span class="player-name" id="p2-name">Bot (Blue)</span>
+            <span class="player-role-badge" id="p2-role" data-i18n="player2Badge">بازیکن ۲</span>
+          </div>
+        </div>
+        <div class="player-status-side">
+          <div class="player-timer" id="p2-timer" style="display:none;">00:30</div>
+          <div class="score-badge">
+            <span class="score-num" id="p2-score">0</span>
+            <span class="score-label" data-i18n="boxesLabel">خانه‌ها</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Board Grid Canvas Wrapper -->
+      <div class="board-wrapper" id="board-wrapper">
+        <div class="dots-grid" id="dots-grid">
+          <!-- Dynamically generated Dots, Lines, and Boxes -->
+        </div>
+      </div>
+
+      <!-- Bottom Player Bar (P1 / Red / Human) -->
+      <div class="player-bar p1-bar active-turn" id="p1-player-bar">
+        <div class="player-info">
+          <div class="player-avatar-wrap">
+            <span class="player-avatar" id="p1-avatar">👤</span>
+          </div>
+          <div class="player-meta">
+            <span class="player-name" id="p1-name">You (Red)</span>
+            <span class="player-role-badge" id="p1-role" data-i18n="player1Badge">بازیکن ۱</span>
+          </div>
+        </div>
+        <div class="player-status-side">
+          <div class="player-timer" id="p1-timer" style="display:none;">00:30</div>
+          <div class="score-badge">
+            <span class="score-num" id="p1-score">0</span>
+            <span class="score-label" data-i18n="boxesLabel">خانه‌ها</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Controls Bar -->
+      <div class="bottom-controls-bar">
+        <div class="controls-left">
+          <button class="btn-action" id="btn-undo" title="Undo Move">
+            <span>↩️</span>
+            <span data-i18n="undoBtn">برگشت</span>
+          </button>
+          <button class="btn-action" id="btn-restart" title="Restart Game">
+            <span>🔄</span>
+            <span data-i18n="restartBtn">شروع مجدد</span>
+          </button>
+        </div>
+        <div class="controls-right">
+          <button class="btn-action primary" id="btn-new-game" title="New Game Options">
+            <span>⚡</span>
+            <span data-i18n="newGameBtn">بازی جدید</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Main Menu Modal (Matches Chess & Backgammon) -->
+  <div class="modal-overlay active" id="modal-main-menu">
+    <div class="modal-box menu-modal-box">
+      <div class="menu-header">
+        <div class="menu-brand-icon">🍱</div>
+        <h2 class="menu-title" data-i18n="mainMenuTitle">بازی نقطه و خط (Dots &amp; Boxes)</h2>
+        <p class="menu-subtitle" data-i18n="mainMenuSubtitle">بازی دونفره فکری و استراتژیک تسخیر خانه‌ها با هوش مصنوعی و اتاق‌های آنلاین</p>
+      </div>
+
+      <div class="menu-grid">
+        <button class="menu-card" id="btn-menu-solo">
+          <div class="menu-card-icon">🤖</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuSoloTitle">بازی تک‌نفره با هوش مصنوعی</h3>
+            <p data-i18n="menuSoloDesc">بازی سریع و آفلاین با ربات هوشمند در ابعاد ۶×۶ تا ۲۰×۲۰ نقطه</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-passplay">
+          <div class="menu-card-icon">👥</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuPassPlayTitle">بازی دو نفره روی یک دستگاه (Pass &amp; Play)</h3>
+            <p data-i18n="menuPassPlayDesc">رقابت دونفره آفلاین به نوبت روی همین دستگاه</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-online">
+          <div class="menu-card-icon">🌐</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuOnlineTitle">چندنفره آنلاین و شبکه محلی</h3>
+            <p data-i18n="menuOnlineDesc">ساخت اتاق اختصاصی، انتخاب ابعاد زمین و دعوت دوستان</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-rules">
+          <div class="menu-card-icon">📜</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuRulesTitle">آموزش و قوانین نقطه و خط</h3>
+            <p data-i18n="menuRulesDesc">قوانین بستن خانه‌ها، نوبت جایزه و استراتژی دابل‌کراس</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+      </div>
+
+      <div class="menu-footer-actions">
+        <button class="btn-secondary" id="btn-menu-resume" style="display:none;" data-i18n="resumeGame">ادامه بازی جاری</button>
+        <a href="/" class="btn-secondary" data-i18n="menuHubTitle">بازگشت به هاب</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Modal (Grid Size & Settings for Solo / Pass & Play) -->
+  <div class="modal-overlay" id="modal-setup">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="setup-modal-title" data-i18n="setupTitle">⚙️ تنظیمات شروع بازی</h2>
+        <button class="btn-modal-close" id="btn-close-setup">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Grid Size Selection (Number of Dots: 6x6, 10x10, 15x15, 20x20) -->
+        <div>
+          <label style="font-weight:700; color:var(--gold-primary); margin-bottom:8px; display:block;" data-i18n="gridDotsLabel">تعداد نقطه‌های زمین بازی:</label>
+          <div class="grid-size-options-grid" id="setup-dots-options">
+            <button class="grid-size-btn active" data-dots="6">
+              <span class="size-name" data-i18n="dots6">کوچک (۶ × ۶ نقطه)</span>
+              <span class="size-desc" data-i18n="boxes25">۵ × ۵ خانه (۲۵ خانه)</span>
+            </button>
+            <button class="grid-size-btn" data-dots="10">
+              <span class="size-name" data-i18n="dots10">متوسط (۱۰ × ۱۰ نقطه)</span>
+              <span class="size-desc" data-i18n="boxes81">۹ × ۹ خانه (۸۱ خانه)</span>
+            </button>
+            <button class="grid-size-btn" data-dots="15">
+              <span class="size-name" data-i18n="dots15">بزرگ (۱۵ × ۱۵ نقطه)</span>
+              <span class="size-desc" data-i18n="boxes196">۱۴ × ۱۴ خانه (۱۹۶ خانه)</span>
+            </button>
+            <button class="grid-size-btn" data-dots="20">
+              <span class="size-name" data-i18n="dots20">خیلی بزرگ (۲۰ × ۲۰ نقطه)</span>
+              <span class="size-desc" data-i18n="boxes361">۱۹ × ۱۹ خانه (۳۶۱ خانه)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Difficulty (Solo Only) -->
+        <div id="ai-difficulty-group">
+          <label style="font-weight:700; color:var(--gold-primary); margin-bottom:6px; display:block;" data-i18n="difficultyLabel">درجه سختی ربات:</label>
+          <div class="modal-options-grid" id="setup-diff-options">
+            <button class="option-btn" data-diff="easy" data-i18n="diffEasy">آسان</button>
+            <button class="option-btn active" data-diff="medium" data-i18n="diffMed">متوسط</button>
+            <button class="option-btn" data-diff="hard" data-i18n="diffHard">سخت (استاد)</button>
+          </div>
+        </div>
+
+        <!-- Timer Setting -->
+        <div>
+          <label style="font-weight:700; color:var(--gold-primary); margin-bottom:6px; display:block;" data-i18n="timerLabel">زمان هر نوبت:</label>
+          <div class="modal-options-grid" id="setup-timer-options">
+            <button class="option-btn" data-timer="0" data-i18n="timerOff">نامحدود</button>
+            <button class="option-btn active" data-timer="30" data-i18n="timer30">۳۰ ثانیه</button>
+            <button class="option-btn" data-timer="60" data-i18n="timer60">۶۰ ثانیه</button>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button class="btn-secondary" id="btn-setup-back" style="flex:1;" data-i18n="backBtn">بازگشت</button>
+          <button class="btn-action primary" id="btn-start-configured-game" style="flex:2; justify-content:center; padding:12px;">
+            <span data-i18n="startGameBtn">شروع بازی</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer / Online Room Modal (Matches Chess & Backgammon) -->
+  <div class="modal-overlay" id="modal-multiplayer">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-title">🌐 <span data-i18n="multiplayerTitle">اتاق نقطه و خط آنلاین / شبکه محلی</span></div>
+      <p class="modal-text" data-i18n="multiplayerDesc">اتاق بسازید یا با کد ۴ حرفی اتاق به رقابت با دوستانتان ملحق شوید.</p>
+
+      <!-- Lobby View (When inside a room) -->
+      <div id="mp-lobby-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px; margin-bottom:12px;">
+          <div>
+            <span style="color:var(--text-muted); font-size:0.85rem;" data-i18n="roomCodeLabel">کد اتاق:</span>
+            <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); margin-left:8px;" id="mp-room-code">----</span>
+          </div>
+          <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 کپی لینک</button>
+        </div>
+
+        <!-- Dedicated Lobby Name Edit Bar -->
+        <div class="lobby-name-bar" id="lobby-name-bar">
+          <span class="lobby-name-label" data-i18n="yourNameLabel">نام شما:</span>
+          <div class="lobby-name-controls">
+            <input type="text" id="lobby-name-input" class="form-input lobby-name-input" maxlength="15" placeholder="Player">
+            <button type="button" class="btn-secondary lobby-name-save-btn" id="btn-save-lobby-name" data-i18n="saveNameBtn">ثبت نام</button>
+          </div>
+        </div>
+
+        <!-- Room Settings Info Row -->
+        <div class="lobby-setting-row" id="lobby-grid-info-row">
+          <div class="lobby-setting-label">
+            <span>📐</span>
+            <span id="lobby-grid-desc">ابعاد: ۶ × ۶ نقطه (۲۵ خانه)</span>
+          </div>
+          <div style="font-size:0.8rem; color:var(--gold-primary); font-weight:700;" id="lobby-timer-desc">⏱️ ۳۰ ثانیه</div>
+        </div>
+
+        <!-- 2 Seats Container -->
+        <div class="lobby-seats" id="lobby-seats-container">
+          <!-- Dynamically populated (Seat 0 Red, Seat 1 Blue) -->
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-secondary" id="btn-swap-dots-seats" data-i18n="swapColorsBtn">🔄 تعویض جایگاه</button>
+          <button class="btn-primary" id="btn-start-online-game" style="flex:1;" data-i18n="startGameBtn">شروع مسابقه</button>
+          <div class="lobby-waiting-msg" id="lobby-waiting-msg" style="display:none; flex:1; text-align:center; padding:8px; font-weight:700; color:var(--text-muted); font-size:0.9rem;" data-i18n="waitingForHost">در انتظار شروع مسابقه توسط میزبان...</div>
+          <button class="btn-secondary" id="btn-leave-room" data-i18n="leaveRoomBtn">خروج از اتاق</button>
+        </div>
+      </div>
+
+      <!-- Entry View (Before joining room) -->
+      <div id="mp-entry-view">
+        <div class="form-group">
+          <label class="form-label" data-i18n="yourNameLabel">نام شما:</label>
+          <input type="text" class="form-input" id="input-player-name" value="Player" maxlength="15">
+        </div>
+
+        <!-- Dots Grid Size Selection -->
+        <div style="margin-bottom:12px;">
+          <span style="font-size:0.82rem; font-weight:700; color:var(--gold-primary); display:block; margin-bottom:6px;" data-i18n="gridDotsLabel">تعداد نقطه‌های زمین بازی:</span>
+          <div class="grid-size-options-grid" id="online-dots-options">
+            <button class="grid-size-btn active" data-dots="6">
+              <span class="size-name" data-i18n="dots6">کوچک (۶ × ۶)</span>
+              <span class="size-desc" data-i18n="boxes25">۲۵ خانه</span>
+            </button>
+            <button class="grid-size-btn" data-dots="10">
+              <span class="size-name" data-i18n="dots10">متوسط (۱۰ × ۱۰)</span>
+              <span class="size-desc" data-i18n="boxes81">۸۱ خانه</span>
+            </button>
+            <button class="grid-size-btn" data-dots="15">
+              <span class="size-name" data-i18n="dots15">بزرگ (۱۵ × ۱۵)</span>
+              <span class="size-desc" data-i18n="boxes196">۱۹۶ خانه</span>
+            </button>
+            <button class="grid-size-btn" data-dots="20">
+              <span class="size-name" data-i18n="dots20">خیلی بزرگ (۲۰ × ۲۰)</span>
+              <span class="size-desc" data-i18n="boxes361">۳۶۱ خانه</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Turn Timer -->
+        <div style="margin-bottom:14px;">
+          <span style="font-size:0.82rem; font-weight:700; color:var(--gold-primary); display:block; margin-bottom:6px;" data-i18n="timerLabel">زمان هر نوبت:</span>
+          <div class="modal-options-grid" id="online-timer-options">
+            <button class="option-btn" data-timer="0" data-i18n="timerOff">نامحدود</button>
+            <button class="option-btn active" data-timer="30" data-i18n="timer30">۳۰ ثانیه</button>
+            <button class="option-btn" data-timer="60" data-i18n="timer60">۶۰ ثانیه</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+          <button class="btn-primary" id="btn-create-room" data-i18n="createRoomBtn">ساخت اتاق جدید</button>
+          <button class="btn-secondary" id="btn-show-join" data-i18n="joinRoomBtn">ورود به اتاق</button>
+        </div>
+
+        <div id="mp-join-fields" style="display:none; margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:14px;">
+          <div class="form-group">
+            <label class="form-label" data-i18n="enterRoomCodeLabel">کد ۴ حرفی اتاق را وارد نمایید:</label>
+            <input type="text" class="form-input" id="input-room-code" placeholder="ABCD" maxlength="6" style="text-transform:uppercase; font-size:1.2rem; font-weight:700; text-align:center;">
+          </div>
+          <button class="btn-primary" id="btn-confirm-join" style="width:100%; margin-top:8px;" data-i18n="joinBtn">ورود به مسابقه</button>
+        </div>
+
+        <button class="btn-secondary" id="btn-close-mp" style="width:100%; margin-top:14px;" data-i18n="backBtn">بازگشت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-overlay" id="modal-gameover">
+    <div class="modal-card" style="text-align:center;">
+      <div class="modal-header">
+        <h2 id="gameover-title" style="margin:0 auto;">🎉 پایان بازی</h2>
+      </div>
+      <div class="modal-body" style="align-items:center;">
+        <div style="font-size:3.5rem; margin-bottom:4px;" id="gameover-icon">🏆</div>
+        <div style="font-size:1.35rem; font-weight:800; color:#fff;" id="gameover-message">بازیکن ۱ برنده شد!</div>
+        
+        <div style="display:flex; justify-content:center; gap:24px; margin:16px 0; width:100%;">
+          <div style="background:rgba(239,68,68,0.15); border:1px solid var(--p1-color); padding:12px 20px; border-radius:12px;">
+            <div style="font-size:0.8rem; color:var(--text-muted);" id="go-p1-label">بازیکن ۱</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--p1-light);" id="go-p1-score">0</div>
+          </div>
+          <div style="background:rgba(59,130,246,0.15); border:1px solid var(--p2-color); padding:12px 20px; border-radius:12px;">
+            <div style="font-size:0.8rem; color:var(--text-muted);" id="go-p2-label">بازیکن ۲</div>
+            <div style="font-size:1.8rem; font-weight:800; color:var(--p2-light);" id="go-p2-score">0</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="btn-secondary" id="btn-gameover-menu" style="flex:1;" data-i18n="mainMenuTitle">منوی اصلی</button>
+          <button class="btn-action primary" id="btn-gameover-rematch" style="flex:2; justify-content:center; padding:12px;">
+            <span>🔄</span>
+            <span data-i18n="rematchBtn">بازی مجدد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="rulesTitle">📜 قوانین و راهنمای نقطه و خط</h2>
+        <button class="btn-modal-close" id="btn-close-rules">&times;</button>
+      </div>
+      <div class="modal-body" id="rules-content">
+        <!-- Injected via i18n -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Drawer -->
+  <div class="chat-drawer" id="chat-drawer">
+    <div class="modal-header" style="padding:10px 14px; margin-bottom:0;">
+      <span style="font-size:0.95rem; font-weight:700; color:var(--gold-primary);" data-i18n="chatTitle">💬 پیام‌ها و چت بازی</span>
+      <button class="btn-modal-close" id="btn-close-chat">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg">
+        <div class="sender">سیستم</div>
+        <div>به بازی نقطه و خط خوش آمدید!</div>
+      </div>
+    </div>
+    <form class="chat-input-bar" id="chat-form">
+      <input type="text" id="chat-input" placeholder="پیام شما..." autocomplete="off">
+      <button type="submit" class="btn-icon" style="width:34px; height:34px; font-size:0.9rem;">➤</button>
+    </form>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

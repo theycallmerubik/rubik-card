@@ -159,7 +159,7 @@
   let roomCode = null;
   let mySeat = -1;
   let isHost = false;
-  let localPlayerName = localStorage.getItem('rubik_bg_player_name') || 'Player';
+  let localPlayerName = localStorage.getItem('rubik_player_name') || localStorage.getItem('rubik_bg_player_name') || 'Player';
 
   // DOM Elements
   const boardEl = document.getElementById('backgammon-board');
@@ -1301,6 +1301,7 @@
       const newName = (nameInput.value || '').trim();
       if (newName) {
         localPlayerName = newName;
+        localStorage.setItem('rubik_player_name', newName);
         localStorage.setItem('rubik_bg_player_name', newName);
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'UPDATE_NAME', name: newName }));

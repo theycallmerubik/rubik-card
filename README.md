@@ -6,6 +6,10 @@ All playing cards are rendered purely using **UTF-8 character symbols** (`♠`, 
 
 ---
 
+## This project is 99% vibe coded, it has infinit possible improvment potential. There will be possible bugs when you test it. I created this project just to kill boredom in future internet shutdown.
+
+---
+
 ## 🌟 Highlights & Features
 
 - **Classic Casino Aesthetic**: Deep emerald green felt baize, polished gold accents, tactile chip controls, and crisp serif typography.
