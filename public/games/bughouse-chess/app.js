@@ -32,8 +32,6 @@
       menuTitle: 'شطرنج باگ‌هاوس (۴ نفره)',
       btnAiTitle: 'تک‌نفره با ربات‌های هوشمند',
       btnAiDesc: 'شما به همراه هم‌تیمی هوش مصنوعی در برابر تیم ربات‌ها',
-      btnLocalTitle: 'بازی چندنفره محلی',
-      btnLocalDesc: 'بازی مشترک روی همین دستگاه (Pass & Play)',
       btnOnlineTitle: 'چندنفره آنلاین ۴ نفره',
       btnOnlineDesc: 'ایجاد اتاق، دعوت از دوستان با لینک و لابی تیمی',
       btnRulesTitle: 'قوانین و راهنمای بازی',
@@ -90,8 +88,6 @@
       menuTitle: 'Bughouse Chess (4 Players)',
       btnAiTitle: 'Solo vs Smart AI Bots',
       btnAiDesc: 'You and an AI teammate face off against two AI opponents',
-      btnLocalTitle: 'Local Pass & Play',
-      btnLocalDesc: 'Play with friends locally on the same device',
       btnOnlineTitle: '4-Player Online Match',
       btnOnlineDesc: 'Create room, invite friends via link, and team up',
       btnRulesTitle: 'Rules & How to Play',
@@ -168,7 +164,7 @@
   let playerName = localStorage.getItem('rubik_player_name') || (currentLang === 'fa' ? 'بازیکن' : 'Player');
 
   let gameState = null;
-  let gameMode = 'ai'; // 'ai' | 'local' | 'online'
+  let gameMode = 'ai'; // 'ai' | 'online'
   let aiDifficulty = 'medium';
   let timeControlSeconds = 180; // 3 min
 
@@ -245,7 +241,6 @@
     el.btnCloseRules = document.getElementById('btn-close-rules');
 
     el.btnModeAi = document.getElementById('btn-mode-ai');
-    el.btnModeLocal = document.getElementById('btn-mode-local');
     el.btnModeOnline = document.getElementById('btn-mode-online');
     el.btnModeRules = document.getElementById('btn-mode-rules');
 
@@ -329,10 +324,6 @@
     if (txtBtnAiTitle) txtBtnAiTitle.textContent = t.btnAiTitle;
     const txtBtnAiDesc = document.getElementById('txt-btn-ai-desc');
     if (txtBtnAiDesc) txtBtnAiDesc.textContent = t.btnAiDesc;
-    const txtBtnLocalTitle = document.getElementById('txt-btn-local-title');
-    if (txtBtnLocalTitle) txtBtnLocalTitle.textContent = t.btnLocalTitle;
-    const txtBtnLocalDesc = document.getElementById('txt-btn-local-desc');
-    if (txtBtnLocalDesc) txtBtnLocalDesc.textContent = t.btnLocalDesc;
     const txtBtnOnlineTitle = document.getElementById('txt-btn-online-title');
     if (txtBtnOnlineTitle) txtBtnOnlineTitle.textContent = t.btnOnlineTitle;
     const txtBtnOnlineDesc = document.getElementById('txt-btn-online-desc');
@@ -436,11 +427,6 @@
       el.nameTopA.textContent = 'Bot A (Opponent)';
       el.nameTopB.textContent = 'Bot B (Opponent)';
       el.nameBottomB.textContent = 'Bot Partner (Teammate)';
-    } else if (mode === 'local') {
-      el.nameBottomA.textContent = 'Player 1 (Team 1)';
-      el.nameTopA.textContent = 'Player 2 (Team 2)';
-      el.nameTopB.textContent = 'Player 3 (Team 2)';
-      el.nameBottomB.textContent = 'Player 4 (Team 1)';
     }
 
     renderAll();
@@ -773,7 +759,7 @@
     renderReserveRack(el.resItemsBottomA, 'boardA', 'w', true);
     renderReserveRack(el.resItemsTopA, 'boardA', 'b', false);
     renderReserveRack(el.resItemsTopB, 'boardB', 'w', false);
-    renderReserveRack(el.resItemsBottomB, 'boardB', 'b', gameMode === 'local');
+    renderReserveRack(el.resItemsBottomB, 'boardB', 'b', false);
   }
 
   function renderReserveRack(container, boardId, color, isInteractive) {
@@ -1160,13 +1146,6 @@
         aiDifficulty = el.selectAiDiff.value;
         timeControlSeconds = parseInt(el.selectTimeControl.value, 10);
         initGame('ai');
-      });
-    }
-
-    if (el.btnModeLocal) {
-      el.btnModeLocal.addEventListener('click', () => {
-        timeControlSeconds = 0; // Unlimited for local
-        initGame('local');
       });
     }
 

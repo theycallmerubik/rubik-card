@@ -3256,6 +3256,27 @@ class OnlineCatanRoom {
     this.checkTurn();
   }
 
+  processBotDiscards() {
+    if (!this.gameState || !Array.isArray(this.gameState.discardQueue)) return;
+    const botItems = this.gameState.discardQueue.filter(item => {
+      const seat = this.seats[item.playerId];
+      return !seat || seat.isBot || !seat.connected || seat.isAfk;
+    });
+
+    for (const item of botItems) {
+      const victim = this.gameState.players[item.playerId];
+      if (!victim) continue;
+      const toDiscard = {};
+      let need = item.count;
+      for (const [r, count] of Object.entries(victim.resources || {})) {
+        const take = Math.min(count, need);
+        if (take > 0) { toDiscard[r] = take; need -= take; }
+        if (need === 0) break;
+      }
+      catanLogic.discardCards(this.gameState, item.playerId, toDiscard);
+    }
+  }
+
   checkTurn() {
     if (this.status !== 'PLAYING' || !this.gameState) return;
     const activeSeatIdx = this.gameState.activePlayer;
@@ -3285,26 +3306,29 @@ class OnlineCatanRoom {
         if (this.gameState.phase === 'ROLL_DICE') {
           const rollRes = catanLogic.rollDice(this.gameState, activeSeatIdx);
           if (rollRes && rollRes.sum === 7) {
-            // Discard for bots
-            while (this.gameState.discardQueue.length > 0) {
-              const item = this.gameState.discardQueue[0];
-              const victim = this.gameState.players[item.playerId];
-              const toDiscard = {};
-              let need = item.count;
-              for (const [r, count] of Object.entries(victim.resources)) {
-                const take = Math.min(count, need);
-                if (take > 0) { toDiscard[r] = take; need -= take; }
-                if (need === 0) break;
-              }
-              catanLogic.discardCards(this.gameState, item.playerId, toDiscard);
+            this.processBotDiscards();
+            if (this.gameState.phase === 'ROBBER_DISCARD') {
+              this.broadcastGameState();
+              return; // Wait for connected human player to discard cards
             }
             // Move robber
             const available = this.gameState.tiles.filter(t => t.id !== this.gameState.robberHexId).map(t => t.id);
-            const pickHex = available[Math.floor(Math.random() * available.length)];
+            const pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
             const robRes = catanLogic.moveRobber(this.gameState, activeSeatIdx, pickHex);
             if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
               catanLogic.stealResource(this.gameState, activeSeatIdx, robRes.candidates[0]);
             }
+          }
+          this.broadcastGameState();
+        }
+
+        // Bot Robber Move (if discarded or deferred)
+        if (this.gameState.phase === 'ROBBER_MOVE') {
+          const available = this.gameState.tiles.filter(t => t.id !== this.gameState.robberHexId).map(t => t.id);
+          const pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
+          const robRes = catanLogic.moveRobber(this.gameState, activeSeatIdx, pickHex);
+          if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
+            catanLogic.stealResource(this.gameState, activeSeatIdx, robRes.candidates[0]);
           }
           this.broadcastGameState();
         }
@@ -3357,7 +3381,10 @@ class OnlineCatanRoom {
     const seatIdx = this.getSeatIndexForSocket(ws.id);
     if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'ROLL_DICE') return;
 
-    catanLogic.rollDice(this.gameState, seatIdx);
+    const rollRes = catanLogic.rollDice(this.gameState, seatIdx);
+    if (rollRes && rollRes.sum === 7) {
+      this.processBotDiscards();
+    }
     this.broadcastGameState();
     this.checkTurn();
   }
@@ -3449,6 +3476,7 @@ class OnlineCatanRoom {
     if (this.status !== 'PLAYING' || !this.gameState) return;
     const seatIdx = this.getSeatIndexForSocket(ws.id);
     catanLogic.discardCards(this.gameState, seatIdx, data.resources);
+    this.processBotDiscards();
     this.broadcastGameState();
     this.checkTurn();
   }
@@ -4063,9 +4091,14 @@ function handleClientMessage(ws, data) {
       ws.send(JSON.stringify({ type: 'ERROR', message: 'Can only rearrange players in the lobby' }));
       return;
     }
-    const seatA = Number(data.seatA);
-    const seatB = Number(data.seatB);
-    if (isNaN(seatA) || isNaN(seatB) || seatA < 0 || seatA > 3 || seatB < 0 || seatB > 3) return;
+    let seatA = Number(data.seatA);
+    let seatB = Number(data.seatB);
+    if (isNaN(seatA) || isNaN(seatB)) {
+      seatA = 0;
+      seatB = 1;
+    }
+    const maxSeat = room.seats.length - 1;
+    if (seatA < 0 || seatA > maxSeat || seatB < 0 || seatB > maxSeat) return;
     if (seatA === seatB) return;
 
     const temp = room.seats[seatA];

@@ -106,6 +106,10 @@ class CatanSoundEngine {
     } catch (_) {}
   }
 
+  playResourceChime() {
+    this.playResource();
+  }
+
   // Road Construction Tap
   playBuildRoad() {
     if (this.muted) return;
@@ -242,6 +246,10 @@ class CatanSoundEngine {
     } catch (_) {}
   }
 
+  playCardWhoosh() {
+    this.playDevCard();
+  }
+
   // Triumphant Victory Fanfare (10 Victory Points Reached)
   playVictory() {
     if (this.muted) return;
@@ -269,6 +277,10 @@ class CatanSoundEngine {
         osc.stop(t + (idx === 3 ? 1.0 : 0.45));
       });
     } catch (_) {}
+  }
+
+  playVictoryFanfare() {
+    this.playVictory();
   }
 
   playClick() {

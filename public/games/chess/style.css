@@ -1429,6 +1429,25 @@ header.top-bar {
   .chat-drawer:not(.minimized) {
     height: 200px;
   }
+
+  /* Mirrored pieces for Face-to-Face Pass & Play on mobile */
+  body.mode-pass-play:not(.board-flipped) .chessboard .piece.black-piece {
+    transform: rotate(180deg);
+  }
+  body.mode-pass-play:not(.board-flipped) .chessboard .square:hover .piece.black-piece {
+    transform: rotate(180deg) scale(1.08);
+  }
+
+  body.mode-pass-play.board-flipped .chessboard .piece.white-piece {
+    transform: rotate(180deg);
+  }
+  body.mode-pass-play.board-flipped .chessboard .square:hover .piece.white-piece {
+    transform: rotate(180deg) scale(1.08);
+  }
+
+  body.mode-pass-play .player-bar.top-player {
+    transform: rotate(180deg);
+  }
 }
 
 @media (max-width: 520px) {

@@ -267,6 +267,20 @@
             playVictoryFanfare: () => {}
           });
 
+  function safePlaySound(method, ...args) {
+    try {
+      if (soundEngine && typeof soundEngine[method] === 'function') {
+        soundEngine[method](...args);
+      } else if (method === 'playResourceChime' && soundEngine && typeof soundEngine.playResource === 'function') {
+        soundEngine.playResource(...args);
+      } else if (method === 'playCardWhoosh' && soundEngine && typeof soundEngine.playDevCard === 'function') {
+        soundEngine.playDevCard(...args);
+      } else if (method === 'playVictoryFanfare' && soundEngine && typeof soundEngine.playVictory === 'function') {
+        soundEngine.playVictory(...args);
+      }
+    } catch (_) {}
+  }
+
   function getResourceName(res) {
     if (currentLang === 'fa') {
       const names = {
@@ -335,6 +349,11 @@
     el.placementModeBanner = document.getElementById('placement-mode-banner');
     el.placementModeText = document.getElementById('placement-mode-text');
     el.btnCancelPlacement = document.getElementById('btn-cancel-placement');
+
+    el.quickEndTurnBanner = document.getElementById('quick-end-turn-banner');
+    el.quickEndTurnText = document.getElementById('quick-end-turn-text');
+    el.btnQuickEndTurn = document.getElementById('btn-quick-end-turn');
+    el.quickEndTurnBtnLabel = document.getElementById('quick-end-turn-btn-label');
 
     el.countLumber = document.getElementById('count-lumber');
     el.countBrick = document.getElementById('count-brick');
@@ -1037,20 +1056,22 @@
       resetDiceDisplayToReady();
     }
 
-    if (el.btnRollDice) {
-      el.btnRollDice.disabled = !canRoll;
-      if (canRoll) {
-        el.btnRollDice.classList.add('primary', 'pulse-glow');
-      } else {
-        el.btnRollDice.classList.remove('primary', 'pulse-glow');
-      }
-    }
-
     const hasRoadRes = isMyTurn && CatanLogic.hasResources(activeP, CatanLogic.COSTS.ROAD) && activeP.roadsLeft > 0;
     const hasSetRes = isMyTurn && CatanLogic.hasResources(activeP, CatanLogic.COSTS.SETTLEMENT) && activeP.settlementsLeft > 0;
     const hasCityRes = isMyTurn && CatanLogic.hasResources(activeP, CatanLogic.COSTS.CITY) && activeP.citiesLeft > 0;
     const hasDevRes = isMyTurn && CatanLogic.canBuyDevCard(state, state.activePlayer);
-    const canAnyBuild = hasRoadRes || hasSetRes || hasCityRes || hasDevRes;
+    const canTrade = isMyTurn && Object.entries(activeP.resources).some(([res, count]) => count >= CatanLogic.getBestTradeRatio(state, state.activePlayer, res));
+    const canAnyAction = hasRoadRes || hasSetRes || hasCityRes || hasDevRes || canTrade;
+
+    if (el.btnRollDice) {
+      el.btnRollDice.innerHTML = `<span>🎲</span><span>${t.rollDiceBtn}</span>`;
+      el.btnRollDice.disabled = !canRoll;
+      if (canRoll) {
+        el.btnRollDice.classList.add('primary', 'pulse-glow');
+      } else {
+        el.btnRollDice.classList.remove('primary', 'pulse-glow', 'must-end-turn');
+      }
+    }
 
     if (el.btnBuildRoad) {
       el.btnBuildRoad.disabled = !(canPlay || (isMyTurn && state.phase === 'SETUP_ROAD'));
@@ -1077,15 +1098,29 @@
     if (el.btnEndTurn) {
       el.btnEndTurn.disabled = !canPlay;
       if (canPlay) {
-        if (!canAnyBuild) {
-          el.btnEndTurn.classList.add('primary', 'must-end-turn');
-          el.btnEndTurn.classList.remove('pulse-glow');
-        } else {
-          el.btnEndTurn.classList.add('primary', 'pulse-glow');
-          el.btnEndTurn.classList.remove('must-end-turn');
-        }
+        el.btnEndTurn.classList.add('primary', 'must-end-turn');
+        el.btnEndTurn.classList.remove('pulse-glow');
       } else {
         el.btnEndTurn.classList.remove('primary', 'pulse-glow', 'must-end-turn');
+      }
+    }
+
+    // Quick End Turn Floating Banner (when no actions affordable)
+    if (el.quickEndTurnBanner) {
+      if (canPlay && !canAnyAction) {
+        el.quickEndTurnBanner.style.display = 'flex';
+        if (el.quickEndTurnText) {
+          el.quickEndTurnText.textContent = currentLang === 'fa'
+            ? '💡 منابع کافی برای ساخت ندارید. برای نوبت هوش مصنوعی کلیک کنید:'
+            : '💡 No affordable builds. Click to pass to bots:';
+        }
+        if (el.quickEndTurnBtnLabel) {
+          el.quickEndTurnBtnLabel.textContent = currentLang === 'fa'
+            ? 'پایان نوبت (نوبت ربات‌ها)'
+            : 'End Turn (Bots Turn)';
+        }
+      } else {
+        el.quickEndTurnBanner.style.display = 'none';
       }
     }
 
@@ -1246,69 +1281,84 @@
   }
 
   function botRelocateRobberAndSteal(botId) {
-    if (!state || state.phase !== 'ROBBER_MOVE') return;
-    const botDecision = CatanLogic.chooseBotTurn(state, botId);
-    let pickHex = (botDecision && botDecision.hexId !== undefined) ? botDecision.hexId : null;
-    if (pickHex === null || pickHex === state.robberHexId) {
-      const available = state.tiles.filter(t => t.id !== state.robberHexId && t.terrain !== 'desert').map(t => t.id);
-      pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
-    }
-    const robRes = CatanLogic.moveRobber(state, botId, pickHex);
-    if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
-      const victimId = robRes.candidates[0];
-      CatanLogic.stealResource(state, botId, victimId);
+    try {
+      if (!state || state.phase !== 'ROBBER_MOVE') return;
+      const botDecision = CatanLogic.chooseBotTurn(state, botId);
+      let pickHex = (botDecision && botDecision.hexId !== undefined) ? botDecision.hexId : null;
+      if (pickHex === null || pickHex === state.robberHexId) {
+        const available = state.tiles.filter(t => t.id !== state.robberHexId && t.terrain !== 'desert').map(t => t.id);
+        pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
+      }
+      const robRes = CatanLogic.moveRobber(state, botId, pickHex);
+      if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
+        const victimId = robRes.candidates[0];
+        CatanLogic.stealResource(state, botId, victimId);
+      }
+    } catch (err) {
+      console.warn('Bot robber error:', err);
     }
   }
 
   function handleRollDice() {
     if (!state || state.phase !== 'ROLL_DICE' || !isLocalPlayerTurn()) return;
 
-    soundEngine.playDiceRoll();
+    if (el.btnRollDice) el.btnRollDice.disabled = true;
+
+    safePlaySound('playDiceRoll');
     animateDiceRoll(() => {
       if (gameMode === 'online') {
         sendWsMessage({ type: 'CATAN_ROLL_DICE' });
       } else {
         const res = CatanLogic.rollDice(state);
-        if (!res || !res.valid) return;
-
-        if (res.dice) {
-          updateDiceVisual(res.dice[0], res.dice[1]);
+        if (!res || !res.valid) {
+          updateUI();
+          return;
         }
-        if (res.sum === 7) {
-          soundEngine.playRobber();
-          processBotDiscards();
 
-          const humanDiscard = state.discardQueue.find(d => isLocalSeat(d.playerId));
-          if (humanDiscard) {
-            checkAndShowDiscardModal();
-          } else {
-            notify(currentLang === 'fa' 
-              ? '⚠️ تاس ۷ آمد! روی یکی از زمین‌های شش‌ضلعی کلیک کنید تا راهزن به آنجا برود.' 
-              : '⚠️ 7 rolled! Click a hex to relocate the Robber.');
+        try {
+          if (res.dice) {
+            updateDiceVisual(res.dice[0], res.dice[1]);
           }
-        } else {
-          highlightRolledHexes(res.sum);
-          soundEngine.playResourceChime();
-          const localId = state.activePlayer;
-          const myProd = res.production && res.production[localId] ? res.production[localId] : {};
-          const items = Object.entries(myProd).filter(([_, count]) => count > 0);
-          const anyProduced = res.production && Object.values(res.production).some(p => Object.values(p).some(c => c > 0));
+          if (res.sum === 7) {
+            safePlaySound('playRobber');
+            processBotDiscards();
 
-          if (items.length > 0) {
-            const listStr = items.map(([r, count]) => `${count} ${getResourceName(r)}`).join(' و ');
-            notify(currentLang === 'fa' 
-              ? `🎲 تاس ${res.sum} آمد! زمین‌های مجاور شما فعال شدند و دریافت کردید: ${listStr}.` 
-              : `🎲 Rolled ${res.sum}! Your adjacent hexes produced: ${listStr}.`);
-          } else if (anyProduced) {
-            notify(currentLang === 'fa' 
-              ? `🎲 تاس ${res.sum} آمد! سایر بازیکنان کارت دریافت کردند (شما روی شماره ${res.sum} روستایی ندارید).` 
-              : `🎲 Rolled ${res.sum}! Other players collected resources (you have no settlements on #${res.sum}).`);
+            const humanDiscard = (state.discardQueue || []).find(d => isLocalSeat(d.playerId));
+            if (humanDiscard) {
+              checkAndShowDiscardModal();
+            } else {
+              notify(currentLang === 'fa' 
+                ? '⚠️ تاس ۷ آمد! روی یکی از زمین‌های شش‌ضلعی کلیک کنید تا راهزن به آنجا برود.' 
+                : '⚠️ 7 rolled! Click a hex to relocate the Robber.');
+            }
           } else {
-            notify(currentLang === 'fa' 
-              ? `🎲 تاس ${res.sum} آمد! هیچ بازیکنی روی این زمین روستا ندارد و منبعی تولید نشد.` 
-              : `🎲 Rolled ${res.sum}! No settlements touch this hex, so no resources were produced.`);
+            highlightRolledHexes(res.sum);
+            safePlaySound('playResourceChime');
+            safePlaySound('playResource');
+            const localId = state.activePlayer;
+            const myProd = res.production && res.production[localId] ? res.production[localId] : {};
+            const items = Object.entries(myProd).filter(([_, count]) => count > 0);
+            const anyProduced = res.production && Object.values(res.production).some(p => Object.values(p).some(c => c > 0));
+
+            if (items.length > 0) {
+              const listStr = items.map(([r, count]) => `${count} ${getResourceName(r)}`).join(' و ');
+              notify(currentLang === 'fa' 
+                ? `🎲 تاس ${res.sum} آمد! دریافت کردید: ${listStr}.` 
+                : `🎲 Rolled ${res.sum}! Produced: ${listStr}.`);
+            } else if (anyProduced) {
+              notify(currentLang === 'fa' 
+                ? `🎲 تاس ${res.sum} آمد! سایر بازیکنان کارت دریافت کردند.` 
+                : `🎲 Rolled ${res.sum}! Other players collected resources.`);
+            } else {
+              notify(currentLang === 'fa' 
+                ? `🎲 تاس ${res.sum} آمد! منبعی تولید نشد.` 
+                : `🎲 Rolled ${res.sum}! No resources produced.`);
+            }
           }
+        } catch (err) {
+          console.error('Roll Dice handler error:', err);
         }
+
         updateUI();
         checkBotTurn();
       }
@@ -1365,7 +1415,7 @@
       } else {
         const res = CatanLogic.buildSettlement(state, state.activePlayer, vertexId, isSetup);
         if (res.valid) {
-          soundEngine.playBuildSettlement();
+          safePlaySound('playBuildSettlement');
           buildMode = null;
           updateUI();
           checkBotTurn();
@@ -1379,7 +1429,7 @@
       } else {
         const res = CatanLogic.buildCity(state, state.activePlayer, vertexId);
         if (res.valid) {
-          soundEngine.playBuildCity();
+          safePlaySound('playBuildCity');
           buildMode = null;
           updateUI();
           checkBotTurn();
@@ -1400,7 +1450,7 @@
       } else {
         const res = CatanLogic.buildRoad(state, state.activePlayer, edgeId, isSetup);
         if (res.valid) {
-          soundEngine.playBuildRoad();
+          safePlaySound('playBuildRoad');
           buildMode = null;
           updateUI();
           checkBotTurn();
@@ -1417,7 +1467,7 @@
     } else {
       const res = CatanLogic.moveRobber(state, state.activePlayer, hexId);
       if (res.valid) {
-        soundEngine.playRobber();
+        safePlaySound('playRobber');
         if (res.canSteal && res.candidates.length > 0) {
           showStealModal(res.candidates);
         }
@@ -1430,7 +1480,8 @@
   function handleEndTurn() {
     if (!state || state.phase !== 'PLAYING_TURN' || !isLocalPlayerTurn()) return;
 
-    soundEngine.playClick();
+    if (el.btnEndTurn) el.btnEndTurn.disabled = true;
+    safePlaySound('playClick');
     if (gameMode === 'online') {
       sendWsMessage({ type: 'CATAN_END_TURN' });
     } else {
@@ -1470,15 +1521,19 @@
 
       // Setup Phase
       if (state.phase.startsWith('SETUP')) {
-        const move = CatanLogic.chooseBotSetupMove(state, botId);
-        if (move) {
-          if (move.action === 'BUILD_SETTLEMENT') {
-            CatanLogic.buildSettlement(state, botId, move.vertexId, true);
-            soundEngine.playBuildSettlement();
-          } else if (move.action === 'BUILD_ROAD') {
-            CatanLogic.buildRoad(state, botId, move.edgeId, true);
-            soundEngine.playBuildRoad();
+        try {
+          const move = CatanLogic.chooseBotSetupMove(state, botId);
+          if (move) {
+            if (move.action === 'BUILD_SETTLEMENT') {
+              CatanLogic.buildSettlement(state, botId, move.vertexId, true);
+              safePlaySound('playBuildSettlement');
+            } else if (move.action === 'BUILD_ROAD') {
+              CatanLogic.buildRoad(state, botId, move.edgeId, true);
+              safePlaySound('playBuildRoad');
+            }
           }
+        } catch (err) {
+          console.warn('Bot setup error:', err);
         }
         updateUI();
         checkBotTurn();
@@ -1487,30 +1542,35 @@
 
       // Roll Phase
       if (state.phase === 'ROLL_DICE') {
-        soundEngine.playDiceRoll();
+        safePlaySound('playDiceRoll');
         const rollRes = CatanLogic.rollDice(state);
-        if (rollRes && rollRes.dice) {
-          updateDiceVisual(rollRes.dice[0], rollRes.dice[1]);
-        }
-
-        if (rollRes && rollRes.sum === 7) {
-          soundEngine.playRobber();
-          notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس ۷ انداخت!` : `🎲 ${bot.name} rolled a 7!`);
-
-          processBotDiscards();
-
-          const humanDiscard = state.discardQueue.find(d => isLocalSeat(d.playerId));
-          if (humanDiscard) {
-            checkAndShowDiscardModal();
-            updateUI();
-            return; // Wait for human player to discard cards
+        try {
+          if (rollRes && rollRes.dice) {
+            updateDiceVisual(rollRes.dice[0], rollRes.dice[1]);
           }
 
-          botRelocateRobberAndSteal(botId);
-        } else if (rollRes && rollRes.valid) {
-          highlightRolledHexes(rollRes.sum);
-          soundEngine.playResourceChime();
-          notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس انداخت: عدد ${rollRes.sum} آمد.` : `🎲 ${bot.name} rolled ${rollRes.sum}.`);
+          if (rollRes && rollRes.sum === 7) {
+            safePlaySound('playRobber');
+            notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس ۷ انداخت!` : `🎲 ${bot.name} rolled a 7!`);
+
+            processBotDiscards();
+
+            const humanDiscard = (state.discardQueue || []).find(d => isLocalSeat(d.playerId));
+            if (humanDiscard) {
+              checkAndShowDiscardModal();
+              updateUI();
+              return; // Wait for human player to discard cards
+            }
+
+            botRelocateRobberAndSteal(botId);
+          } else if (rollRes && rollRes.valid) {
+            highlightRolledHexes(rollRes.sum);
+            safePlaySound('playResourceChime');
+            safePlaySound('playResource');
+            notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس انداخت: عدد ${rollRes.sum} آمد.` : `🎲 ${bot.name} rolled ${rollRes.sum}.`);
+          }
+        } catch (err) {
+          console.warn('Bot roll handling error:', err);
         }
         updateUI();
       }
@@ -1524,36 +1584,40 @@
   }
 
   function executeBotTurnActions(botId) {
-    if (!state || state.activePlayer !== botId || state.phase !== 'PLAYING_TURN') return;
+    if (!state || state.activePlayer !== botId) return;
 
-    let safety = 0;
-    while (state.phase === 'PLAYING_TURN' && safety++ < 6) {
-      const decision = CatanLogic.chooseBotTurn(state, botId);
-      if (!decision || decision.action === 'END_TURN') {
-        break;
+    try {
+      let safety = 0;
+      while (state.phase === 'PLAYING_TURN' && safety++ < 6) {
+        const decision = CatanLogic.chooseBotTurn(state, botId);
+        if (!decision || decision.action === 'END_TURN') {
+          break;
+        }
+        let didAct = false;
+        if (decision.action === 'BUILD_CITY') {
+          const r = CatanLogic.buildCity(state, botId, decision.vertexId);
+          if (r && r.valid) { didAct = true; safePlaySound('playBuildCity'); }
+        } else if (decision.action === 'BUILD_SETTLEMENT') {
+          const r = CatanLogic.buildSettlement(state, botId, decision.vertexId, false);
+          if (r && r.valid) { didAct = true; safePlaySound('playBuildSettlement'); }
+        } else if (decision.action === 'BUILD_ROAD') {
+          const r = CatanLogic.buildRoad(state, botId, decision.edgeId, false);
+          if (r && r.valid) { didAct = true; safePlaySound('playBuildRoad'); }
+        } else if (decision.action === 'BUY_DEV_CARD') {
+          const r = CatanLogic.buyDevCard(state, botId);
+          if (r && r.valid) { didAct = true; safePlaySound('playCardWhoosh'); }
+        } else if (decision.action === 'BANK_TRADE') {
+          const r = CatanLogic.bankTrade(state, botId, decision.giveResource, decision.getResource);
+          if (r && r.valid) { didAct = true; }
+        }
+        if (!didAct) break;
       }
-      let didAct = false;
-      if (decision.action === 'BUILD_CITY') {
-        const r = CatanLogic.buildCity(state, botId, decision.vertexId);
-        if (r && r.valid) { didAct = true; soundEngine.playBuildCity(); }
-      } else if (decision.action === 'BUILD_SETTLEMENT') {
-        const r = CatanLogic.buildSettlement(state, botId, decision.vertexId, false);
-        if (r && r.valid) { didAct = true; soundEngine.playBuildSettlement(); }
-      } else if (decision.action === 'BUILD_ROAD') {
-        const r = CatanLogic.buildRoad(state, botId, decision.edgeId, false);
-        if (r && r.valid) { didAct = true; soundEngine.playBuildRoad(); }
-      } else if (decision.action === 'BUY_DEV_CARD') {
-        const r = CatanLogic.buyDevCard(state, botId);
-        if (r && r.valid) { didAct = true; soundEngine.playCardWhoosh(); }
-      } else if (decision.action === 'BANK_TRADE') {
-        const r = CatanLogic.bankTrade(state, botId, decision.giveResource, decision.getResource);
-        if (r && r.valid) { didAct = true; }
-      }
-      if (!didAct) break;
+    } catch (err) {
+      console.warn('Bot turn action error:', err);
     }
 
-    // Bot finished its actions: guarantee endTurn is called
-    if (state.phase === 'PLAYING_TURN' && state.activePlayer === botId) {
+    // Always guarantee endTurn is called for the bot so turn advances
+    if (state.activePlayer === botId) {
       CatanLogic.endTurn(state, botId);
     }
 
@@ -1747,7 +1811,7 @@
   function showGameOverModal() {
     if (!state || !el.modalGameover) return;
     const winnerP = state.players[state.winner];
-    soundEngine.playVictoryFanfare();
+    safePlaySound('playVictoryFanfare');
 
     const title = document.getElementById('gameover-message');
     if (title && winnerP) {
@@ -1797,6 +1861,7 @@
   function handleWsMessage(msg) {
     if (msg.type === 'ROOM_CREATED' || msg.type === 'ROOM_JOINED') {
       roomCode = msg.roomCode;
+      gameMode = 'online';
       mySeat = msg.seat !== undefined ? msg.seat : 0;
       window.location.hash = roomCode;
     } else if (msg.type === 'LOBBY_UPDATE') {
@@ -1808,7 +1873,14 @@
       closeAllModals();
       startTurnCountdown();
     } else if (msg.type === 'CATAN_STATE_UPDATE') {
+      gameMode = 'online';
+      const needsRender = !state || !document.querySelector('.hex-polygon');
       state = msg.state;
+      if (needsRender) {
+        renderBoardBase();
+        resetPanZoom();
+      }
+      closeAllModals();
       if (msg.lastDice) {
         updateDiceVisual(msg.lastDice[0], msg.lastDice[1]);
       }
@@ -2301,7 +2373,7 @@
       } else {
         const res = CatanLogic.buyDevCard(state, state.activePlayer);
         if (res.valid) {
-          soundEngine.playCardWhoosh();
+          safePlaySound('playCardWhoosh');
           notify(currentLang === 'fa' ? `یک کارت شانس خریداری شد!` : `Bought a Development Card!`);
           updateUI();
         }
@@ -2333,6 +2405,28 @@
     });
     if (el.btnTrade) el.btnTrade.addEventListener('click', openTradeModal);
     if (el.btnEndTurn) el.btnEndTurn.addEventListener('click', handleEndTurn);
+    if (el.btnQuickEndTurn) el.btnQuickEndTurn.addEventListener('click', () => {
+      soundEngine.playClick();
+      handleEndTurn();
+    });
+
+    // Keyboard Shortcuts (Space / Enter to roll dice or end turn)
+    window.addEventListener('keydown', (e) => {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+      const anyActiveModal = document.querySelector('.modal-overlay.active');
+      if (anyActiveModal) return;
+
+      if (!state || !isLocalPlayerTurn()) return;
+      e.preventDefault();
+
+      if (state.phase === 'ROLL_DICE') {
+        handleRollDice();
+      } else if (state.phase === 'PLAYING_TURN') {
+        handleEndTurn();
+      }
+    });
 
     // Trade Modal Controls
     const btnCloseTrade = document.getElementById('btn-close-trade');
@@ -2372,7 +2466,7 @@
       } else {
         const res = CatanLogic.bankTrade(state, state.activePlayer, tradeGiveRes, tradeGetRes);
         if (res.valid) {
-          soundEngine.playResourceChime();
+          safePlaySound('playResourceChime');
           notify(currentLang === 'fa' ? 'تبادل با بانک با موفقیت انجام شد!' : 'Bank trade executed successfully!');
           closeTradeModal();
           updateUI();

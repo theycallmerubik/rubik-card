@@ -416,6 +416,9 @@
     if (!dom.chessboard) return;
     dom.chessboard.innerHTML = '';
 
+    document.body.classList.toggle('mode-pass-play', mode === 'PASS_PLAY');
+    document.body.classList.toggle('board-flipped', !!isBoardFlipped);
+
     const inCheck = chessLogic.isInCheck(gameState.board, gameState.turn);
     const checkedKingSq = inCheck ? (gameState.turn === 'w' ? gameState.board.indexOf('K') : gameState.board.indexOf('k')) : -1;
 

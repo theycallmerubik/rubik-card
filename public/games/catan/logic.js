@@ -645,8 +645,8 @@
         }
       }
 
+      state.discardQueue = discardQueue;
       if (discardQueue.length > 0) {
-        state.discardQueue = discardQueue;
         state.phase = 'ROBBER_DISCARD';
       } else {
         state.phase = 'ROBBER_MOVE';
@@ -789,7 +789,8 @@
     }
 
     state.discardQueue.splice(idx, 1);
-    if (state.discardQueue.length === 0) {
+    if (!state.discardQueue || state.discardQueue.length === 0) {
+      state.discardQueue = [];
       state.phase = 'ROBBER_MOVE';
     }
 
@@ -1062,7 +1063,7 @@
     }
 
     if (state.phase === 'ROBBER_DISCARD') {
-      const entry = state.discardQueue.find(d => d.playerId === botId);
+      const entry = Array.isArray(state.discardQueue) ? state.discardQueue.find(d => d.playerId === botId) : null;
       if (entry) {
         const discarded = {};
         let need = entry.count;
