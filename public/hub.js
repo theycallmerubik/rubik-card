@@ -462,6 +462,60 @@
           <p>کیش‌مات یا افتادن پرچم ساعت در هر یک از دو تخته، بلافاصله منجر به پیروزی کل تیم می‌شود.</p>
         `
       }
+    },
+    {
+      id: 'ludo',
+      icon: '🎲',
+      suits: '🔴 🟢 🟡 🔵',
+      status: 'available',
+      title: {
+        en: 'Ludo',
+        fa: 'بازی منچ'
+      },
+      subtitle: {
+        en: 'Classic 2, 3 or 4 Player Cross & Circle Board Game',
+        fa: 'بازی نوستالژیک و کلاسیک منچ ۲، ۳ یا ۴ نفره'
+      },
+      players: {
+        en: '2, 3 or 4 Players',
+        fa: '۲، ۳ یا ۴ نفره'
+      },
+      tags: {
+        en: ['Classic Ludo', '2, 3 & 4 Players', 'Pass & Play', 'Online LAN', 'Smart AI Bots', 'Safe Stars', 'Zero-Scroll'],
+        fa: ['منچ کلاسیک', '۲، ۳ و ۴ نفره', 'پاس و بازی (محلی)', 'آنلاین و شبکه', 'ربات‌های هوشمند', 'خانه‌های امن ستاره', 'بدون اسکرول']
+      },
+      desc: {
+        en: 'The beloved traditional family board game! Roll a 6 to bring tokens onto the track, race around the 52-tile circuit, knock rivals back to their yard, and guide all four tokens into the home triangle. Supports 2-player duels, 3-player matches, or full 4-player battles with empty bases for absent players!',
+        fa: 'بازی دوست‌داشتنی و خاطره‌انگیز منچ! تاس ۶ بیاورید تا مهره‌هایتان را از حیاط وارد مسیر ۵۲ خانه‌ای کنید، مهره‌های حریف را به حیاطشان بفرستید و هر ۴ مهره را به مقصد نهایی برسانید. پشتیبانی کامل از حالت‌های ۲ نفره (دوئل روبه‌رو)، ۳ نفره و ۴ نفره با خالی ماندن جایگاه بازیکنان غایب در حالت تک‌نفره با ربات، پاس و بازی و آنلاین شبکه!'
+      },
+      playUrl: '/games/ludo/',
+      onlineUrl: '/games/ludo/#online',
+      rules: {
+        en: `
+          <h4>1. 2, 3, or 4 Players</h4>
+          <p>Choose 2 players (Red vs Yellow diagonal duel), 3 players (Red, Green, Yellow), or 4 players. Missing player bases remain empty with no tokens on the board.</p>
+          <h4>2. Entering the Track</h4>
+          <p>You must roll a 6 to move a token from the yard onto your starting track space. Rolling a 6 also grants an immediate bonus roll!</p>
+          <h4>3. Capturing Rivals</h4>
+          <p>Landing on an opponent's token captures it, returning it to their starting yard base (unless protected on a Safe Star).</p>
+          <h4>4. Safe Stars</h4>
+          <p>Cells marked with a star (including starting cells) are safe zones where tokens cannot be captured.</p>
+          <h4>5. Home Run & Winning</h4>
+          <p>Tokens make a full circuit and enter their color's 5-step Home Run column. You must roll the exact number to enter the central Goal. The first player to bring all 4 tokens home wins!</p>
+        `,
+        fa: `
+          <h4>۱. حالت‌های ۲، ۳ یا ۴ نفره</h4>
+          <p>امکان انتخاب ۲ نفره (دوئل ضربدری قرمز و زرد)، ۳ نفره (قرمز، سبز، زرد) یا ۴ نفره. پایگاه بازیکنان غایب بدون مهره و خالی می‌ماند.</p>
+          <h4>۲. ورود به صفحه با تاس ۶</h4>
+          <p>برای خارج کردن مهره از حیاط و ورود به خانه شروع به تاس ۶ نیاز دارید. آوردن تاس ۶ جایزه یک پرتاب مجدد دارد!</p>
+          <h4>۳. زدن مهره‌های حریف</h4>
+          <p>فرود آمدن روی مهره حریف آن را می‌زند و به حیاط ابتدایی برمی‌گرداند (مگر در خانه‌های امن ستاره‌دار).</p>
+          <h4>۴. خانه‌های امن (ستاره)</h4>
+          <p>خانه‌های ستاره‌دار (شامل خانه‌های خروجی هر رنگ) مناطق امن هستند و مهره‌های درون آن قابل زدن نیستند.</p>
+          <h4>۵. ستون نهایی و پیروزی</h4>
+          <p>مهره‌ها پس از دور کامل وارد دالان هم‌رنگ خود می‌شوند. ورود به مثلث پایانی نیازمند تاس دقیق است. اولین بازیکنی که هر ۴ مهره را به مقصد برساند برنده است!</p>
+        `
+      }
     }
   ];
 

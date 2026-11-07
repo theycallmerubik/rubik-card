@@ -824,51 +824,80 @@ body {
   letter-spacing: 0.5px;
 }
 
-.dice-pair {
+.dice-container {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
 }
 
-.die-box {
-  width: 36px;
-  height: 36px;
-  background: #f8fafc;
+.die {
+  width: 44px;
+  height: 44px;
+  background: #fcfcfc;
   border-radius: 8px;
-  border: 2px solid #cbd5e1;
-  box-shadow: inset 0 -3px 0 #94a3b8, 0 3px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+  border: 1.5px solid #d4d4d4;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  padding: 4px;
-  align-items: center;
-  justify-items: center;
-  transition: transform 0.25s ease;
+  padding: 5px;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.die:hover {
+  transform: scale(1.06);
+}
+
+.die.rolling {
+  animation: diceRollAnim 0.45s ease-in-out;
+}
+
+@keyframes diceRollAnim {
+  0% { transform: rotate(0deg) scale(0.9); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(0.95); }
+  75% { transform: rotate(270deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 .die-dot {
-  width: 6px;
-  height: 6px;
-  background: #0f172a;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  display: none;
+  background: #1e1e1e;
+  align-self: center;
+  justify-self: center;
 }
 
-.die-dot.red-dot {
-  background: #dc2626;
-}
+/* Die Dot Positioning (Copied from Backgammon) */
+.die[data-val="1"] .die-dot:nth-child(1) { grid-area: 2 / 2; }
 
-.die-box.rolling {
-  animation: shakeDie 0.4s ease infinite;
-}
+.die[data-val="2"] .die-dot:nth-child(1) { grid-area: 1 / 1; }
+.die[data-val="2"] .die-dot:nth-child(2) { grid-area: 3 / 3; }
 
-@keyframes shakeDie {
-  0% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(-10deg) scale(1.08); }
-  75% { transform: rotate(10deg) scale(0.92); }
-  100% { transform: rotate(0deg) scale(1); }
-}
+.die[data-val="3"] .die-dot:nth-child(1) { grid-area: 1 / 1; }
+.die[data-val="3"] .die-dot:nth-child(2) { grid-area: 2 / 2; }
+.die[data-val="3"] .die-dot:nth-child(3) { grid-area: 3 / 3; }
+
+.die[data-val="4"] .die-dot:nth-child(1) { grid-area: 1 / 1; }
+.die[data-val="4"] .die-dot:nth-child(2) { grid-area: 1 / 3; }
+.die[data-val="4"] .die-dot:nth-child(3) { grid-area: 3 / 1; }
+.die[data-val="4"] .die-dot:nth-child(4) { grid-area: 3 / 3; }
+
+.die[data-val="5"] .die-dot:nth-child(1) { grid-area: 1 / 1; }
+.die[data-val="5"] .die-dot:nth-child(2) { grid-area: 1 / 3; }
+.die[data-val="5"] .die-dot:nth-child(3) { grid-area: 2 / 2; }
+.die[data-val="5"] .die-dot:nth-child(4) { grid-area: 3 / 1; }
+.die[data-val="5"] .die-dot:nth-child(5) { grid-area: 3 / 3; }
+
+.die[data-val="6"] .die-dot:nth-child(1) { grid-area: 1 / 1; }
+.die[data-val="6"] .die-dot:nth-child(2) { grid-area: 2 / 1; }
+.die[data-val="6"] .die-dot:nth-child(3) { grid-area: 3 / 1; }
+.die[data-val="6"] .die-dot:nth-child(4) { grid-area: 1 / 3; }
+.die[data-val="6"] .die-dot:nth-child(5) { grid-area: 2 / 3; }
+.die[data-val="6"] .die-dot:nth-child(6) { grid-area: 3 / 3; }
 
 .dice-sum-badge {
   font-size: 1.25rem;
@@ -1647,9 +1676,9 @@ body {
     border-radius: 10px;
   }
 
-  .die-box {
-    width: 30px;
-    height: 30px;
+  .die {
+    width: 34px;
+    height: 34px;
     padding: 3px;
   }
 

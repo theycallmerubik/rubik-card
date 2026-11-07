@@ -766,8 +766,8 @@
 
   function resetDiceDisplayToReady() {
     if (el.diceSumBadge) el.diceSumBadge.textContent = '🎲';
-    renderDieFace(el.die1, null);
-    renderDieFace(el.die2, null);
+    renderDieFace(el.die1, 1);
+    renderDieFace(el.die2, 1);
   }
 
   // =========================================================================
@@ -1478,23 +1478,14 @@
 
   function renderDieFace(dieEl, val) {
     if (!dieEl) return;
-    const dots = dieEl.querySelectorAll('.die-dot');
-    dots.forEach(d => d.style.display = 'none');
-    if (val === null || val === undefined) return;
-
-    // Standard 3x3 die indices: 0..8
-    const pattern = {
-      1: [4],
-      2: [0, 8],
-      3: [0, 4, 8],
-      4: [0, 2, 6, 8],
-      5: [0, 2, 4, 6, 8],
-      6: [0, 2, 3, 5, 6, 8]
-    }[val] || [4];
-
-    pattern.forEach(idx => {
-      if (dots[idx]) dots[idx].style.display = 'block';
-    });
+    const v = Math.max(1, Math.min(6, parseInt(val, 10) || 1));
+    dieEl.setAttribute('data-val', v);
+    dieEl.innerHTML = '';
+    for (let i = 0; i < v; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'die-dot';
+      dieEl.appendChild(dot);
+    }
   }
 
   function handleVertexClick(vertexId) {
