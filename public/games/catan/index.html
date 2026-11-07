@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Catan (کاتان) - Rubik Card Club</title>
+  <meta name="description" content="Play Settlers of Catan online with friends or offline vs smart AI bots. Standard official rules, 19 hexes, trading, robber, dev cards, longest road, and procedural audio.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-bar">
+    <div class="header-left">
+      <a href="/" class="btn-hub-return" title="Return to Game Hub">
+        <span>◀</span>
+        <span class="hub-label" data-i18n="menuHubTitle">هاب بازی‌ها</span>
+      </a>
+      <div class="brand-title">
+        <span class="catan-brand-badge">🏝️ CATAN</span>
+        <span class="game-name" data-i18n="gameTitle">مهاجران کاتان</span>
+      </div>
+    </div>
+
+    <!-- Center Turn Indicator Pill -->
+    <div class="top-turn-pill" id="top-turn-pill">
+      <div class="turn-color-dot red" id="top-turn-dot"></div>
+      <span class="top-status-text" id="top-status-text" data-i18n="setupSettlement">نوبت: ساخت اولین روستا</span>
+      <span class="top-timer-badge" id="top-timer-badge">60</span>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-right">
+      <div class="header-desktop-actions">
+        <button class="btn-icon" id="btn-sound" title="Toggle Sound">🔊</button>
+        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)">🌐</button>
+        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین">👥</button>
+        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما">📜</button>
+        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت">💬</button>
+        <button class="btn-icon" id="btn-menu" title="منوی اصلی">🏠</button>
+      </div>
+      <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" aria-label="Open Navigation">☰</button>
+      <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
+        <button class="mobile-nav-item" id="btn-mob-menu">
+          <span>🏠</span>
+          <span data-i18n="mainMenuTitle">منوی اصلی</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-multiplayer">
+          <span>👥</span>
+          <span data-i18n="multiplayerBtn">چندنفره آنلاین</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-sound">
+          <span id="mob-sound-icon">🔊</span>
+          <span data-i18n="soundLabel">صدا</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-lang">
+          <span>🌐</span>
+          <span id="mob-lang-text">فارسی / EN</span>
+        </button>
+        <button class="mobile-nav-item" id="btn-mob-rules">
+          <span>📜</span>
+          <span data-i18n="rulesTitle">راهنما و قوانین</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div class="notification-bubble" id="notification-bubble"></div>
+
+  <!-- Main Game Playing Layout -->
+  <main class="catan-layout" id="catan-layout">
+    
+    <!-- Players Scoreboard HUD -->
+    <div class="players-hud-bar" id="players-hud-bar">
+      <!-- Dynamically populated for 3 or 4 players -->
+    </div>
+
+    <!-- Hexagonal Board Container -->
+    <div class="board-container" id="board-container">
+      
+      <!-- Interactive SVG Board -->
+      <svg class="board-svg" id="board-svg" viewBox="-50 0 540 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="hex-shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+          </filter>
+        </defs>
+
+        <!-- Pan & Zoom Layer -->
+        <g id="board-panzoom-layer">
+          <!-- Ocean Coast & Island Base -->
+          <g id="svg-ocean-ports"></g>
+          <!-- 19 Hexagon Tiles -->
+          <g id="svg-hex-tiles"></g>
+          <!-- 72 Edges / Roads -->
+          <g id="svg-edges"></g>
+          <!-- 54 Vertices / Settlements / Cities -->
+          <g id="svg-vertices"></g>
+        </g>
+      </svg>
+
+      <!-- Board Zoom & Pan Map Controls -->
+      <div class="board-zoom-controls" id="board-zoom-controls">
+        <button type="button" class="btn-zoom" id="btn-zoom-in" title="بزرگ‌نمایی (+)">➕</button>
+        <button type="button" class="btn-zoom" id="btn-zoom-reset" title="اندازه پیش‌فرض">🎯</button>
+        <button type="button" class="btn-zoom" id="btn-zoom-out" title="کوچک‌نمایی (−)">➖</button>
+        <span class="zoom-level-text" id="zoom-level-text">100%</span>
+      </div>
+
+      <!-- Dice Overlay Widget -->
+      <div class="dice-overlay-widget" id="dice-overlay-widget">
+        <div class="dice-pair">
+          <div class="die-box" id="die-1">
+            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+            <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
+            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+          </div>
+          <div class="die-box" id="die-2">
+            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+            <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
+            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+          </div>
+        </div>
+        <div class="dice-sum-badge" id="dice-sum-badge">-</div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Action & Hand Dock -->
+    <div class="bottom-dock" id="bottom-dock">
+      
+      <!-- Placement Mode Banner (e.g. "Click an edge to build road") -->
+      <div class="placement-mode-banner" id="placement-mode-banner">
+        <span id="placement-mode-text">روی یکی از خطوط مشخص شده کلیک کنید تا جاده ساخته شود.</span>
+        <button class="btn-cancel-placement" id="btn-cancel-placement" data-i18n="cancelBtn">انصراف</button>
+      </div>
+
+      <!-- Resource Hand Cards -->
+      <div class="resource-cards-hand" id="resource-cards-hand">
+        <div class="res-card lumber">
+          <span class="res-icon">🪵</span>
+          <span class="res-name" data-i18n="resLumber">چوب</span>
+          <span class="res-count" id="count-lumber">0</span>
+        </div>
+        <div class="res-card brick">
+          <span class="res-icon">🧱</span>
+          <span class="res-name" data-i18n="resBrick">آجر</span>
+          <span class="res-count" id="count-brick">0</span>
+        </div>
+        <div class="res-card wool">
+          <span class="res-icon">🐑</span>
+          <span class="res-name" data-i18n="resWool">گوسفند</span>
+          <span class="res-count" id="count-wool">0</span>
+        </div>
+        <div class="res-card grain">
+          <span class="res-icon">🌾</span>
+          <span class="res-name" data-i18n="resGrain">گندم</span>
+          <span class="res-count" id="count-grain">0</span>
+        </div>
+        <div class="res-card ore">
+          <span class="res-icon">🪨</span>
+          <span class="res-name" data-i18n="resOre">سنگ</span>
+          <span class="res-count" id="count-ore">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons Bar -->
+      <div class="action-buttons-bar" id="action-buttons-bar">
+        <button class="btn-action primary" id="btn-roll-dice" title="Roll Dice (2d6)">
+          <span>🎲</span>
+          <span data-i18n="rollDiceBtn">پرتاب تاس</span>
+        </button>
+        <button class="btn-action" id="btn-build-road" title="Road: 1 Wood, 1 Brick">
+          <span>🛣️</span>
+          <span data-i18n="buildRoadBtn">جاده</span>
+        </button>
+        <button class="btn-action" id="btn-build-settlement" title="Settlement: 1 Wood, 1 Brick, 1 Sheep, 1 Wheat">
+          <span>🏠</span>
+          <span data-i18n="buildSettlementBtn">روستا</span>
+        </button>
+        <button class="btn-action" id="btn-build-city" title="City: 2 Wheat, 3 Ore">
+          <span>🏛️</span>
+          <span data-i18n="buildCityBtn">شهر</span>
+        </button>
+        <button class="btn-action" id="btn-buy-dev" title="Dev Card: 1 Sheep, 1 Wheat, 1 Ore">
+          <span>📜</span>
+          <span data-i18n="buyDevBtn">کارت شانس</span>
+        </button>
+        <button class="btn-action" id="btn-my-devs" title="View & Play Dev Cards">
+          <span>🃏</span>
+          <span data-i18n="myDevsBtn">کارت‌های من</span> (<span id="my-dev-count">0</span>)
+        </button>
+        <button class="btn-action" id="btn-trade" title="Trade with Bank or Ports">
+          <span>🔄</span>
+          <span data-i18n="tradeBtn">تجارت</span>
+        </button>
+        <button class="btn-action end-turn" id="btn-end-turn" title="End Turn">
+          <span>⏭️</span>
+          <span data-i18n="endTurnBtn">پایان نوبت</span>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Main Menu Modal (Standard Rubik Platform Design) -->
+  <div class="modal-overlay active" id="modal-main-menu">
+    <div class="modal-box menu-modal-box">
+      <div class="menu-header">
+        <div class="menu-brand-icon">🏝️</div>
+        <h2 class="menu-title" data-i18n="mainMenuTitle">بازی کاتان (Catan)</h2>
+        <p class="menu-subtitle" data-i18n="mainMenuSubtitle">بازی استراتژیک تجارت، ساخت‌وساز جاده و شهر و تصرف جزیره با هوش مصنوعی و اتاق‌های آنلاین</p>
+      </div>
+
+      <div class="menu-grid">
+        <button class="menu-card" id="btn-menu-solo">
+          <div class="menu-card-icon">🤖</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuSoloTitle">بازی تک‌نفره با هوش مصنوعی</h3>
+            <p data-i18n="menuSoloDesc">رقابت آفلاین با ۲ یا ۳ ربات هوشمند با استراتژی توسعه و تجارت</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-passplay">
+          <div class="menu-card-icon">👥</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuPassPlayTitle">بازی دورهمی روی یک دستگاه (Pass &amp; Play)</h3>
+            <p data-i18n="menuPassPlayDesc">رقابت ۲ تا ۴ نفره به نوبت دور یک گوشی یا کامپیوتر</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-online">
+          <div class="menu-card-icon">🌐</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuOnlineTitle">چندنفره آنلاین و شبکه محلی</h3>
+            <p data-i18n="menuOnlineDesc">ساخت اتاق اختصاصی کاتان، دعوت دوستان و بازی همزمان</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+
+        <button class="menu-card" id="btn-menu-rules">
+          <div class="menu-card-icon">📜</div>
+          <div class="menu-card-content">
+            <h3 data-i18n="menuRulesTitle">آموزش و قوانین بازی کاتان</h3>
+            <p data-i18n="menuRulesDesc">قوانین تولید منابع، راهزن، بنادر تجاری، طولانی‌ترین جاده و ۱۰ امتیاز پیروزی</p>
+          </div>
+          <span class="menu-card-arrow">◀</span>
+        </button>
+      </div>
+
+      <div class="menu-footer-actions">
+        <button class="btn-secondary" id="btn-menu-resume" style="display:none;" data-i18n="resumeGame">ادامه بازی جاری</button>
+        <a href="/" class="btn-secondary" data-i18n="menuHubTitle">بازگشت به هاب</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Modal (Solo / Pass & Play) -->
+  <div class="modal-overlay" id="modal-setup">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="setup-modal-title" data-i18n="setupTitle">⚙️ تنظیمات شروع بازی کاتان</h2>
+        <button class="btn-modal-close" id="btn-close-setup">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Player Count -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="playerCountLabel">تعداد بازیکنان:</label>
+          <div class="modal-options-grid" id="setup-players-options">
+            <button class="option-btn" data-players="2">۲ بازیکن (دوئل)</button>
+            <button class="option-btn active" data-players="3">۳ بازیکن (استاندارد)</button>
+            <button class="option-btn" data-players="4">۴ بازیکن (کامل)</button>
+          </div>
+        </div>
+
+        <!-- AI Difficulty (Solo Only) -->
+        <div class="form-group" id="ai-difficulty-group">
+          <label class="form-label" data-i18n="difficultyLabel">درجه هوش مصنوعی:</label>
+          <div class="modal-options-grid" id="setup-diff-options">
+            <button class="option-btn" data-diff="easy" data-i18n="diffEasy">آسان</button>
+            <button class="option-btn active" data-diff="medium" data-i18n="diffMed">متوسط</button>
+            <button class="option-btn" data-diff="hard" data-i18n="diffHard">سخت (استاد)</button>
+          </div>
+        </div>
+
+        <!-- Timer Setting -->
+        <div class="form-group">
+          <label class="form-label" data-i18n="timerLabel">زمان هر نوبت:</label>
+          <div class="modal-options-grid" id="setup-timer-options">
+            <button class="option-btn active" data-timer="0" data-i18n="timerOff">نامحدود</button>
+            <button class="option-btn" data-timer="45">۴۵ ثانیه</button>
+            <button class="option-btn" data-timer="60">۶۰ ثانیه</button>
+            <button class="option-btn" data-timer="90">۹۰ ثانیه</button>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button class="btn-secondary" id="btn-setup-back" style="flex:1;" data-i18n="backBtn">بازگشت</button>
+          <button class="btn-primary" id="btn-start-configured-game" style="flex:2;">
+            <span data-i18n="startGameBtn">شروع بازی</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Multiplayer / Online Room Modal -->
+  <div class="modal-overlay" id="modal-multiplayer">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <h2 class="modal-title">🌐 <span data-i18n="multiplayerTitle">اتاق کاتان آنلاین / شبکه محلی</span></h2>
+        <button class="btn-modal-close" id="btn-close-mp-header">&times;</button>
+      </div>
+
+      <!-- Lobby View (When inside a room) -->
+      <div id="mp-lobby-view" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 14px; border-radius:8px; margin-bottom:10px;">
+          <div>
+            <span style="color:var(--text-muted); font-size:0.85rem;" data-i18n="roomCodeLabel">کد اتاق:</span>
+            <span style="font-size:1.3rem; font-weight:800; color:var(--gold-primary); margin-left:8px;" id="mp-room-code">----</span>
+          </div>
+          <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 کپی لینک</button>
+        </div>
+
+        <!-- Dedicated Lobby Name Edit Bar (Persisted to rubik_player_name) -->
+        <div class="lobby-name-bar" id="lobby-name-bar">
+          <span class="lobby-name-label" data-i18n="yourNameLabel">نام شما:</span>
+          <div class="lobby-name-controls">
+            <input type="text" id="lobby-name-input" class="form-input lobby-name-input" maxlength="15" placeholder="Player">
+            <button type="button" class="btn-secondary lobby-name-save-btn" id="btn-save-lobby-name" data-i18n="saveNameBtn">ثبت نام</button>
+          </div>
+        </div>
+
+        <!-- 4 Seats Container -->
+        <div class="lobby-seats" id="lobby-seats-container">
+          <!-- Dynamically populated (Seat 0 Red, Seat 1 Blue, Seat 2 Orange, Seat 3 Green) -->
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px; align-items:center; flex-wrap:wrap;">
+          <button class="btn-secondary" id="btn-swap-catan-seats" data-i18n="swapColorsBtn">🔄 تعویض جایگاه</button>
+          <button class="btn-primary" id="btn-start-online-game" style="flex:1;" data-i18n="startGameBtn">شروع مسابقه</button>
+          <div class="lobby-waiting-msg" id="lobby-waiting-msg" style="display:none; flex:1; text-align:center; padding:8px; font-weight:700; color:var(--text-muted); font-size:0.9rem;" data-i18n="waitingForHost">در انتظار شروع مسابقه توسط میزبان...</div>
+          <button class="btn-secondary" id="btn-leave-room" data-i18n="leaveRoomBtn">خروج از اتاق</button>
+        </div>
+      </div>
+
+      <!-- Entry View (Before joining room) -->
+      <div id="mp-entry-view">
+        <div class="form-group">
+          <label class="form-label" data-i18n="yourNameLabel">نام شما:</label>
+          <input type="text" class="form-input" id="input-player-name" value="Player" maxlength="15">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="playerCountLabel">تعداد بازیکنان اتاق:</label>
+          <div class="modal-options-grid" id="online-players-options">
+            <button class="option-btn" data-players="2">۲ بازیکن</button>
+            <button class="option-btn active" data-players="3">۳ بازیکن</button>
+            <button class="option-btn" data-players="4">۴ بازیکن</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" data-i18n="timerLabel">زمان هر نوبت:</label>
+          <div class="modal-options-grid" id="online-timer-options">
+            <button class="option-btn" data-timer="0" data-i18n="timerOff">نامحدود</button>
+            <button class="option-btn active" data-timer="60">۶۰ ثانیه</button>
+            <button class="option-btn" data-timer="90">۹۰ ثانیه</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px;">
+          <button class="btn-primary" id="btn-create-room" data-i18n="createRoomBtn">ساخت اتاق جدید</button>
+          <button class="btn-secondary" id="btn-show-join" data-i18n="joinRoomBtn">ورود به اتاق</button>
+        </div>
+
+        <div id="mp-join-fields" style="display:none; margin-top:14px; border-top:1px solid rgba(255,255,255,0.1); padding-top:14px;">
+          <div class="form-group">
+            <label class="form-label" data-i18n="enterRoomCodeLabel">کد ۴ حرفی اتاق را وارد نمایید:</label>
+            <input type="text" class="form-input" id="input-room-code" placeholder="ABCD" maxlength="6" style="text-transform:uppercase; font-size:1.2rem; font-weight:700; text-align:center;">
+          </div>
+          <button class="btn-primary" id="btn-confirm-join" style="width:100%; margin-top:8px;" data-i18n="joinBtn">ورود به مسابقه</button>
+        </div>
+
+        <button class="btn-secondary" id="btn-close-mp" style="width:100%; margin-top:14px;" data-i18n="backBtn">بازگشت</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bank Trade Modal -->
+  <div class="modal-overlay" id="modal-trade">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="tradeModalTitle">🔄 تجارت با بانک و بنادر</h2>
+        <button class="btn-modal-close" id="btn-close-trade">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="trade-section-title" data-i18n="giveResourceLabel">منبعی که می‌دهید:</div>
+        <div class="trade-res-selector" id="trade-give-selector">
+          <button class="trade-res-btn selected" data-res="lumber">
+            <span>🪵</span><span>چوب</span>
+          </button>
+          <button class="trade-res-btn" data-res="brick">
+            <span>🧱</span><span>آجر</span>
+          </button>
+          <button class="trade-res-btn" data-res="wool">
+            <span>🐑</span><span>گوسفند</span>
+          </button>
+          <button class="trade-res-btn" data-res="grain">
+            <span>🌾</span><span>گندم</span>
+          </button>
+          <button class="trade-res-btn" data-res="ore">
+            <span>🪨</span><span>سنگ</span>
+          </button>
+        </div>
+
+        <div class="trade-rate-indicator" id="trade-rate-indicator">
+          نرخ تبادل: ۴ به ۱ (با داشتن بندر: ۳ به ۱ یا ۲ به ۱)
+        </div>
+
+        <div class="trade-section-title" data-i18n="getResourceLabel">منبعی که دریافت می‌کنید:</div>
+        <div class="trade-res-selector" id="trade-get-selector">
+          <button class="trade-res-btn" data-res="lumber">
+            <span>🪵</span><span>چوب</span>
+          </button>
+          <button class="trade-res-btn selected" data-res="brick">
+            <span>🧱</span><span>آجر</span>
+          </button>
+          <button class="trade-res-btn" data-res="wool">
+            <span>🐑</span><span>گوسفند</span>
+          </button>
+          <button class="trade-res-btn" data-res="grain">
+            <span>🌾</span><span>گندم</span>
+          </button>
+          <button class="trade-res-btn" data-res="ore">
+            <span>🪨</span><span>سنگ</span>
+          </button>
+        </div>
+
+        <button class="btn-primary" id="btn-execute-bank-trade" style="width:100%; margin-top:8px;">
+          <span data-i18n="confirmTradeBtn">انجام تبادل</span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Development Cards Modal -->
+  <div class="modal-overlay" id="modal-devcards">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="myDevsTitle">🃏 کارت‌های شانس شما</h2>
+        <button class="btn-modal-close" id="btn-close-devs">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="dev-cards-list" id="my-dev-cards-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Discard Cards Modal (When 7 rolled and > 7 cards) -->
+  <div class="modal-overlay" id="modal-discard">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>⚠️ پرتاب ۷ و سوزاندن کارت‌ها</h2>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+          به دلیل پرتاب عدد ۷ و داشتن بیش از ۷ کارت، باید نصف کارت‌های خود را انتخاب و بسوزانید.
+        </p>
+        <div style="text-align:center; font-weight:800; color:var(--gold-primary); font-size:1.1rem; margin:6px 0;" id="discard-quota-text">
+          باید ۳ کارت بسوزانید (۰ از ۳ انتخاب شده)
+        </div>
+        <div id="discard-selectors-list" style="display:flex; flex-direction:column; gap:6px;">
+          <!-- Lumber, Brick, Wool, Grain, Ore +/- counters -->
+        </div>
+        <button class="btn-primary" id="btn-confirm-discard" style="width:100%; margin-top:8px;" disabled>
+          سوزاندن کارت‌های انتخاب‌شده
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steal Resource Modal (When robber moved) -->
+  <div class="modal-overlay" id="modal-steal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🦹 سرقت منبع توسط راهزن</h2>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+          یکی از بازیکنان مجاور خانه راهزن را برای سرقت تصادفی یک کارت منبع انتخاب کنید:
+        </p>
+        <div class="modal-options-grid" id="steal-candidates-list" style="grid-template-columns:1fr; gap:8px;">
+          <!-- Dynamically populated candidate buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-overlay" id="modal-gameover">
+    <div class="modal-card" style="text-align:center;">
+      <div class="modal-header">
+        <h2 id="gameover-title" style="margin:0 auto;">🎉 پایان بازی کاتان</h2>
+      </div>
+      <div class="modal-body" style="align-items:center;">
+        <div style="font-size:3.5rem; margin-bottom:4px;" id="gameover-icon">🏆</div>
+        <div style="font-size:1.35rem; font-weight:800; color:#fff;" id="gameover-message">بازیکن ۱ برنده شد!</div>
+        <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;" id="gameover-sub">با کسب ۱۰ امتیاز پیروزی، فاتح جزیره کاتان شد.</div>
+
+        <div style="display:flex; gap:10px; width:100%;">
+          <button class="btn-secondary" id="btn-gameover-menu" style="flex:1;" data-i18n="mainMenuTitle">منوی اصلی</button>
+          <button class="btn-primary" id="btn-gameover-rematch" style="flex:2;">
+            <span>🔄</span>
+            <span data-i18n="rematchBtn">بازی مجدد</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Modal -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 data-i18n="rulesTitle">📜 قوانین و راهنمای بازی کاتان</h2>
+        <button class="btn-modal-close" id="btn-close-rules">&times;</button>
+      </div>
+      <div class="modal-body" id="rules-content">
+        <!-- Injected via i18n -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Drawer -->
+  <div class="chat-drawer" id="chat-drawer">
+    <div class="modal-header" style="padding:10px 14px; margin-bottom:0;">
+      <span style="font-size:0.95rem; font-weight:700; color:var(--gold-primary);" data-i18n="chatTitle">💬 پیام‌ها و چت بازی</span>
+      <button class="btn-modal-close" id="btn-close-chat">&times;</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg">
+        <div class="sender">سیستم</div>
+        <div>به بازی استراتژیک کاتان خوش آمدید!</div>
+      </div>
+    </div>
+    <form class="chat-input-bar" id="chat-form">
+      <input type="text" id="chat-input" placeholder="پیام شما..." autocomplete="off">
+      <button type="submit" class="btn-icon" style="width:34px; height:34px; font-size:0.9rem;">➤</button>
+    </form>
+  </div>
+
+  <!-- Scripts -->
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

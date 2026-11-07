@@ -14,6 +14,8 @@ const unoLogic = require('./public/games/uno/logic.js');
 const chessLogic = require('./public/games/chess/logic.js');
 const backgammonLogic = require('./public/games/backgammon/logic.js');
 const dotsAndBoxesLogic = require('./public/games/dots-and-boxes/logic.js');
+const catanLogic = require('./public/games/catan/logic.js');
+const bughouseLogic = require('./public/games/bughouse-chess/logic.js');
 
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
@@ -63,6 +65,8 @@ const server = http.createServer((req, res) => {
   if (reqPath === '/chess' || reqPath === '/chess/') reqPath = '/games/chess/index.html';
   if (reqPath === '/backgammon' || reqPath === '/backgammon/') reqPath = '/games/backgammon/index.html';
   if (reqPath === '/dots-and-boxes' || reqPath === '/dots-and-boxes/' || reqPath === '/dots' || reqPath === '/dots/') reqPath = '/games/dots-and-boxes/index.html';
+  if (reqPath === '/catan' || reqPath === '/catan/') reqPath = '/games/catan/index.html';
+  if (reqPath === '/bughouse' || reqPath === '/bughouse/' || reqPath === '/bughouse-chess' || reqPath === '/bughouse-chess/') reqPath = '/games/bughouse-chess/index.html';
 
   if (reqPath === '/api/server-info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -3059,6 +3063,726 @@ class OnlineDotsAndBoxesRoom {
   }
 }
 
+class OnlineCatanRoom {
+  constructor(code, hostWs, hostName = 'Host', settings = {}) {
+    this.code = code;
+    this.gameType = 'catan';
+    this.hostSocketId = hostWs.id;
+    this.status = 'LOBBY';
+    this.turnTimer = null;
+    this.turnStartTime = null;
+
+    this.playerCount = Math.max(2, Math.min(4, parseInt(settings && settings.playerCount, 10) || 3));
+    this.timeControl = settings && settings.timeControl !== undefined ? parseInt(settings.timeControl, 10) : 60;
+    this.difficulty = (settings && settings.difficulty) || 'medium';
+
+    this.seats = [];
+    for (let i = 0; i < this.playerCount; i++) {
+      if (i === 0) {
+        this.seats.push({
+          name: hostName,
+          originalName: hostName,
+          isBot: false,
+          socketId: hostWs.id,
+          connected: true,
+          ready: true,
+          consecutiveAfkTurns: 0,
+          isAfk: false
+        });
+      } else {
+        this.seats.push({
+          name: `Bot ${i + 1}`,
+          originalName: `Bot ${i + 1}`,
+          isBot: true,
+          socketId: null,
+          connected: true,
+          ready: true,
+          consecutiveAfkTurns: 0,
+          isAfk: false
+        });
+      }
+    }
+
+    this.disconnectTimers = Array.from({ length: this.playerCount }, () => null);
+    this.clients = new Set();
+    this.addClient(hostWs);
+    this.gameState = null;
+  }
+
+  addClient(ws) {
+    this.clients.add(ws);
+    ws.roomCode = this.code;
+  }
+
+  removeClient(ws) {
+    this.clients.delete(ws);
+    const seatIdx = this.seats.findIndex(s => s.socketId === ws.id);
+    if (seatIdx !== -1) {
+      const seat = this.seats[seatIdx];
+      seat.connected = false;
+      if (this.status === 'PLAYING') {
+        seat.isAfk = true;
+        this.broadcastGameState();
+
+        if (!seat.isBot) {
+          if (this.disconnectTimers[seatIdx]) {
+            clearTimeout(this.disconnectTimers[seatIdx]);
+          }
+          this.broadcast({
+            type: 'CHAT',
+            sender: 'System',
+            text: `${seat.name} disconnected. They have 5 minutes to reconnect or forfeit the match.`
+          });
+
+          this.disconnectTimers[seatIdx] = setTimeout(() => {
+            if (this.status === 'PLAYING' && !seat.connected) {
+              this.broadcast({
+                type: 'CHAT',
+                sender: 'System',
+                text: `${seat.name} was offline for 5 minutes. Seat replaced by Bot.`
+              });
+              seat.isBot = true;
+              this.checkTurn();
+            }
+          }, 5 * 60 * 1000);
+        }
+      }
+    }
+  }
+
+  getSeatIndexForSocket(socketId) {
+    return this.seats.findIndex(s => s.socketId === socketId);
+  }
+
+  broadcast(message) {
+    const raw = JSON.stringify(message);
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(raw);
+      }
+    }
+  }
+
+  broadcastLobby() {
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        const isHost = this.hostSocketId === ws.id;
+        ws.send(JSON.stringify({
+          type: 'LOBBY_UPDATE',
+          roomCode: this.code,
+          gameType: this.gameType,
+          isHost,
+          yourSeat,
+          seats: this.seats.map((s, idx) => ({
+            seat: idx,
+            name: s.name,
+            isBot: s.isBot,
+            connected: s.connected,
+            ready: s.ready,
+            isHost: s.socketId === this.hostSocketId,
+            isOnline: s.connected && !s.isBot,
+            isMe: s.socketId === ws.id
+          })),
+          settings: {
+            playerCount: this.playerCount,
+            timeControl: this.timeControl
+          }
+        }));
+      }
+    }
+  }
+
+  broadcastGameState() {
+    this.broadcast({
+      type: 'CATAN_STATE_UPDATE',
+      state: this.gameState,
+      lastDice: this.gameState ? this.gameState.lastDice : null,
+      seats: this.seats.map(s => ({ name: s.name, isBot: s.isBot, connected: s.connected })),
+      timeControl: this.timeControl
+    });
+  }
+
+  clearTurnTimer() {
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+  }
+
+  startTurnTimer() {
+    this.clearTurnTimer();
+    if (this.timeControl <= 0) return;
+
+    this.turnStartTime = Date.now();
+    this.turnTimer = setTimeout(() => {
+      this.handleTurnTimeout();
+    }, this.timeControl * 1000);
+  }
+
+  handleTurnTimeout() {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const currentSeat = this.gameState.activePlayer;
+    const seat = this.seats[currentSeat];
+    if (seat) {
+      seat.consecutiveAfkTurns = (seat.consecutiveAfkTurns || 0) + 1;
+      if (seat.consecutiveAfkTurns >= 2) {
+        seat.isAfk = true;
+      }
+    }
+    this.checkTurn();
+  }
+
+  startGame() {
+    this.status = 'PLAYING';
+    const playerNames = this.seats.map(s => s.name);
+    this.gameState = catanLogic.createInitialState(this.playerCount, playerNames);
+
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        ws.send(JSON.stringify({
+          type: 'GAME_STARTED',
+          gameType: 'catan',
+          yourSeat,
+          playerCount: this.playerCount,
+          timeControl: this.timeControl
+        }));
+      }
+    }
+
+    this.broadcastGameState();
+    this.startTurnTimer();
+    this.checkTurn();
+  }
+
+  checkTurn() {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const activeSeatIdx = this.gameState.activePlayer;
+    const seat = this.seats[activeSeatIdx];
+
+    if (seat && (seat.isBot || seat.isAfk)) {
+      setTimeout(() => {
+        if (this.status !== 'PLAYING' || !this.gameState) return;
+        if (this.gameState.activePlayer !== activeSeatIdx) return;
+
+        // Bot setup
+        if (this.gameState.phase.startsWith('SETUP')) {
+          const move = catanLogic.chooseBotSetupMove(this.gameState, activeSeatIdx);
+          if (move) {
+            if (move.action === 'BUILD_SETTLEMENT') {
+              catanLogic.buildSettlement(this.gameState, activeSeatIdx, move.vertexId, true);
+            } else if (move.action === 'BUILD_ROAD') {
+              catanLogic.buildRoad(this.gameState, activeSeatIdx, move.edgeId, true);
+            }
+          }
+          this.broadcastGameState();
+          this.checkTurn();
+          return;
+        }
+
+        // Bot Roll Dice
+        if (this.gameState.phase === 'ROLL_DICE') {
+          const rollRes = catanLogic.rollDice(this.gameState, activeSeatIdx);
+          if (rollRes && rollRes.sum === 7) {
+            // Discard for bots
+            while (this.gameState.discardQueue.length > 0) {
+              const item = this.gameState.discardQueue[0];
+              const victim = this.gameState.players[item.playerId];
+              const toDiscard = {};
+              let need = item.count;
+              for (const [r, count] of Object.entries(victim.resources)) {
+                const take = Math.min(count, need);
+                if (take > 0) { toDiscard[r] = take; need -= take; }
+                if (need === 0) break;
+              }
+              catanLogic.discardCards(this.gameState, item.playerId, toDiscard);
+            }
+            // Move robber
+            const available = this.gameState.tiles.filter(t => t.id !== this.gameState.robberHexId).map(t => t.id);
+            const pickHex = available[Math.floor(Math.random() * available.length)];
+            const robRes = catanLogic.moveRobber(this.gameState, activeSeatIdx, pickHex);
+            if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
+              catanLogic.stealResource(this.gameState, activeSeatIdx, robRes.candidates[0]);
+            }
+          }
+          this.broadcastGameState();
+        }
+
+        // Bot playing actions
+        let safety = 0;
+        while (this.gameState.phase === 'PLAYING_TURN' && safety++ < 6) {
+          const decision = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx);
+          if (!decision || decision.action === 'END_TURN') {
+            break;
+          }
+          let didAct = false;
+          if (decision.action === 'BUILD_CITY') {
+            const r = catanLogic.buildCity(this.gameState, activeSeatIdx, decision.vertexId);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUILD_SETTLEMENT') {
+            const r = catanLogic.buildSettlement(this.gameState, activeSeatIdx, decision.vertexId, false);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUILD_ROAD') {
+            const r = catanLogic.buildRoad(this.gameState, activeSeatIdx, decision.edgeId, false);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUY_DEV_CARD') {
+            const r = catanLogic.buyDevCard(this.gameState, activeSeatIdx);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BANK_TRADE') {
+            const r = catanLogic.bankTrade(this.gameState, activeSeatIdx, decision.giveResource, decision.getResource);
+            if (r && r.valid) didAct = true;
+          }
+          if (!didAct) break;
+        }
+
+        if (this.gameState.phase === 'PLAYING_TURN' && this.gameState.activePlayer === activeSeatIdx) {
+          catanLogic.endTurn(this.gameState, activeSeatIdx);
+        }
+
+        this.broadcastGameState();
+        if (this.gameState.winner !== null) {
+          this.status = 'FINISHED';
+          this.clearTurnTimer();
+        } else {
+          this.startTurnTimer();
+          this.checkTurn();
+        }
+      }, 700);
+    }
+  }
+
+  handleRollDice(ws) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'ROLL_DICE') return;
+
+    catanLogic.rollDice(this.gameState, seatIdx);
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+
+  handleBuildSettlement(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.buildSettlement(this.gameState, seatIdx, data.vertexId, !!data.isSetup);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleBuildRoad(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.buildRoad(this.gameState, seatIdx, data.edgeId, !!data.isSetup);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleBuildCity(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.buildCity(this.gameState, seatIdx, data.vertexId);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleBuyDev(ws) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.buyDevCard(this.gameState, seatIdx);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleBankTrade(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.bankTrade(this.gameState, seatIdx, data.giveResource, data.getResource);
+    if (res.valid) {
+      this.broadcastGameState();
+    }
+  }
+
+  handleMoveRobber(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'ROBBER_MOVE') return;
+
+    const res = catanLogic.moveRobber(this.gameState, seatIdx, data.hexId);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleSteal(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'ROBBER_STEAL') return;
+
+    const res = catanLogic.stealResource(this.gameState, seatIdx, data.victimId);
+    if (res.valid) {
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleDiscard(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    catanLogic.discardCards(this.gameState, seatIdx, data.resources);
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+
+  handleEndTurn(ws) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    catanLogic.endTurn(this.gameState, seatIdx);
+    this.broadcastGameState();
+    this.startTurnTimer();
+    this.checkTurn();
+  }
+
+  handleResign(ws) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+
+    this.seats[seatIdx].isBot = true;
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${this.seats[seatIdx].name} resigned and is now controlled by AI.`
+    });
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+}
+
+class OnlineBughouseRoom {
+  constructor(code, hostWs, hostName = 'Host', settings = {}) {
+    this.code = code;
+    this.gameType = 'bughouse-chess';
+    this.hostSocketId = hostWs.id;
+    this.status = 'LOBBY';
+    this.clockInterval = null;
+    this.lastClockTick = null;
+
+    const requestedTime = settings && settings.timeControl !== undefined ? parseInt(settings.timeControl, 10) : 180;
+    this.timeControl = !isNaN(requestedTime) && requestedTime >= 0 ? requestedTime : 180;
+    this.clocks = {
+      A_w: this.timeControl,
+      A_b: this.timeControl,
+      B_w: this.timeControl,
+      B_b: this.timeControl
+    };
+
+    this.seats = [
+      { name: hostName, originalName: hostName, isBot: false, socketId: hostWs.id, connected: true, ready: true, boardId: 'boardA', color: 'w', team: 1 },
+      { name: 'Bot 1', originalName: 'Bot 1', isBot: true, socketId: null, connected: true, ready: true, boardId: 'boardA', color: 'b', team: 2 },
+      { name: 'Bot 2', originalName: 'Bot 2', isBot: true, socketId: null, connected: true, ready: true, boardId: 'boardB', color: 'w', team: 2 },
+      { name: 'Bot 3', originalName: 'Bot 3', isBot: true, socketId: null, connected: true, ready: true, boardId: 'boardB', color: 'b', team: 1 }
+    ];
+
+    this.clients = new Set();
+    this.addClient(hostWs);
+
+    this.gameState = bughouseLogic.createInitialState();
+  }
+
+  addClient(ws) {
+    this.clients.add(ws);
+    ws.roomCode = this.code;
+  }
+
+  removeClient(ws) {
+    this.clients.delete(ws);
+    const seatIdx = this.seats.findIndex(s => s.socketId === ws.id);
+    if (seatIdx !== -1) {
+      const seat = this.seats[seatIdx];
+      seat.connected = false;
+      if (this.status === 'LOBBY') {
+        seat.isBot = true;
+        seat.socketId = null;
+        seat.name = `Bot ${seatIdx + 1}`;
+        this.broadcastLobby();
+      } else if (this.status === 'PLAYING') {
+        seat.isBot = true;
+        this.broadcast({
+          type: 'CHAT',
+          sender: 'System',
+          text: `${seat.name} disconnected. Replaced by AI Bot.`
+        });
+        this.checkBotTurns();
+      }
+    }
+  }
+
+  getSeatIndexForSocket(socketId) {
+    return this.seats.findIndex(s => s.socketId === socketId);
+  }
+
+  broadcast(msg) {
+    const raw = JSON.stringify(msg);
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(raw);
+      }
+    }
+  }
+
+  broadcastLobby() {
+    this.broadcast({
+      type: 'LOBBY_UPDATE',
+      roomCode: this.code,
+      status: this.status,
+      seats: this.seats.map(s => ({
+        name: s.name,
+        connected: s.connected,
+        ready: s.ready,
+        isBot: s.isBot,
+        boardId: s.boardId,
+        color: s.color,
+        team: s.team
+      })),
+      timeControl: this.timeControl
+    });
+  }
+
+  broadcastGameState() {
+    this.broadcast({
+      type: 'GAME_STATE',
+      gameState: this.gameState,
+      clocks: this.clocks
+    });
+  }
+
+  fillWithBots() {
+    for (let i = 0; i < this.seats.length; i++) {
+      if (!this.seats[i].connected || this.seats[i].socketId === null) {
+        this.seats[i].isBot = true;
+        this.seats[i].connected = true;
+        this.seats[i].ready = true;
+        this.seats[i].name = `Bot ${i + 1}`;
+      }
+    }
+    this.broadcastLobby();
+  }
+
+  startGame() {
+    this.status = 'PLAYING';
+    this.gameState = bughouseLogic.createInitialState();
+    this.clocks = {
+      A_w: this.timeControl,
+      A_b: this.timeControl,
+      B_w: this.timeControl,
+      B_b: this.timeControl
+    };
+
+    this.broadcast({
+      type: 'GAME_START',
+      gameState: this.gameState,
+      timeControl: this.timeControl,
+      clocks: this.clocks
+    });
+
+    if (this.timeControl > 0) {
+      this.startClock();
+    }
+
+    this.checkBotTurns();
+  }
+
+  startClock() {
+    if (this.clockInterval) clearInterval(this.clockInterval);
+    this.lastClockTick = Date.now();
+    this.clockInterval = setInterval(() => {
+      if (this.status !== 'PLAYING') {
+        this.stopClock();
+        return;
+      }
+
+      const now = Date.now();
+      const delta = (now - this.lastClockTick) / 1000;
+      this.lastClockTick = now;
+
+      const activeColorA = this.gameState.boardA.turn;
+      const keyA = 'A_' + activeColorA;
+      this.clocks[keyA] = Math.max(0, this.clocks[keyA] - delta);
+
+      const activeColorB = this.gameState.boardB.turn;
+      const keyB = 'B_' + activeColorB;
+      this.clocks[keyB] = Math.max(0, this.clocks[keyB] - delta);
+
+      if (this.clocks[keyA] <= 0) {
+        bughouseLogic.handleTimeout(this.gameState, 'boardA', activeColorA);
+        this.handleGameEnd();
+      } else if (this.clocks[keyB] <= 0) {
+        bughouseLogic.handleTimeout(this.gameState, 'boardB', activeColorB);
+        this.handleGameEnd();
+      }
+    }, 250);
+  }
+
+  stopClock() {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+      this.clockInterval = null;
+    }
+  }
+
+  handleBughouseMove(ws, boardId, move) {
+    if (this.status !== 'PLAYING') return;
+
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const seat = this.seats[seatIdx];
+
+    if (seat.boardId !== boardId || seat.color !== this.gameState[boardId].turn) return;
+
+    const success = bughouseLogic.makeBughouseMove(this.gameState, boardId, move);
+    if (!success) return;
+
+    this.broadcast({
+      type: 'BUGHOUSE_MOVE',
+      boardId,
+      move,
+      clocks: this.clocks,
+      gameState: this.gameState
+    });
+
+    if (this.gameState.status === 'FINISHED') {
+      this.handleGameEnd();
+    } else {
+      this.checkBotTurns();
+    }
+  }
+
+  handleBughouseDrop(ws, boardId, move) {
+    if (this.status !== 'PLAYING') return;
+
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const seat = this.seats[seatIdx];
+
+    if (seat.boardId !== boardId || seat.color !== this.gameState[boardId].turn) return;
+
+    const success = bughouseLogic.makeBughouseMove(this.gameState, boardId, move);
+    if (!success) return;
+
+    this.broadcast({
+      type: 'BUGHOUSE_DROP',
+      boardId,
+      move,
+      clocks: this.clocks,
+      gameState: this.gameState
+    });
+
+    if (this.gameState.status === 'FINISHED') {
+      this.handleGameEnd();
+    } else {
+      this.checkBotTurns();
+    }
+  }
+
+  handleCallout(ws, text, icon) {
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    const sender = seatIdx !== -1 ? this.seats[seatIdx].name : 'Partner';
+    this.broadcast({
+      type: 'BUGHOUSE_CALLOUT',
+      sender,
+      text,
+      icon
+    });
+  }
+
+  handleResign(ws) {
+    if (this.status !== 'PLAYING') return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const seat = this.seats[seatIdx];
+
+    bughouseLogic.handleResign(this.gameState, seat.boardId, seat.color);
+    this.handleGameEnd();
+  }
+
+  handleGameEnd() {
+    this.status = 'FINISHED';
+    this.stopClock();
+    this.broadcast({
+      type: 'GAME_OVER',
+      gameState: this.gameState
+    });
+  }
+
+  checkBotTurns() {
+    if (this.status !== 'PLAYING') return;
+
+    setTimeout(() => {
+      const colorA = this.gameState.boardA.turn;
+      const seatA = this.seats.find(s => s.boardId === 'boardA' && s.color === colorA);
+      if (seatA && seatA.isBot && this.status === 'PLAYING') {
+        const move = bughouseLogic.getBestBughouseMove(this.gameState, 'boardA', 'medium');
+        if (move) {
+          bughouseLogic.makeBughouseMove(this.gameState, 'boardA', move);
+          this.broadcast({
+            type: move.isDrop ? 'BUGHOUSE_DROP' : 'BUGHOUSE_MOVE',
+            boardId: 'boardA',
+            move,
+            clocks: this.clocks,
+            gameState: this.gameState
+          });
+          if (this.gameState.status === 'FINISHED') {
+            this.handleGameEnd();
+            return;
+          }
+        }
+      }
+
+      const colorB = this.gameState.boardB.turn;
+      const seatB = this.seats.find(s => s.boardId === 'boardB' && s.color === colorB);
+      if (seatB && seatB.isBot && this.status === 'PLAYING') {
+        const move = bughouseLogic.getBestBughouseMove(this.gameState, 'boardB', 'medium');
+        if (move) {
+          bughouseLogic.makeBughouseMove(this.gameState, 'boardB', move);
+          this.broadcast({
+            type: move.isDrop ? 'BUGHOUSE_DROP' : 'BUGHOUSE_MOVE',
+            boardId: 'boardB',
+            move,
+            clocks: this.clocks,
+            gameState: this.gameState
+          });
+          if (this.gameState.status === 'FINISHED') {
+            this.handleGameEnd();
+            return;
+          }
+        }
+      }
+    }, 400 + Math.random() * 300);
+  }
+}
+
 let socketIdCounter = 1;
 
 wss.on('connection', (ws) => {
@@ -3099,6 +3823,10 @@ function handleClientMessage(ws, data) {
       room = new OnlineBackgammonRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else if (gameType === 'dots-and-boxes') {
       room = new OnlineDotsAndBoxesRoom(code, ws, data.playerName || 'Player 1', data.settings);
+    } else if (gameType === 'catan') {
+      room = new OnlineCatanRoom(code, ws, data.playerName || 'Player 1', data.settings);
+    } else if (gameType === 'bughouse-chess' || gameType === 'bughouse') {
+      room = new OnlineBughouseRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else {
       room = new OnlineRoom(code, ws, data.playerName || 'Player 1');
     }
@@ -3203,6 +3931,16 @@ function handleClientMessage(ws, data) {
       permanentAi: false,
       color: (room.gameType === 'chess' || room.gameType === 'backgammon') ? (freeSeatIdx === 0 ? 'w' : 'b') : undefined
     };
+
+    if (room.gameType === 'bughouse-chess') {
+      const bughouseConfigs = [
+        { boardId: 'boardA', color: 'w', team: 1 },
+        { boardId: 'boardA', color: 'b', team: 2 },
+        { boardId: 'boardB', color: 'w', team: 2 },
+        { boardId: 'boardB', color: 'b', team: 1 }
+      ];
+      Object.assign(room.seats[freeSeatIdx], bughouseConfigs[freeSeatIdx]);
+    }
 
     room.addClient(ws);
     ws.send(JSON.stringify({
@@ -3719,6 +4457,135 @@ function handleClientMessage(ws, data) {
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'dots-and-boxes') return;
     room.handleResign(ws);
+    return;
+  }
+
+  if (type === 'CATAN_ROLL_DICE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleRollDice(ws);
+    return;
+  }
+
+  if (type === 'CATAN_BUILD_SETTLEMENT') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleBuildSettlement(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_BUILD_ROAD') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleBuildRoad(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_BUILD_CITY') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleBuildCity(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_BUY_DEV') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleBuyDev(ws);
+    return;
+  }
+
+  if (type === 'CATAN_BANK_TRADE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleBankTrade(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_MOVE_ROBBER') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleMoveRobber(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_STEAL') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleSteal(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_DISCARD') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleDiscard(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_END_TURN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleEndTurn(ws);
+    return;
+  }
+
+  if (type === 'CATAN_RESIGN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleResign(ws);
+    return;
+  }
+
+  if (type === 'BUGHOUSE_MOVE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'bughouse-chess') return;
+    room.handleBughouseMove(ws, data.boardId, data.move);
+    return;
+  }
+
+  if (type === 'BUGHOUSE_DROP') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'bughouse-chess') return;
+    room.handleBughouseDrop(ws, data.boardId, data.move);
+    return;
+  }
+
+  if (type === 'BUGHOUSE_CALLOUT') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'bughouse-chess') return;
+    room.handleCallout(ws, data.text, data.icon);
+    return;
+  }
+
+  if (type === 'BUGHOUSE_RESIGN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'bughouse-chess') return;
+    room.handleResign(ws);
+    return;
+  }
+
+  if (type === 'FILL_BOTS') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType === 'bughouse-chess' && typeof room.fillWithBots === 'function') {
+      room.fillWithBots();
+    }
     return;
   }
 

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bughouse Chess (شطرنج باگ‌هاوس ۴ نفره) - Rubik Club</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="rtl">
+
+  <!-- Header -->
+  <header class="game-header">
+    <div class="brand-section">
+      <span class="brand-logo">👥♟️</span>
+      <h1 class="brand-title" id="txt-brand-title">شطرنج باگ‌هاوس</h1>
+    </div>
+
+    <div class="match-status-badge" id="match-status-badge">
+      <span id="txt-match-status">آماده شروع</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="header-btn" id="btn-sound" title="Sound">🔊</button>
+      <button class="header-btn" id="btn-lang" title="Language">🌐 EN</button>
+      <button class="header-btn" id="btn-menu" title="Menu">⚙️ <span id="txt-menu-btn">منو</span></button>
+      <a href="/" class="header-btn" title="Game Hub">🏠</a>
+    </div>
+  </header>
+
+  <!-- Teammate Callout Strip -->
+  <div class="callout-strip" id="callout-strip">
+    <span class="callout-label" id="txt-callout-label">پیام سریع به هم‌تیمی:</span>
+    <button class="callout-btn" data-callout="need_knight">🐴 <span id="txt-callout-n">نیاز به اسب</span></button>
+    <button class="callout-btn" data-callout="need_pawn">♟️ <span id="txt-callout-p">پیاده بده</span></button>
+    <button class="callout-btn" data-callout="need_queen">👑 <span id="txt-callout-q">وزیر بفرست</span></button>
+    <button class="callout-btn" data-callout="watch_mate">⚠️ <span id="txt-callout-warn">مراقب مات باش</span></button>
+    <button class="callout-btn" data-callout="wait_stall">⏳ <span id="txt-callout-wait">نوبت رو نگه دار</span></button>
+    <button class="callout-btn" data-callout="good_job">👏 <span id="txt-callout-cheer">آفرین هم‌تیمی</span></button>
+  </div>
+
+  <div class="callout-toast" id="callout-toast">
+    <span id="callout-toast-icon">📢</span>
+    <span id="callout-toast-text">هم‌تیمی: نیاز به اسب!</span>
+  </div>
+
+  <!-- Arena: 2 Dual Chessboards -->
+  <main class="bughouse-arena">
+
+    <!-- BOARD A (Left Board) -->
+    <div class="board-container board-a" id="container-board-a">
+      <div class="board-header-bar">
+        <div class="board-tag">
+          <span class="board-tag-icon board-a"></span>
+          <span id="txt-board-a-title">تخته ۱ (Board A)</span>
+        </div>
+        <div class="team-badge team-2" id="badge-top-a">تیم ۲ (حریف)</div>
+      </div>
+
+      <!-- Board A Top (Black) -->
+      <div class="player-bar" id="bar-top-a">
+        <div class="player-info">
+          <span class="player-name" id="name-top-a">Bot A-Black</span>
+        </div>
+        <div class="player-clock" id="clock-top-a">03:00</div>
+      </div>
+
+      <!-- Top Reserve Tray -->
+      <div class="reserve-rack" id="reserve-rack-top-a">
+        <span class="reserve-label" id="txt-res-label-top-a">ذخیره:</span>
+        <div class="reserve-items" id="reserve-items-top-a"></div>
+      </div>
+
+      <!-- Chessboard A -->
+      <div class="chessboard" id="board-a-grid"></div>
+
+      <!-- Bottom Reserve Rack (Interactive for White player) -->
+      <div class="reserve-rack" id="reserve-rack-bottom-a">
+        <span class="reserve-label" id="txt-res-label-bot-a">ذخیره شما:</span>
+        <div class="reserve-items" id="reserve-items-bottom-a"></div>
+      </div>
+
+      <!-- Board A Bottom (White) -->
+      <div class="player-bar" id="bar-bottom-a">
+        <div class="player-info">
+          <div class="team-badge team-1" id="badge-bot-a">تیم ۱ (شما)</div>
+          <span class="player-name" id="name-bottom-a">Player (You)</span>
+        </div>
+        <div class="player-clock" id="clock-bottom-a">03:00</div>
+      </div>
+    </div>
+
+    <!-- BOARD B (Right Board) -->
+    <div class="board-container board-b" id="container-board-b">
+      <div class="board-header-bar">
+        <div class="board-tag">
+          <span class="board-tag-icon board-b"></span>
+          <span id="txt-board-b-title">تخته ۲ (Board B)</span>
+        </div>
+        <div class="team-badge team-2" id="badge-top-b">تیم ۲ (حریف)</div>
+      </div>
+
+      <!-- Board B Top (White) -->
+      <div class="player-bar" id="bar-top-b">
+        <div class="player-info">
+          <span class="player-name" id="name-top-b">Bot B-White</span>
+        </div>
+        <div class="player-clock" id="clock-top-b">03:00</div>
+      </div>
+
+      <!-- Top Reserve Tray -->
+      <div class="reserve-rack" id="reserve-rack-top-b">
+        <span class="reserve-label" id="txt-res-label-top-b">ذخیره:</span>
+        <div class="reserve-items" id="reserve-items-top-b"></div>
+      </div>
+
+      <!-- Chessboard B -->
+      <div class="chessboard" id="board-b-grid"></div>
+
+      <!-- Bottom Reserve Rack -->
+      <div class="reserve-rack" id="reserve-rack-bottom-b">
+        <span class="reserve-label" id="txt-res-label-bot-b">ذخیره هم‌تیمی:</span>
+        <div class="reserve-items" id="reserve-items-bottom-b"></div>
+      </div>
+
+      <!-- Board B Bottom (Black - Teammate) -->
+      <div class="player-bar" id="bar-bottom-b">
+        <div class="player-info">
+          <div class="team-badge team-1" id="badge-bot-b">تیم ۱ (هم‌تیمی)</div>
+          <span class="player-name" id="name-bottom-b">Bot B-Black (Partner)</span>
+        </div>
+        <div class="player-clock" id="clock-bottom-b">03:00</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: MAIN MENU -->
+  <div class="modal-overlay active" id="modal-main-menu">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">👥♟️ <span id="txt-menu-title">شطرنج باگ‌هاوس (۴ نفره)</span></h2>
+        <button class="btn-close-modal" id="btn-close-menu">✕</button>
+      </div>
+
+      <div class="menu-options">
+        <button class="menu-btn primary" id="btn-mode-ai">
+          <span class="menu-btn-icon">🤖</span>
+          <div class="menu-btn-text">
+            <h3 id="txt-btn-ai-title">تک‌نفره با ربات‌های هوشمند</h3>
+            <p id="txt-btn-ai-desc">شما به همراه هم‌تیمی هوش مصنوعی در برابر تیم ربات‌ها</p>
+          </div>
+        </button>
+
+        <button class="menu-btn" id="btn-mode-local">
+          <span class="menu-btn-icon">👥</span>
+          <div class="menu-btn-text">
+            <h3 id="txt-btn-local-title">بازی دونفره / چهارنفره محلی</h3>
+            <p id="txt-btn-local-desc">بازی مشترک روی همین دستگاه (Pass & Play)</p>
+          </div>
+        </button>
+
+        <button class="menu-btn" id="btn-mode-online">
+          <span class="menu-btn-icon">🌐</span>
+          <div class="menu-btn-text">
+            <h3 id="txt-btn-online-title">چندنفره آنلاین ۴ نفره</h3>
+            <p id="txt-btn-online-desc">ایجاد اتاق، دعوت از دوستان با لینک و لابی تیمی</p>
+          </div>
+        </button>
+
+        <button class="menu-btn" id="btn-mode-rules">
+          <span class="menu-btn-icon">📖</span>
+          <div class="menu-btn-text">
+            <h3 id="txt-btn-rules-title">قوانین و راهنمای بازی</h3>
+            <p id="txt-btn-rules-desc">قوانین رسمی Chess.com، قطعات ذخیره و مهره‌گذاری</p>
+          </div>
+        </button>
+
+        <a href="/" class="menu-btn" style="text-decoration: none;">
+          <span class="menu-btn-icon">🏠</span>
+          <div class="menu-btn-text">
+            <h3 id="txt-btn-hub-title">بازگشت به هاب روبیک</h3>
+            <p id="txt-btn-hub-desc">مشاهده سایر بازی‌های پاسور، تخته و شطرنج</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AI MATCH SETTINGS -->
+  <div class="modal-overlay" id="modal-ai-settings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">⚙️ <span id="txt-ai-title">تنظیمات مسابقه هوش مصنوعی</span></h2>
+        <button class="btn-close-modal" id="btn-close-ai-settings">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" id="txt-label-ai-diff">سطح هوش مصنوعی:</label>
+        <select class="form-select" id="select-ai-difficulty">
+          <option value="easy" id="opt-diff-easy">آسان (تفریحی)</option>
+          <option value="medium" id="opt-diff-med" selected>متوسط (استاندارد)</option>
+          <option value="hard" id="opt-diff-hard">حرفه‌ای (استراتژیک)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" id="txt-label-time">زمان بازی (ساعت بلیتس):</label>
+        <select class="form-select" id="select-time-control">
+          <option value="180" id="opt-time-3" selected>۳ دقیقه (بلیتس استاندارد)</option>
+          <option value="300" id="opt-time-5">۵ دقیقه (سریع)</option>
+          <option value="0" id="opt-time-unlimited">نامحدود (بدون ساعت)</option>
+        </select>
+      </div>
+
+      <button class="menu-btn primary" id="btn-start-ai-match" style="width: 100%; justify-content: center; margin-top: 10px;">
+        <span class="menu-btn-icon">⚔️</span>
+        <span id="txt-btn-start-match">شروع مسابقه</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: ONLINE LOBBY -->
+  <div class="modal-overlay" id="modal-online-lobby">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">🌐 <span id="txt-lobby-title">لابی اتاق آنلاین (۴ صندلی)</span></h2>
+        <button class="btn-close-modal" id="btn-close-lobby">✕</button>
+      </div>
+
+      <div style="text-align: center; margin: 10px 0;">
+        <span style="font-size: 0.85rem; color: var(--text-muted);" id="txt-room-code-label">کد اتاق:</span>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--gold-primary); letter-spacing: 4px;" id="lbl-room-code">----</div>
+        <button class="callout-btn" id="btn-copy-room-link" style="margin-top: 6px;">📋 <span id="txt-copy-link">کپی لینک دعوت</span></button>
+      </div>
+
+      <div class="lobby-seats-grid" id="lobby-seats-grid">
+        <!-- 4 Seat Cards generated dynamically -->
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <button class="menu-btn" id="btn-fill-bots" style="flex: 1; justify-content: center; padding: 10px;">
+          🤖 <span id="txt-fill-bots">پر کردن با ربات</span>
+        </button>
+        <button class="menu-btn primary" id="btn-start-online-match" style="flex: 1; justify-content: center; padding: 10px;">
+          ⚔️ <span id="txt-start-online">شروع مسابقه</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RULES -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">📖 <span id="txt-rules-modal-title">قوانین شطرنج باگ‌هاوس</span></h2>
+        <button class="btn-close-modal" id="btn-close-rules">✕</button>
+      </div>
+      <div class="rules-body" id="rules-content">
+        <!-- Bilingual rules dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GAME OVER -->
+  <div class="modal-overlay" id="modal-game-over">
+    <div class="modal-content" style="text-align: center;">
+      <div style="font-size: 3.5rem; margin-bottom: 8px;" id="game-over-icon">🏆</div>
+      <h2 style="font-size: 1.6rem; color: var(--gold-primary); margin-bottom: 6px;" id="game-over-title">پیروزی تیم ۱!</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 18px;" id="game-over-reason">کیش‌مات روی تخته شماره ۱</p>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="menu-btn primary" id="btn-rematch" style="flex: 1; justify-content: center;">
+          🔄 <span id="txt-btn-rematch">بازی مجدد</span>
+        </button>
+        <button class="menu-btn" id="btn-return-menu" style="flex: 1; justify-content: center;">
+          ⚙️ <span id="txt-btn-back-menu">منوی اصلی</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

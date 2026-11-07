@@ -1,10 +1,10 @@
 {
   "name": "rubik-card-club",
   "version": "1.0.0",
-  "description": "Lightweight, responsive classic casino & card game portal featuring Hokm, Shelem, UNO, Chess, and Backgammon with offline AI and real-time WebSocket multiplayer.",
+  "description": "Lightweight, responsive classic casino & card game portal featuring Hokm, Shelem, UNO, Chess, Backgammon, Dots & Boxes, and Catan with offline AI and real-time WebSocket multiplayer.",
   "main": "server.js",
   "scripts": {
-    "test": "node -e \"require('./public/logic.js'); require('./public/games/shelem/logic.js'); require('./public/games/uno/logic.js'); require('./public/games/chess/logic.js'); require('./public/games/backgammon/logic.js'); require('./public/games/dots-and-boxes/logic.js'); console.log('All game logic tests passed!');\"",
+    "test": "node -e \"require('./public/logic.js'); require('./public/games/shelem/logic.js'); require('./public/games/uno/logic.js'); require('./public/games/chess/logic.js'); require('./public/games/backgammon/logic.js'); require('./public/games/dots-and-boxes/logic.js'); require('./public/games/catan/logic.js'); require('./public/games/bughouse-chess/logic.js'); console.log('All game logic tests passed!');\"",
     "start": "node server.js"
   },
   "keywords": [
@@ -22,7 +22,7 @@
     "utf8-cards",
     "minimax-ai"
   ],
-  "author": "",
+  "author": "Ru_Bic",
   "license": "MIT",
   "dependencies": {
     "ws": "^8.22.0"

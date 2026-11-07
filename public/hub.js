@@ -356,6 +356,112 @@
           <p>از دادن ضلع سوم به حریف بپرهیزید. در مراحل پایانی، قربانی کردن هوشمندانه ۲ خانه از یک زنجیره کنترل زنجیره بعدی را به شما هدیه می‌دهد!</p>
         `
       }
+    },
+    {
+      id: 'catan',
+      icon: '🏝️',
+      suits: '🪵 🧱 🐑 🌾 🪨',
+      status: 'available',
+      title: {
+        en: 'Catan',
+        fa: 'بازی کاتان (مهاجران کاتان)'
+      },
+      subtitle: {
+        en: 'Classic Strategy Island Settlement & Trade',
+        fa: 'استراتژی تصرف جزیره، تجارت و شهرسازی کاتان'
+      },
+      players: {
+        en: '2 to 4 Players',
+        fa: '۲ تا ۴ نفره'
+      },
+      tags: {
+        en: ['Resource Management', 'Hex Island', 'Dice & Robber', 'Port Trading', 'Development Cards', 'Solo AI & Online LAN'],
+        fa: ['مدیریت منابع', 'جزیره شش‌ضلعی', 'تاس و راهزن', 'تجارت بنادر', 'کارت‌های شانس', 'آفلاین با ربات و چندنفره آنلاین']
+      },
+      desc: {
+        en: 'The legendary world-famous strategy board game. Collect resources (Lumber, Brick, Wool, Grain, Ore), build roads and settlements, trade with ports and bank, outwit the robber, and race to 10 Victory Points against smart AI bots or friends online.',
+        fa: 'شاهکار افسانه‌ای بازی‌های رومیزی جهان. منابع پنج‌گانه (چوب، آجر، گوسفند، گندم و سنگ) را استخراج کنید، جاده و روستا بسازید، با بنادر تجارت کنید، راهزن را کنترل کرده و با کسب ۱۰ امتیاز پیروزی فاتح کاتان شوید.'
+      },
+      playUrl: '/games/catan/',
+      onlineUrl: '/games/catan/#online',
+      rules: {
+        en: `
+          <h4>1. Objective</h4>
+          <p>The goal of Catan is to reach 10 Victory Points (VP). Points are earned from Settlements (1 VP), Cities (2 VP), Longest Road (2 VP), Largest Army (2 VP), and Victory Point Development Cards.</p>
+          <h4>2. Production & Robber</h4>
+          <p>On each turn, 2 dice are rolled. Hexes showing that number yield resources to adjacent settlements/cities. If a 7 is rolled, no resources are produced, players with >7 cards discard half, and the active player moves the robber and steals 1 card.</p>
+          <h4>3. Building & Trading</h4>
+          <p>• Road: 1 Lumber + 1 Brick<br>
+          • Settlement: 1 Lumber + 1 Brick + 1 Wool + 1 Grain (Distance rule: min 2 edges apart)<br>
+          • City: 2 Grain + 3 Ore (Upgrades an existing settlement to yield double resources)<br>
+          • Dev Card: 1 Wool + 1 Grain + 1 Ore</p>
+        `,
+        fa: `
+          <h4>۱. هدف بازی</h4>
+          <p>هدف بازی کاتان، کسب ۱۰ امتیاز پیروزی (VP) است. هر روستا ۱ امتیاز، هر شهر ۲ امتیاز، داشتن طولانی‌ترین جاده ۲ امتیاز، بزرگترین ارتش ۲ امتیاز و کارت‌های شانس امتیازدار هر کدام ۱ امتیاز دارند.</p>
+          <h4>۲. تاس، تولید منابع و راهزن</h4>
+          <p>در آغاز نوبت ۲ تاس پرتاب می‌شود. زمین‌هایی با عدد تاس آمده به روستاهای مجاور ۱ کارت و به شهرها ۲ کارت منبع می‌دهند. پرتاب عدد ۷ راهزن را فعال کرده، بازیکنان با بیش از ۷ کارت نصف کارت‌ها را می‌سوزانند و پرتاب‌کننده یک کارت از حریفان سرقت می‌کند.</p>
+          <h4>۳. ساخت‌وساز و بنادر</h4>
+          <p>• جاده: ۱ چوب + ۱ آجر<br>
+          • روستا: ۱ چوب + ۱ آجر + ۱ گوسفند + ۱ گندم (با رعایت قانون فاصله حداقل ۲ جاده از روستای دیگر)<br>
+          • شهر: ۲ گندم + ۳ سنگ (ارتقای روستا برای تولید دوبرابر منابع)<br>
+          • کارت شانس: ۱ گوسفند + ۱ گندم + ۱ سنگ</p>
+        `
+      }
+    },
+    {
+      id: 'bughouse-chess',
+      icon: '👥♟️',
+      suits: '♔ ♕ ♖ ♗ ♘ ♙',
+      status: 'available',
+      title: {
+        en: 'Bughouse Chess',
+        fa: 'شطرنج باگ‌هاوس (دوبل ۴ نفره)'
+      },
+      subtitle: {
+        en: '2-Board 4-Player Team Chess with Piece Drops',
+        fa: 'شطرنج هیجانی ۴ نفره با انتقال مهره‌های تسخیرشده'
+      },
+      players: {
+        en: '4 Players (2 vs 2 Teams)',
+        fa: '۴ نفره (۲ تیم ۲ نفره)'
+      },
+      tags: {
+        en: ['Team Chess', 'Dual Boards', 'Reserve Piece Drops', 'Promotion Reversion', 'Blitz Clocks', 'Solo vs AI & Online LAN'],
+        fa: ['شطرنج تیمی', 'دو تخته موازی', 'مهره‌گذاری از ذخیره', 'برگشت پیاده ترفیع', 'ساعت بلیتس', 'آفلاین با ربات و چندنفره آنلاین']
+      },
+      desc: {
+        en: 'The electrifying 4-player team chess sensation from Chess.com. Played on two parallel boards in teams of two. When you capture an opponent\'s piece, it transfers directly to your teammate\'s reserve to be dropped onto their board! Checkmate or timeout on either board wins the match for your team.',
+        fa: 'پرطرفدارترین و سرعتی‌ترین نسخه تیمی شطرنج جهان از Chess.com. بازی روی ۲ تخته همزمان بین دو تیم ۲ نفره انجام می‌شود. هر مهره‌ای که از حریف بزنید، بلافاصله به بانک ذخیره هم‌تیمی شما منتقل می‌شود تا در صفحه‌اش قرار دهد! کیش‌مات یا اتمام زمان در هر تخته پیروزی کل تیم را رقم می‌زند.'
+      },
+      playUrl: '/games/bughouse-chess/',
+      onlineUrl: '/games/bughouse-chess/#online',
+      rules: {
+        en: `
+          <h4>1. Dual Boards & Fixed Teams</h4>
+          <p>4 players, 2 boards, 2 teams of 2. Team 1 plays White on Board A and Black on Board B. Team 2 plays Black on Board A and White on Board B.</p>
+          <h4>2. Piece Passing</h4>
+          <p>Captured pieces are passed to your teammate\'s reserve bank and switch to your teammate\'s color.</p>
+          <h4>3. Pawn Promotion Reversion</h4>
+          <p>Promoted pieces revert to standard Pawns when captured and transferred to the partner\'s reserve.</p>
+          <h4>4. Drop Moves</h4>
+          <p>Instead of moving, place any piece from reserve onto any vacant square (Pawns only on ranks 2-7). Drops can block checks, give check, or checkmate!</p>
+          <h4>5. Team Victory</h4>
+          <p>Checkmate or clock flag fall on either board immediately ends both games with a match victory for that team.</p>
+        `,
+        fa: `
+          <h4>۱. دو تخته موازی و تیم‌های دونفره</h4>
+          <p>۴ بازیکن بر روی دو تخته در دو تیم دو نفره رقابت می‌کنند. تیم ۱ سفید در تخته ۱ و سیاه در تخته ۲، و تیم ۲ سیاه در تخته ۱ و سفید در تخته ۲ هستند.</p>
+          <h4>۲. انتقال مهره‌های زده‌شده</h4>
+          <p>هر مهره‌ای که بزنید، فوراً به بانک ذخیره هم‌تیمی شما منتقل می‌شود و با رنگ او آماده ورود به صفحه است.</p>
+          <h4>۳. قانون برگشت پیاده</h4>
+          <p>مهره‌های ترفیع‌یافته هنگام حذف شدن، به عنوان پیاده معمولی به هم‌تیمی تحویل داده می‌شوند.</p>
+          <h4>۴. مهره‌گذاری (Drop)</h4>
+          <p>می‌توانید در نوبت خود، مهره‌ای از ذخیره را در هر خانه خالی قرار دهید (پیاده در ردیف‌های ۲ تا ۷). مهره‌گذاری می‌تواند جلوی کیش را بگیرد یا کیش‌مات کند!</p>
+          <h4>۵. پیروزی تیمی همزمان</h4>
+          <p>کیش‌مات یا افتادن پرچم ساعت در هر یک از دو تخته، بلافاصله منجر به پیروزی کل تیم می‌شود.</p>
+        `
+      }
     }
   ];
 
@@ -695,6 +801,10 @@
         window.location.href = `/games/backgammon/#${code}`;
       } else if (data && data.gameType === 'dots-and-boxes') {
         window.location.href = `/games/dots-and-boxes/#${code}`;
+      } else if (data && data.gameType === 'catan') {
+        window.location.href = `/games/catan/#${code}`;
+      } else if (data && data.gameType === 'bughouse-chess') {
+        window.location.href = `/games/bughouse-chess/#${code}`;
       } else {
         window.location.href = `/games/hokm/#${code}`;
       }
