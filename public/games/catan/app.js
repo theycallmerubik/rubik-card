@@ -92,6 +92,41 @@
       nameSavedToast: 'نام شما به «{name}» ذخیره شد.',
       longestRoadBadge: '🚗 طولانی‌ترین جاده',
       largestArmyBadge: '⚔️ بزرگترین ارتش',
+      soloSetupTitle: '🤖 تنظیمات بازی تک‌نفره با هوش مصنوعی',
+      passplaySetupTitle: '👥 تنظیمات بازی دورهمی روی یک دستگاه',
+      setupPlayers2: '۲ بازیکن (دوئل)',
+      setupPlayers3: '۳ بازیکن (استاندارد)',
+      setupPlayers4: '۴ بازیکن (کامل)',
+      onlinePlayers2: '۲ بازیکن',
+      onlinePlayers3: '۳ بازیکن',
+      onlinePlayers4: '۴ بازیکن',
+      timer45: '۴۵ ثانیه',
+      timer60: '۶۰ ثانیه',
+      timer90: '۹۰ ثانیه',
+      tradeRateDefault: 'نرخ تبادل: ۴ به ۱ (با داشتن بندر: ۳ به ۱ یا ۲ به ۱)',
+      discardModalTitle: '⚠️ پرتاب ۷ و سوزاندن کارت‌ها',
+      discardModalDesc: 'به دلیل پرتاب عدد ۷ و داشتن بیش از ۷ کارت، باید نصف کارت‌های خود را انتخاب و بسوزانید.',
+      confirmDiscardBtn: 'سوزاندن کارت‌های انتخاب‌شده',
+      stealModalTitle: '🦹 سرقت منبع توسط راهزن',
+      stealModalDesc: 'یکی از بازیکنان مجاور خانه راهزن را برای سرقت تصادفی یک کارت منبع انتخاب کنید:',
+      gameOverTitle: '🎉 پایان بازی کاتان',
+      gameOverSub: 'با کسب ۱۰ امتیاز پیروزی، فاتح جزیره کاتان شد.',
+      chatSystemSender: 'سیستم',
+      chatWelcomeMsg: 'به بازی استراتژیک کاتان خوش آمدید!',
+      chatPlaceholder: 'پیام شما...',
+      quickEndTurnText: '💡 منابع کافی برای ساخت ندارید. برای نوبت هوش مصنوعی کلیک کنید:',
+      quickEndTurnBtnLabel: 'پایان نوبت (نوبت ربات‌ها)',
+      soundTooltip: 'صدا (قطع/وصل)',
+      langTooltip: 'تغییر زبان (EN/FA)',
+      multiplayerTooltip: 'بازی چندنفره آنلاین',
+      rulesTooltip: 'قوانین و راهنما',
+      chatTooltip: 'پیام‌ها و چت',
+      menuTooltip: 'منوی اصلی',
+      mobileNavTooltip: 'منو',
+      zoomInTooltip: 'بزرگ‌نمایی (+)',
+      zoomResetTooltip: 'اندازه پیش‌فرض (۱۰۰٪)',
+      zoomOutTooltip: 'کوچک‌نمایی (−)',
+      diceLabel: 'تاس',
       rulesContent: `
         <h4>۱. هدف بازی</h4>
         <p>هدف کسب ۱۰ امتیاز پیروزی (VP) از طریق ساخت روستاها (هر کدام ۱ امتیاز)، ارتقای آنها به شهر (هر کدام ۲ امتیاز)، دستیابی به طولانی‌ترین جاده (۲ امتیاز)، بزرگترین ارتش (۲ امتیاز) و کارت‌های امتیاز توسعه است.</p>
@@ -191,6 +226,41 @@
       nameSavedToast: 'Your name was saved as "{name}".',
       longestRoadBadge: '🚗 Longest Road',
       largestArmyBadge: '⚔️ Largest Army',
+      soloSetupTitle: '🤖 Solo Match vs AI Setup',
+      passplaySetupTitle: '👥 Pass & Play Setup',
+      setupPlayers2: '2 Players (Duel)',
+      setupPlayers3: '3 Players (Standard)',
+      setupPlayers4: '4 Players (Full)',
+      onlinePlayers2: '2 Players',
+      onlinePlayers3: '3 Players',
+      onlinePlayers4: '4 Players',
+      timer45: '45 Seconds',
+      timer60: '60 Seconds',
+      timer90: '90 Seconds',
+      tradeRateDefault: 'Exchange rate: 4:1 default (with port: 3:1 or 2:1)',
+      discardModalTitle: '⚠️ 7 Rolled: Discard Cards',
+      discardModalDesc: 'Due to rolling a 7 with more than 7 cards, you must select and discard half your hand.',
+      confirmDiscardBtn: 'Discard Selected Cards',
+      stealModalTitle: '🦹 Robber Steal Resource',
+      stealModalDesc: 'Select an adjacent player to steal a random resource card:',
+      gameOverTitle: '🎉 Game Over - Settlers of Catan',
+      gameOverSub: 'Conquered the island of Catan with 10 Victory Points.',
+      chatSystemSender: 'System',
+      chatWelcomeMsg: 'Welcome to Settlers of Catan strategic board game!',
+      chatPlaceholder: 'Your message...',
+      quickEndTurnText: '💡 No affordable builds. Click to pass to bots:',
+      quickEndTurnBtnLabel: 'End Turn (Bots Turn)',
+      soundTooltip: 'Sound (Mute/Unmute)',
+      langTooltip: 'Switch Language (EN/FA)',
+      multiplayerTooltip: 'Online Multiplayer',
+      rulesTooltip: 'Rules & Guide',
+      chatTooltip: 'Messages & Chat',
+      menuTooltip: 'Main Menu',
+      mobileNavTooltip: 'Menu',
+      zoomInTooltip: 'Zoom In (+)',
+      zoomResetTooltip: 'Reset Zoom (100%)',
+      zoomOutTooltip: 'Zoom Out (−)',
+      diceLabel: 'Dice',
       rulesContent: `
         <h4>1. Objective</h4>
         <p>The goal is to reach 10 Victory Points (VP). Earn points from Settlements (1 VP each), Cities (2 VP each), Longest Road (2 VP), Largest Army (2 VP), and Victory Point Development Cards.</p>
@@ -345,6 +415,7 @@
     el.die1 = document.getElementById('die-1');
     el.die2 = document.getElementById('die-2');
     el.diceSumBadge = document.getElementById('dice-sum-badge');
+    el.diceBox = document.getElementById('dice-overlay-widget');
 
     el.placementModeBanner = document.getElementById('placement-mode-banner');
     el.placementModeText = document.getElementById('placement-mode-text');
@@ -420,11 +491,15 @@
       localStorage.setItem('rubik_card_lang', currentLang);
     } catch (_) {}
 
+    document.title = currentLang === 'fa'
+      ? 'Catan (کاتان) - Rubik Card Club'
+      : 'Catan (Settlers of Catan) - Rubik Card Club';
+
     const t = I18N[currentLang];
     document.querySelectorAll('[data-i18n]').forEach((node) => {
       const key = node.getAttribute('data-i18n');
       if (t[key]) {
-        if (node.tagName === 'INPUT' && node.placeholder) {
+        if (node.tagName === 'INPUT' && (node.placeholder || node.getAttribute('placeholder') !== null)) {
           node.placeholder = t[key];
         } else {
           node.innerHTML = t[key];
@@ -432,9 +507,24 @@
       }
     });
 
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+      const key = node.getAttribute('data-i18n-title');
+      if (t[key]) {
+        node.setAttribute('title', t[key]);
+      }
+    });
+
     const rulesEl = document.getElementById('rules-content');
     if (rulesEl && t.rulesContent) {
       rulesEl.innerHTML = t.rulesContent;
+    }
+
+    const setupTitleEl = document.getElementById('setup-modal-title');
+    if (setupTitleEl) {
+      const setupKey = setupTitleEl.getAttribute('data-i18n');
+      if (setupKey && t[setupKey]) {
+        setupTitleEl.textContent = t[setupKey];
+      }
     }
 
     updateHeaderIcons();
@@ -1073,6 +1163,10 @@
       }
     }
 
+    if (el.diceBox) {
+      el.diceBox.classList.toggle('can-roll', canRoll);
+    }
+
     if (el.btnBuildRoad) {
       el.btnBuildRoad.disabled = !(canPlay || (isMyTurn && state.phase === 'SETUP_ROAD'));
       el.btnBuildRoad.classList.toggle('can-afford', hasRoadRes || (isMyTurn && state.phase === 'SETUP_ROAD'));
@@ -1695,7 +1789,9 @@
       const btn = document.createElement('button');
       btn.className = 'btn-secondary';
       btn.style.width = '100%';
-      btn.innerHTML = `<span style="color:${p.colorHex}; font-weight:800;">${p.name}</span> (${Object.values(p.resources).reduce((a,b)=>a+b, 0)} cards)`;
+      const totalCards = Object.values(p.resources).reduce((a, b) => a + b, 0);
+      const cardLabel = currentLang === 'fa' ? 'کارت' : 'cards';
+      btn.innerHTML = `<span style="color:${p.colorHex}; font-weight:800;">${p.name}</span> (${totalCards} ${cardLabel})`;
       btn.addEventListener('click', () => {
         soundEngine.playClick();
         if (gameMode === 'online') {
@@ -1749,8 +1845,11 @@
       row.style.padding = '6px 12px';
       row.style.borderRadius = '8px';
 
+      const resName = getResourceName(resKey);
+      const holdingLabel = currentLang === 'fa' ? `(موجودی: ${have})` : `(In hand: ${have})`;
+
       row.innerHTML = `
-        <div style="font-weight:700;">${resKey} (موجودی: ${have})</div>
+        <div style="font-weight:700;">${resName} <span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;">${holdingLabel}</span></div>
         <div style="display:flex; gap:8px; align-items:center;">
           <button type="button" class="btn-icon minus-btn" style="width:28px; height:28px;">-</button>
           <span class="count-display" style="font-weight:800; min-width:20px; text-align:center;">0</span>
@@ -1813,11 +1912,16 @@
     const winnerP = state.players[state.winner];
     safePlaySound('playVictoryFanfare');
 
+    const t = I18N[currentLang];
     const title = document.getElementById('gameover-message');
     if (title && winnerP) {
       title.textContent = currentLang === 'fa' 
         ? `${winnerP.name} برنده بازی شد! 🏆` 
         : `${winnerP.name} Wins the Match! 🏆`;
+    }
+    const sub = document.getElementById('gameover-sub');
+    if (sub) {
+      sub.textContent = t.gameOverSub;
     }
     el.modalGameover.classList.add('active');
   }
@@ -2189,7 +2293,10 @@
       if (el.modalSetup) {
         el.modalSetup.dataset.targetMode = 'solo';
         const titleEl = document.getElementById('setup-modal-title');
-        if (titleEl) titleEl.textContent = currentLang === 'fa' ? '🤖 تنظیمات بازی تک‌نفره با هوش مصنوعی' : '🤖 Solo Match vs AI Setup';
+        if (titleEl) {
+          titleEl.setAttribute('data-i18n', 'soloSetupTitle');
+          titleEl.textContent = I18N[currentLang].soloSetupTitle;
+        }
         const aiGroup = document.getElementById('ai-difficulty-group');
         if (aiGroup) aiGroup.style.display = 'block';
         el.modalSetup.classList.add('active');
@@ -2203,7 +2310,10 @@
       if (el.modalSetup) {
         el.modalSetup.dataset.targetMode = 'passplay';
         const titleEl = document.getElementById('setup-modal-title');
-        if (titleEl) titleEl.textContent = currentLang === 'fa' ? '👥 تنظیمات بازی دورهمی روی یک دستگاه' : '👥 Pass & Play Setup';
+        if (titleEl) {
+          titleEl.setAttribute('data-i18n', 'passplaySetupTitle');
+          titleEl.textContent = I18N[currentLang].passplaySetupTitle;
+        }
         const aiGroup = document.getElementById('ai-difficulty-group');
         if (aiGroup) aiGroup.style.display = 'none';
         el.modalSetup.classList.add('active');

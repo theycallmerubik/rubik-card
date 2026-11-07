@@ -32,14 +32,14 @@
     <!-- Header Actions -->
     <div class="header-right">
       <div class="header-desktop-actions">
-        <button class="btn-icon" id="btn-sound" title="Toggle Sound">🔊</button>
-        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)">🌐</button>
-        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین">👥</button>
-        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما">📜</button>
-        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت">💬</button>
-        <button class="btn-icon" id="btn-menu" title="منوی اصلی">🏠</button>
+        <button class="btn-icon" id="btn-sound" title="صدا (قطع/وصل)" data-i18n-title="soundTooltip">🔊</button>
+        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)" data-i18n-title="langTooltip">🌐</button>
+        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین" data-i18n-title="multiplayerTooltip">👥</button>
+        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما" data-i18n-title="rulesTooltip">📜</button>
+        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت" data-i18n-title="chatTooltip">💬</button>
+        <button class="btn-icon" id="btn-menu" title="منوی اصلی" data-i18n-title="menuTooltip">🏠</button>
       </div>
-      <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" aria-label="Open Navigation">☰</button>
+      <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" data-i18n-title="mobileNavTooltip" aria-label="Open Navigation">☰</button>
       <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
         <button class="mobile-nav-item" id="btn-mob-menu">
           <span>🏠</span>
@@ -77,53 +77,65 @@
     </div>
 
     <!-- Hexagonal Board Container -->
-    <div class="board-container" id="board-container">
-      
-      <!-- Interactive SVG Board -->
-      <svg class="board-svg" id="board-svg" viewBox="-50 0 540 480" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="hex-shadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
-          </filter>
-        </defs>
+    <!-- Middle Game Area: Board Map + Side Dock -->
+    <div class="board-area-wrapper" id="board-area-wrapper">
 
-        <!-- Pan & Zoom Layer -->
-        <g id="board-panzoom-layer">
-          <!-- Ocean Coast & Island Base -->
-          <g id="svg-ocean-ports"></g>
-          <!-- 19 Hexagon Tiles -->
-          <g id="svg-hex-tiles"></g>
-          <!-- 72 Edges / Roads -->
-          <g id="svg-edges"></g>
-          <!-- 54 Vertices / Settlements / Cities -->
-          <g id="svg-vertices"></g>
-        </g>
-      </svg>
+      <!-- Board SVG Container -->
+      <div class="board-container" id="board-container">
+        
+        <!-- Interactive SVG Board -->
+        <svg class="board-svg" id="board-svg" viewBox="-50 0 540 480" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="hex-shadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+            </filter>
+          </defs>
 
-      <!-- Board Zoom & Pan Map Controls -->
-      <div class="board-zoom-controls" id="board-zoom-controls">
-        <button type="button" class="btn-zoom" id="btn-zoom-in" title="بزرگ‌نمایی (+)">➕</button>
-        <button type="button" class="btn-zoom" id="btn-zoom-reset" title="اندازه پیش‌فرض">🎯</button>
-        <button type="button" class="btn-zoom" id="btn-zoom-out" title="کوچک‌نمایی (−)">➖</button>
-        <span class="zoom-level-text" id="zoom-level-text">100%</span>
-      </div>
+          <!-- Pan & Zoom Layer -->
+          <g id="board-panzoom-layer">
+            <!-- Ocean Coast & Island Base -->
+            <g id="svg-ocean-ports"></g>
+            <!-- 19 Hexagon Tiles -->
+            <g id="svg-hex-tiles"></g>
+            <!-- 72 Edges / Roads -->
+            <g id="svg-edges"></g>
+            <!-- 54 Vertices / Settlements / Cities -->
+            <g id="svg-vertices"></g>
+          </g>
+        </svg>
 
-      <!-- Dice Overlay Widget -->
-      <div class="dice-overlay-widget" id="dice-overlay-widget">
-        <div class="dice-pair">
-          <div class="die-box" id="die-1">
-            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
-            <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
-            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
-          </div>
-          <div class="die-box" id="die-2">
-            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
-            <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
-            <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
-          </div>
+        <!-- Board Zoom & Pan Map Controls -->
+        <div class="board-zoom-controls" id="board-zoom-controls">
+          <button type="button" class="btn-zoom" id="btn-zoom-in" title="بزرگ‌نمایی (+)" data-i18n-title="zoomInTooltip">➕</button>
+          <button type="button" class="btn-zoom" id="btn-zoom-reset" title="اندازه پیش‌فرض" data-i18n-title="zoomResetTooltip">🎯</button>
+          <button type="button" class="btn-zoom" id="btn-zoom-out" title="کوچک‌نمایی (−)" data-i18n-title="zoomOutTooltip">➖</button>
+          <span class="zoom-level-text" id="zoom-level-text">100%</span>
         </div>
-        <div class="dice-sum-badge" id="dice-sum-badge">-</div>
+
       </div>
+
+      <!-- Side Dock (Outside the map) -->
+      <aside class="board-side-dock" id="board-side-dock">
+        <div class="dice-side-widget" id="dice-overlay-widget" title="Roll Dice">
+          <div class="dice-widget-title">
+            <span>🎲</span>
+            <span data-i18n="diceLabel">تاس</span>
+          </div>
+          <div class="dice-pair">
+            <div class="die-box" id="die-1">
+              <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+              <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
+              <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+            </div>
+            <div class="die-box" id="die-2">
+              <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+              <div class="die-dot"></div><div class="die-dot red-dot"></div><div class="die-dot"></div>
+              <div class="die-dot"></div><div class="die-dot"></div><div class="die-dot"></div>
+            </div>
+          </div>
+          <div class="dice-sum-badge" id="dice-sum-badge">-</div>
+        </div>
+      </aside>
 
     </div>
 
@@ -132,15 +144,15 @@
       
       <!-- Placement Mode Banner (e.g. "Click an edge to build road") -->
       <div class="placement-mode-banner" id="placement-mode-banner">
-        <span id="placement-mode-text">روی یکی از خطوط مشخص شده کلیک کنید تا جاده ساخته شود.</span>
+        <span id="placement-mode-text" data-i18n="roadHint">روی یکی از خطوط مشخص شده کلیک کنید تا جاده ساخته شود.</span>
         <button class="btn-cancel-placement" id="btn-cancel-placement" data-i18n="cancelBtn">انصراف</button>
       </div>
 
       <!-- Quick End Turn Prompt Banner -->
       <div class="quick-end-turn-banner" id="quick-end-turn-banner" style="display:none;">
-        <span id="quick-end-turn-text">💡 منابع کافی برای ساخت ندارید. برای نوبت هوش مصنوعی کلیک کنید:</span>
+        <span id="quick-end-turn-text" data-i18n="quickEndTurnText">💡 منابع کافی برای ساخت ندارید. برای نوبت هوش مصنوعی کلیک کنید:</span>
         <button type="button" class="btn-quick-end-turn pulse-glow" id="btn-quick-end-turn">
-          <span>⏭️</span> <span id="quick-end-turn-btn-label">پایان نوبت (نوبت ربات‌ها)</span>
+          <span>⏭️</span> <span id="quick-end-turn-btn-label" data-i18n="quickEndTurnBtnLabel">پایان نوبت (نوبت ربات‌ها)</span>
         </button>
       </div>
 
@@ -281,9 +293,9 @@
         <div class="form-group">
           <label class="form-label" data-i18n="playerCountLabel">تعداد بازیکنان:</label>
           <div class="modal-options-grid" id="setup-players-options">
-            <button class="option-btn" data-players="2">۲ بازیکن (دوئل)</button>
-            <button class="option-btn active" data-players="3">۳ بازیکن (استاندارد)</button>
-            <button class="option-btn" data-players="4">۴ بازیکن (کامل)</button>
+            <button class="option-btn" data-players="2" data-i18n="setupPlayers2">۲ بازیکن (دوئل)</button>
+            <button class="option-btn active" data-players="3" data-i18n="setupPlayers3">۳ بازیکن (استاندارد)</button>
+            <button class="option-btn" data-players="4" data-i18n="setupPlayers4">۴ بازیکن (کامل)</button>
           </div>
         </div>
 
@@ -302,9 +314,9 @@
           <label class="form-label" data-i18n="timerLabel">زمان هر نوبت:</label>
           <div class="modal-options-grid" id="setup-timer-options">
             <button class="option-btn active" data-timer="0" data-i18n="timerOff">نامحدود</button>
-            <button class="option-btn" data-timer="45">۴۵ ثانیه</button>
-            <button class="option-btn" data-timer="60">۶۰ ثانیه</button>
-            <button class="option-btn" data-timer="90">۹۰ ثانیه</button>
+            <button class="option-btn" data-timer="45" data-i18n="timer45">۴۵ ثانیه</button>
+            <button class="option-btn" data-timer="60" data-i18n="timer60">۶۰ ثانیه</button>
+            <button class="option-btn" data-timer="90" data-i18n="timer90">۹۰ ثانیه</button>
           </div>
         </div>
 
@@ -369,9 +381,9 @@
         <div class="form-group">
           <label class="form-label" data-i18n="playerCountLabel">تعداد بازیکنان اتاق:</label>
           <div class="modal-options-grid" id="online-players-options">
-            <button class="option-btn" data-players="2">۲ بازیکن</button>
-            <button class="option-btn active" data-players="3">۳ بازیکن</button>
-            <button class="option-btn" data-players="4">۴ بازیکن</button>
+            <button class="option-btn" data-players="2" data-i18n="onlinePlayers2">۲ بازیکن</button>
+            <button class="option-btn active" data-players="3" data-i18n="onlinePlayers3">۳ بازیکن</button>
+            <button class="option-btn" data-players="4" data-i18n="onlinePlayers4">۴ بازیکن</button>
           </div>
         </div>
 
@@ -379,8 +391,8 @@
           <label class="form-label" data-i18n="timerLabel">زمان هر نوبت:</label>
           <div class="modal-options-grid" id="online-timer-options">
             <button class="option-btn" data-timer="0" data-i18n="timerOff">نامحدود</button>
-            <button class="option-btn active" data-timer="60">۶۰ ثانیه</button>
-            <button class="option-btn" data-timer="90">۹۰ ثانیه</button>
+            <button class="option-btn active" data-timer="60" data-i18n="timer60">۶۰ ثانیه</button>
+            <button class="option-btn" data-timer="90" data-i18n="timer90">۹۰ ثانیه</button>
           </div>
         </div>
 
@@ -415,42 +427,42 @@
         <div class="trade-section-title" data-i18n="giveResourceLabel">منبعی که می‌دهید:</div>
         <div class="trade-res-selector" id="trade-give-selector">
           <button class="trade-res-btn selected" data-res="lumber">
-            <span>🪵</span><span>چوب</span>
+            <span>🪵</span><span data-i18n="resLumber">چوب</span>
           </button>
           <button class="trade-res-btn" data-res="brick">
-            <span>🧱</span><span>آجر</span>
+            <span>🧱</span><span data-i18n="resBrick">آجر</span>
           </button>
           <button class="trade-res-btn" data-res="wool">
-            <span>🐑</span><span>گوسفند</span>
+            <span>🐑</span><span data-i18n="resWool">گوسفند</span>
           </button>
           <button class="trade-res-btn" data-res="grain">
-            <span>🌾</span><span>گندم</span>
+            <span>🌾</span><span data-i18n="resGrain">گندم</span>
           </button>
           <button class="trade-res-btn" data-res="ore">
-            <span>🪨</span><span>سنگ</span>
+            <span>🪨</span><span data-i18n="resOre">سنگ</span>
           </button>
         </div>
 
-        <div class="trade-rate-indicator" id="trade-rate-indicator">
+        <div class="trade-rate-indicator" id="trade-rate-indicator" data-i18n="tradeRateDefault">
           نرخ تبادل: ۴ به ۱ (با داشتن بندر: ۳ به ۱ یا ۲ به ۱)
         </div>
 
         <div class="trade-section-title" data-i18n="getResourceLabel">منبعی که دریافت می‌کنید:</div>
         <div class="trade-res-selector" id="trade-get-selector">
           <button class="trade-res-btn" data-res="lumber">
-            <span>🪵</span><span>چوب</span>
+            <span>🪵</span><span data-i18n="resLumber">چوب</span>
           </button>
           <button class="trade-res-btn selected" data-res="brick">
-            <span>🧱</span><span>آجر</span>
+            <span>🧱</span><span data-i18n="resBrick">آجر</span>
           </button>
           <button class="trade-res-btn" data-res="wool">
-            <span>🐑</span><span>گوسفند</span>
+            <span>🐑</span><span data-i18n="resWool">گوسفند</span>
           </button>
           <button class="trade-res-btn" data-res="grain">
-            <span>🌾</span><span>گندم</span>
+            <span>🌾</span><span data-i18n="resGrain">گندم</span>
           </button>
           <button class="trade-res-btn" data-res="ore">
-            <span>🪨</span><span>سنگ</span>
+            <span>🪨</span><span data-i18n="resOre">سنگ</span>
           </button>
         </div>
 
@@ -481,19 +493,18 @@
   <div class="modal-overlay" id="modal-discard">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>⚠️ پرتاب ۷ و سوزاندن کارت‌ها</h2>
+        <h2 data-i18n="discardModalTitle">⚠️ پرتاب ۷ و سوزاندن کارت‌ها</h2>
       </div>
       <div class="modal-body">
-        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;" data-i18n="discardModalDesc">
           به دلیل پرتاب عدد ۷ و داشتن بیش از ۷ کارت، باید نصف کارت‌های خود را انتخاب و بسوزانید.
         </p>
         <div style="text-align:center; font-weight:800; color:var(--gold-primary); font-size:1.1rem; margin:6px 0;" id="discard-quota-text">
-          باید ۳ کارت بسوزانید (۰ از ۳ انتخاب شده)
         </div>
         <div id="discard-selectors-list" style="display:flex; flex-direction:column; gap:6px;">
           <!-- Lumber, Brick, Wool, Grain, Ore +/- counters -->
         </div>
-        <button class="btn-primary" id="btn-confirm-discard" style="width:100%; margin-top:8px;" disabled>
+        <button class="btn-primary" id="btn-confirm-discard" style="width:100%; margin-top:8px;" disabled data-i18n="confirmDiscardBtn">
           سوزاندن کارت‌های انتخاب‌شده
         </button>
       </div>
@@ -504,10 +515,10 @@
   <div class="modal-overlay" id="modal-steal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>🦹 سرقت منبع توسط راهزن</h2>
+        <h2 data-i18n="stealModalTitle">🦹 سرقت منبع توسط راهزن</h2>
       </div>
       <div class="modal-body">
-        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;" data-i18n="stealModalDesc">
           یکی از بازیکنان مجاور خانه راهزن را برای سرقت تصادفی یک کارت منبع انتخاب کنید:
         </p>
         <div class="modal-options-grid" id="steal-candidates-list" style="grid-template-columns:1fr; gap:8px;">
@@ -521,12 +532,12 @@
   <div class="modal-overlay" id="modal-gameover">
     <div class="modal-card" style="text-align:center;">
       <div class="modal-header">
-        <h2 id="gameover-title" style="margin:0 auto;">🎉 پایان بازی کاتان</h2>
+        <h2 id="gameover-title" style="margin:0 auto;" data-i18n="gameOverTitle">🎉 پایان بازی کاتان</h2>
       </div>
       <div class="modal-body" style="align-items:center;">
         <div style="font-size:3.5rem; margin-bottom:4px;" id="gameover-icon">🏆</div>
-        <div style="font-size:1.35rem; font-weight:800; color:#fff;" id="gameover-message">بازیکن ۱ برنده شد!</div>
-        <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;" id="gameover-sub">با کسب ۱۰ امتیاز پیروزی، فاتح جزیره کاتان شد.</div>
+        <div style="font-size:1.35rem; font-weight:800; color:#fff;" id="gameover-message"></div>
+        <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;" id="gameover-sub" data-i18n="gameOverSub">با کسب ۱۰ امتیاز پیروزی، فاتح جزیره کاتان شد.</div>
 
         <div style="display:flex; gap:10px; width:100%;">
           <button class="btn-secondary" id="btn-gameover-menu" style="flex:1;" data-i18n="mainMenuTitle">منوی اصلی</button>
@@ -560,12 +571,12 @@
     </div>
     <div class="chat-messages" id="chat-messages">
       <div class="chat-msg">
-        <div class="sender">سیستم</div>
-        <div>به بازی استراتژیک کاتان خوش آمدید!</div>
+        <div class="sender" data-i18n="chatSystemSender">سیستم</div>
+        <div data-i18n="chatWelcomeMsg">به بازی استراتژیک کاتان خوش آمدید!</div>
       </div>
     </div>
     <form class="chat-input-bar" id="chat-form">
-      <input type="text" id="chat-input" placeholder="پیام شما..." autocomplete="off">
+      <input type="text" id="chat-input" placeholder="پیام شما..." autocomplete="off" data-i18n="chatPlaceholder">
       <button type="submit" class="btn-icon" style="width:34px; height:34px; font-size:0.9rem;">➤</button>
     </form>
   </div>
