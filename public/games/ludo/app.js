@@ -570,34 +570,39 @@
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', `ludo-token-group ${isSelectable ? 'selectable' : ''}`);
         g.setAttribute('id', `token-${colorId}-${token.id}`);
-        g.style.transformOrigin = `${cx}px ${cy}px`;
+        g.setAttribute('transform', `translate(${cx}, ${cy})`);
+
+        // Inner content group for in-place scale animation centered at (0, 0)
+        const content = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        content.setAttribute('class', 'ludo-token-content');
 
         // Token Outer Ring
         const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        ring.setAttribute('cx', cx);
-        ring.setAttribute('cy', cy);
+        ring.setAttribute('cx', 0);
+        ring.setAttribute('cy', 0);
         ring.setAttribute('r', 16);
         ring.setAttribute('fill', color.hex);
         ring.setAttribute('class', 'ludo-token-body');
 
         // Token Inner Metallic Dome
         const inner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        inner.setAttribute('cx', cx);
-        inner.setAttribute('cy', cy);
+        inner.setAttribute('cx', 0);
+        inner.setAttribute('cy', 0);
         inner.setAttribute('r', 9);
         inner.setAttribute('fill', '#ffffff');
         inner.setAttribute('opacity', '0.85');
 
         // Center Pip
         const pip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        pip.setAttribute('cx', cx);
-        pip.setAttribute('cy', cy);
+        pip.setAttribute('cx', 0);
+        pip.setAttribute('cy', 0);
         pip.setAttribute('r', 4);
         pip.setAttribute('fill', color.hex);
 
-        g.appendChild(ring);
-        g.appendChild(inner);
-        g.appendChild(pip);
+        content.appendChild(ring);
+        content.appendChild(inner);
+        content.appendChild(pip);
+        g.appendChild(content);
 
         if (isSelectable) {
           g.addEventListener('click', (e) => {
@@ -656,6 +661,30 @@
   // =========================================================================
   // FLYING CHECKER ANIMATION (Copied directly from Backgammon)
   // =========================================================================
+  function getSvgScreenCoords(svgEl, cx, cy) {
+    if (svgEl && svgEl.getScreenCTM) {
+      const ctm = svgEl.getScreenCTM();
+      if (ctm) {
+        return {
+          x: cx * ctm.a + cy * ctm.c + ctm.e,
+          y: cx * ctm.b + cy * ctm.d + ctm.f,
+          scale: ctm.a
+        };
+      }
+    }
+
+    const rect = svgEl.getBoundingClientRect();
+    const minDim = Math.min(rect.width, rect.height);
+    const scale = minDim / 600;
+    const offsetX = rect.left + (rect.width - minDim) / 2;
+    const offsetY = rect.top + (rect.height - minDim) / 2;
+    return {
+      x: offsetX + cx * scale,
+      y: offsetY + cy * scale,
+      scale
+    };
+  }
+
   function flyTokenAnimation(colorId, tokenId, fromCoords, toCoords, onFinish) {
     if (activeFlyerCleanup) {
       activeFlyerCleanup();
@@ -667,57 +696,18 @@
       return;
     }
 
-    const svgRect = svgEl.getBoundingClientRect();
-    if (!svgRect || svgRect.width === 0) {
-      if (onFinish) onFinish();
-      return;
-    }
+    const startCX = fromCoords ? fromCoords.x * CELL_SIZE + (fromCoords.state === 'YARD' ? 0 : CELL_SIZE / 2) : 0;
+    const startCY = fromCoords ? fromCoords.y * CELL_SIZE + (fromCoords.state === 'YARD' ? 0 : CELL_SIZE / 2) : 0;
 
-    const scale = svgRect.width / 600;
-    const tokenDim = Math.max(16, Math.round(32 * scale));
+    const endCX = toCoords ? toCoords.x * CELL_SIZE + (toCoords.state === 'YARD' ? 0 : CELL_SIZE / 2) : 0;
+    const endCY = toCoords ? toCoords.y * CELL_SIZE + (toCoords.state === 'YARD' ? 0 : CELL_SIZE / 2) : 0;
+
+    const startPt = getSvgScreenCoords(svgEl, startCX, startCY);
+    const endPt = getSvgScreenCoords(svgEl, endCX, endCY);
+
+    const tokenDim = Math.max(16, Math.round(32 * (startPt.scale || 1)));
 
     const sourceTokenEl = document.getElementById(`token-${colorId}-${tokenId}`);
-    let startRect = null;
-    if (sourceTokenEl) {
-      const sRect = sourceTokenEl.getBoundingClientRect();
-      if (sRect && sRect.width > 0) {
-        startRect = {
-          left: sRect.left,
-          top: sRect.top,
-          width: sRect.width,
-          height: sRect.height
-        };
-      }
-    }
-
-    if (!startRect && fromCoords) {
-      const startCX = fromCoords.x * CELL_SIZE + (fromCoords.state === 'YARD' ? 0 : CELL_SIZE / 2);
-      const startCY = fromCoords.y * CELL_SIZE + (fromCoords.state === 'YARD' ? 0 : CELL_SIZE / 2);
-      startRect = {
-        left: svgRect.left + startCX * scale - tokenDim / 2,
-        top: svgRect.top + startCY * scale - tokenDim / 2,
-        width: tokenDim,
-        height: tokenDim
-      };
-    }
-
-    let endRect = null;
-    if (toCoords) {
-      const endCX = toCoords.x * CELL_SIZE + (toCoords.state === 'YARD' ? 0 : CELL_SIZE / 2);
-      const endCY = toCoords.y * CELL_SIZE + (toCoords.state === 'YARD' ? 0 : CELL_SIZE / 2);
-      endRect = {
-        left: svgRect.left + endCX * scale - tokenDim / 2,
-        top: svgRect.top + endCY * scale - tokenDim / 2,
-        width: tokenDim,
-        height: tokenDim
-      };
-    }
-
-    if (!startRect || !endRect) {
-      if (onFinish) onFinish();
-      return;
-    }
-
     if (sourceTokenEl) {
       sourceTokenEl.style.visibility = 'hidden';
     }
@@ -725,8 +715,8 @@
     const flyer = document.createElement('div');
     flyer.className = `ludo-flying-checker color-${colorId}`;
     flyer.style.position = 'fixed';
-    flyer.style.left = `${startRect.left}px`;
-    flyer.style.top = `${startRect.top}px`;
+    flyer.style.left = `${startPt.x - tokenDim / 2}px`;
+    flyer.style.top = `${startPt.y - tokenDim / 2}px`;
     flyer.style.width = `${tokenDim}px`;
     flyer.style.height = `${tokenDim}px`;
     flyer.style.margin = '0';
@@ -739,8 +729,8 @@
 
     void flyer.offsetHeight;
 
-    const dx = (endRect.left + endRect.width / 2) - (startRect.left + startRect.width / 2);
-    const dy = (endRect.top + endRect.height / 2) - (startRect.top + startRect.height / 2);
+    const dx = endPt.x - startPt.x;
+    const dy = endPt.y - startPt.y;
 
     flyer.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1)`;
     flyer.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.4)';

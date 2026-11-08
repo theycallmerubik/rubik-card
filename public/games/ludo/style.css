@@ -398,11 +398,13 @@ body {
 
 /* Ludo Board SVG Container */
 .board-container {
-  flex: 1 1 0;
-  min-height: 0;
+  aspect-ratio: 1 / 1;
+  width: min(600px, calc(100vh - 170px));
+  height: min(600px, calc(100vh - 170px));
+  max-width: min(600px, calc(100vh - 170px));
+  max-height: min(600px, calc(100vh - 170px));
+  flex: 0 0 auto;
   position: relative;
-  width: 100%;
-  max-width: 620px;
   margin: 0;
   border-radius: 16px;
   background: radial-gradient(circle at 50% 50%, #0f2238 0%, #080f1a 80%);
@@ -464,44 +466,51 @@ body {
    ========================================================================== */
 .ludo-token-group {
   cursor: default;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform 0.15s ease, filter 0.15s ease;
   pointer-events: none;
 }
 
 .ludo-token-group.selectable {
   cursor: pointer;
   pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.ludo-token-content {
+  transform-origin: 0 0;
+  transition: transform 0.16s cubic-bezier(0.2, 0.85, 0.4, 1), filter 0.16s ease;
 }
 
 .ludo-token-body {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
   stroke: #ffffff;
   stroke-width: 2px;
-  transition: stroke 0.15s ease, stroke-width 0.15s ease, filter 0.15s ease;
+  transition: stroke 0.16s ease, stroke-width 0.16s ease, filter 0.16s ease;
 }
 
 /* Selectable token highlight - clean static highlight like Backgammon, NO keyframes/floating */
 .ludo-token-group.selectable .ludo-token-body {
   stroke: var(--gold-primary);
   stroke-width: 3.5px;
-  filter: drop-shadow(0 0 8px rgba(245, 197, 24, 0.9));
+  filter: drop-shadow(0 0 8px rgba(245, 197, 24, 0.95));
 }
 
-/* Checker hover animation copied from Backgammon: transform: scale(1.08) */
-.ludo-token-group.selectable:hover {
-  transform: scale(1.08);
+/* Checker hover animation copied from Backgammon: transform: scale(1.1) in-place on desktop */
+@media (hover: hover) and (pointer: fine) {
+  .ludo-token-group.selectable:hover .ludo-token-content {
+    transform: scale(1.1);
+  }
+
+  .ludo-token-group.selectable:hover .ludo-token-body {
+    stroke: #ffffff;
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 12px var(--gold-primary)) brightness(1.25);
+  }
 }
 
-.ludo-token-group.selectable:hover .ludo-token-body {
-  stroke: #ffffff;
-  stroke-width: 4px;
-  filter: drop-shadow(0 0 12px var(--gold-primary)) brightness(1.2);
-}
-
-.ludo-token-group.selectable:active {
-  transform: scale(0.96);
+/* Responsive tap feedback for both mobile and desktop */
+.ludo-token-group.selectable:active .ludo-token-content {
+  transform: scale(0.95);
+  transition-duration: 0.08s;
 }
 
 /* ==========================================================================
@@ -1089,6 +1098,16 @@ body {
   .board-area-wrapper {
     flex-direction: column;
     gap: 4px;
+    padding: 2px;
+  }
+
+  .board-container {
+    width: min(96vw, calc(100vh - 215px));
+    height: min(96vw, calc(100vh - 215px));
+    max-width: min(96vw, calc(100vh - 215px));
+    max-height: min(96vw, calc(100vh - 215px));
+    aspect-ratio: 1 / 1;
+    flex: 0 0 auto;
   }
 
   .board-side-dock {
