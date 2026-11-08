@@ -651,11 +651,16 @@
     }, { passive: false });
 
     // 2. Click & Drag Pan (Pointer Events)
+    let pointerDownScreenX = 0;
+    let pointerDownScreenY = 0;
+
     el.boardContainer.addEventListener('pointerdown', (e) => {
       if (e.target.closest('#board-zoom-controls') || e.target.closest('#btn-cancel-placement')) return;
 
       isPanning = true;
       hasPanned = false;
+      pointerDownScreenX = e.clientX;
+      pointerDownScreenY = e.clientY;
       startPointerX = e.clientX - panX;
       startPointerY = e.clientY - panY;
       el.boardContainer.classList.add('is-panning');
@@ -663,10 +668,8 @@
 
     window.addEventListener('pointermove', (e) => {
       if (!isPanning) return;
-      const dx = (e.clientX - startPointerX) - panX;
-      const dy = (e.clientY - startPointerY) - panY;
-
-      if (Math.hypot(dx, dy) > 6) {
+      const totalMoved = Math.hypot(e.clientX - pointerDownScreenX, e.clientY - pointerDownScreenY);
+      if (totalMoved > 10) {
         hasPanned = true;
       }
 
@@ -684,9 +687,13 @@
       if (!isPanning) return;
       isPanning = false;
       if (el.boardContainer) el.boardContainer.classList.remove('is-panning');
-      setTimeout(() => {
+      if (hasPanned) {
+        setTimeout(() => {
+          hasPanned = false;
+        }, 50);
+      } else {
         hasPanned = false;
-      }, 60);
+      }
     };
 
     window.addEventListener('pointerup', endPan);
@@ -1103,18 +1110,25 @@
             </div>
           </div>
           <div class="hud-stats-row">
-            <div class="hud-stat-pill highlight" title="Resources">
+            <div class="hud-stat-pill highlight" title="${currentLang === 'fa' ? 'مجموع منابع' : 'Total Resources'}">
               <span>🃏</span> <span>${totalRes}</span>
             </div>
-            <div class="hud-stat-pill" title="Development Cards">
+            <div class="hud-stat-pill" title="${currentLang === 'fa' ? 'کارت‌های شانس' : 'Dev Cards'}">
               <span>📜</span> <span>${devCount}</span>
             </div>
-            <div class="hud-stat-pill" title="Knights Played">
+            <div class="hud-stat-pill" title="${currentLang === 'fa' ? 'شوالیه‌ها' : 'Knights'}">
               <span>⚔️</span> <span>${p.playedKnights}</span>
             </div>
-            <div class="hud-stat-pill" title="Road Length">
+            <div class="hud-stat-pill" title="${currentLang === 'fa' ? 'طول جاده' : 'Road'}">
               <span>🛣️</span> <span>${p.longestRoadLength}</span>
             </div>
+          </div>
+          <div class="hud-resources-row" title="${currentLang === 'fa' ? 'منابع در دست' : 'Resources in hand'}">
+            <span class="hud-res-item res-lumber" title="${currentLang === 'fa' ? 'چوب' : 'Lumber'}"><span class="hud-res-emoji">🪵</span><span>${p.resources.lumber || 0}</span></span>
+            <span class="hud-res-item res-brick" title="${currentLang === 'fa' ? 'آجر' : 'Brick'}"><span class="hud-res-emoji">🧱</span><span>${p.resources.brick || 0}</span></span>
+            <span class="hud-res-item res-wool" title="${currentLang === 'fa' ? 'گوسفند' : 'Wool'}"><span class="hud-res-emoji">🐑</span><span>${p.resources.wool || 0}</span></span>
+            <span class="hud-res-item res-grain" title="${currentLang === 'fa' ? 'گندم' : 'Grain'}"><span class="hud-res-emoji">🌾</span><span>${p.resources.grain || 0}</span></span>
+            <span class="hud-res-item res-ore" title="${currentLang === 'fa' ? 'سنگ' : 'Ore'}"><span class="hud-res-emoji">🪨</span><span>${p.resources.ore || 0}</span></span>
           </div>
           <div class="hud-special-badges">
             <span class="special-badge road ${p.hasLongestRoad ? 'visible' : ''}">${t.longestRoadBadge}</span>
@@ -1141,9 +1155,21 @@
     const canRoll = isMyTurn && state.phase === 'ROLL_DICE';
     const canPlay = isMyTurn && state.phase === 'PLAYING_TURN';
 
-    // Reset dice visual to ready indicator when waiting for roll
-    if (state.phase === 'ROLL_DICE' && (!state.lastDice || isMyTurn)) {
-      resetDiceDisplayToReady();
+    // Auto set buildMode during setup if local player's turn
+    if (inSetup && isMyTurn) {
+      if (state.phase === 'SETUP_SETTLEMENT') buildMode = 'SETTLEMENT';
+      if (state.phase === 'SETUP_ROAD') buildMode = 'ROAD';
+    } else if (!inSetup && !canPlay) {
+      buildMode = null;
+    }
+
+    // Always show the last rolled dice (or 1-1 if match just began and no rolls yet)
+    if (state.lastDice && state.lastDice.length === 2) {
+      updateDiceVisual(state.lastDice[0], state.lastDice[1]);
+    } else {
+      renderDieFace(el.die1, 1);
+      renderDieFace(el.die2, 1);
+      if (el.diceSumBadge) el.diceSumBadge.textContent = '-';
     }
 
     const hasRoadRes = isMyTurn && CatanLogic.hasResources(activeP, CatanLogic.COSTS.ROAD) && activeP.roadsLeft > 0;
@@ -1234,8 +1260,28 @@
     }
 
     // 7. Auto Trigger Modals for Phase
-    if (state.phase === 'ROBBER_DISCARD' && isMyTurn) {
-      checkAndShowDiscardModal();
+    if (state.phase === 'ROBBER_DISCARD') {
+      const humanDiscard = (state.discardQueue || []).find(d => isLocalSeat(d.playerId));
+      if (humanDiscard) {
+        checkAndShowDiscardModal();
+      } else if (el.modalDiscard) {
+        el.modalDiscard.classList.remove('active');
+      }
+    } else if (el.modalDiscard) {
+      el.modalDiscard.classList.remove('active');
+    }
+
+    if (state.phase === 'ROBBER_STEAL' && isMyTurn) {
+      if (state.stealCandidates && state.stealCandidates.length > 0) {
+        showStealModal(state.stealCandidates);
+      } else {
+        if (gameMode !== 'online') {
+          state.phase = 'PLAYING_TURN';
+          updateUI();
+        }
+      }
+    } else if (state.phase !== 'ROBBER_STEAL' && el.modalSteal) {
+      el.modalSteal.classList.remove('active');
     }
   }
 
@@ -1276,7 +1322,8 @@
       }
 
       if (hitbox) {
-        const canBuild = buildMode === 'ROAD' && CatanLogic.canBuildRoad(state, activeId, e.id, isSetup, state.lastSetupSettlementVertex);
+        const isRoadMode = (buildMode === 'ROAD' || (isSetup && state.phase === 'SETUP_ROAD')) && isLocalPlayerTurn();
+        const canBuild = isRoadMode && CatanLogic.canBuildRoad(state, activeId, e.id, isSetup, state.lastSetupSettlementVertex);
         if (canBuild) {
           hitbox.classList.add('selectable');
         } else {
@@ -1305,15 +1352,26 @@
 
       if (hitbox) {
         let canSelect = false;
-        if (buildMode === 'SETTLEMENT') {
+        let isCity = false;
+        const isSettlementMode = (buildMode === 'SETTLEMENT' || (isSetup && state.phase === 'SETUP_SETTLEMENT')) && isLocalPlayerTurn();
+        const isCityMode = (buildMode === 'CITY') && isLocalPlayerTurn();
+
+        if (isSettlementMode) {
           canSelect = CatanLogic.canBuildSettlement(state, activeId, v.id, isSetup);
-        } else if (buildMode === 'CITY') {
+        } else if (isCityMode) {
           canSelect = CatanLogic.canBuildCity(state, activeId, v.id);
+          if (canSelect) isCity = true;
         }
+
         if (canSelect) {
           hitbox.classList.add('selectable');
+          if (isCity) {
+            hitbox.classList.add('selectable-city');
+          } else {
+            hitbox.classList.remove('selectable-city');
+          }
         } else {
-          hitbox.classList.remove('selectable');
+          hitbox.classList.remove('selectable', 'selectable-city');
         }
       }
     });
@@ -1547,12 +1605,12 @@
   function handleMoveRobber(hexId) {
     if (hasPanned || !state || state.phase !== 'ROBBER_MOVE' || !isLocalPlayerTurn()) return;
 
+    safePlaySound('playRobber');
     if (gameMode === 'online') {
       sendWsMessage({ type: 'CATAN_MOVE_ROBBER', hexId });
     } else {
       const res = CatanLogic.moveRobber(state, state.activePlayer, hexId);
       if (res.valid) {
-        safePlaySound('playRobber');
         if (res.canSteal && res.candidates.length > 0) {
           showStealModal(res.candidates);
         }
@@ -1628,36 +1686,45 @@
       // Roll Phase
       if (state.phase === 'ROLL_DICE') {
         safePlaySound('playDiceRoll');
-        const rollRes = CatanLogic.rollDice(state);
-        try {
-          if (rollRes && rollRes.dice) {
-            updateDiceVisual(rollRes.dice[0], rollRes.dice[1]);
-          }
-
-          if (rollRes && rollRes.sum === 7) {
-            safePlaySound('playRobber');
-            notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس ۷ انداخت!` : `🎲 ${bot.name} rolled a 7!`);
-
-            processBotDiscards();
-
-            const humanDiscard = (state.discardQueue || []).find(d => isLocalSeat(d.playerId));
-            if (humanDiscard) {
-              checkAndShowDiscardModal();
-              updateUI();
-              return; // Wait for human player to discard cards
+        animateDiceRoll(() => {
+          if (!state || state.activePlayer !== botId) return;
+          const rollRes = CatanLogic.rollDice(state);
+          try {
+            if (rollRes && rollRes.dice) {
+              updateDiceVisual(rollRes.dice[0], rollRes.dice[1]);
             }
 
-            botRelocateRobberAndSteal(botId);
-          } else if (rollRes && rollRes.valid) {
-            highlightRolledHexes(rollRes.sum);
-            safePlaySound('playResourceChime');
-            safePlaySound('playResource');
-            notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس انداخت: عدد ${rollRes.sum} آمد.` : `🎲 ${bot.name} rolled ${rollRes.sum}.`);
+            if (rollRes && rollRes.sum === 7) {
+              safePlaySound('playRobber');
+              notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس ۷ انداخت!` : `🎲 ${bot.name} rolled a 7!`);
+
+              processBotDiscards();
+
+              const humanDiscard = (state.discardQueue || []).find(d => isLocalSeat(d.playerId));
+              if (humanDiscard) {
+                checkAndShowDiscardModal();
+                updateUI();
+                return; // Wait for human player to discard cards
+              }
+
+              botRelocateRobberAndSteal(botId);
+            } else if (rollRes && rollRes.valid) {
+              highlightRolledHexes(rollRes.sum);
+              safePlaySound('playResourceChime');
+              safePlaySound('playResource');
+              notify(currentLang === 'fa' ? `🎲 ${bot.name} تاس انداخت: عدد ${rollRes.sum} آمد.` : `🎲 ${bot.name} rolled ${rollRes.sum}.`);
+            }
+          } catch (err) {
+            console.warn('Bot roll handling error:', err);
           }
-        } catch (err) {
-          console.warn('Bot roll handling error:', err);
-        }
-        updateUI();
+          updateUI();
+
+          // Main Playing Actions Loop after player has seen bot roll
+          setTimeout(() => {
+            executeBotTurnActions(botId);
+          }, 1100);
+        });
+        return;
       }
 
       // Main Playing Actions Loop
@@ -1771,12 +1838,20 @@
 
   function showStealModal(candidates) {
     if (!el.modalSteal) return;
+    if (!candidates || candidates.length === 0) {
+      if (gameMode !== 'online') {
+        state.phase = 'PLAYING_TURN';
+        updateUI();
+      }
+      return;
+    }
     const list = document.getElementById('steal-candidates-list');
     if (!list) return;
     list.innerHTML = '';
 
     candidates.forEach(cId => {
       const p = state.players[cId];
+      if (!p) return;
       const btn = document.createElement('button');
       btn.className = 'btn-secondary';
       btn.style.width = '100%';
@@ -1975,7 +2050,9 @@
         renderBoardBase();
         resetPanZoom();
       }
-      closeAllModals();
+      if (state.phase !== 'ROBBER_STEAL' && state.phase !== 'ROBBER_DISCARD') {
+        closeAllModals();
+      }
       if (msg.lastDice) {
         updateDiceVisual(msg.lastDice[0], msg.lastDice[1]);
       }
@@ -2179,15 +2256,24 @@
         </div>
       `;
 
-      if (card.type !== 'victory_point' && canPlayCard) {
-        const playBtn = document.createElement('button');
-        playBtn.className = 'btn-secondary';
-        playBtn.textContent = currentLang === 'fa' ? 'بازی کردن' : 'Play';
-        playBtn.addEventListener('click', () => {
-          handlePlayDevCard(card.type, idx);
-          if (el.modalDevcards) el.modalDevcards.classList.remove('active');
-        });
-        row.appendChild(playBtn);
+      const isBoughtThisTurn = card.turnBought !== undefined && card.turnBought >= (state.turnCount || 0);
+
+      if (card.type !== 'victory_point') {
+        if (isBoughtThisTurn) {
+          const lockedSpan = document.createElement('span');
+          lockedSpan.className = 'dev-card-locked-tag';
+          lockedSpan.textContent = currentLang === 'fa' ? '🔒 قابل استفاده از نوبت بعد' : '🔒 Playable next turn';
+          row.appendChild(lockedSpan);
+        } else if (canPlayCard) {
+          const playBtn = document.createElement('button');
+          playBtn.className = 'btn-secondary';
+          playBtn.textContent = currentLang === 'fa' ? 'بازی کردن' : 'Play';
+          playBtn.addEventListener('click', () => {
+            handlePlayDevCard(card.type, idx);
+            if (el.modalDevcards) el.modalDevcards.classList.remove('active');
+          });
+          row.appendChild(playBtn);
+        }
       }
 
       list.appendChild(row);
@@ -2199,8 +2285,23 @@
   function handlePlayDevCard(cardType, cardIdx) {
     if (!state || !isLocalPlayerTurn() || state.phase !== 'PLAYING_TURN' || state.devCardPlayedThisTurn) return;
 
-    soundEngine.playClick();
     const p = state.players[state.activePlayer];
+    const card = p.devCards[cardIdx];
+    if (!card) return;
+    if (card.turnBought !== undefined && card.turnBought >= (state.turnCount || 0)) {
+      notify(currentLang === 'fa'
+        ? 'کارت‌های شانس فقط از نوبت بعد قابل بازی هستند.'
+        : 'Development cards can only be played starting from your next turn.');
+      return;
+    }
+
+    soundEngine.playClick();
+
+    if (gameMode === 'online') {
+      sendWsMessage({ type: 'CATAN_PLAY_DEV', cardType, cardIdx });
+      return;
+    }
+
     p.devCards.splice(cardIdx, 1);
     state.devCardPlayedThisTurn = true;
 
@@ -2713,6 +2814,11 @@
     applyLanguage(currentLang);
     setupEventListeners();
     setupBoardPanZoom();
+
+    // Initialize dice so they are never blank
+    if (el.die1) renderDieFace(el.die1, 1);
+    if (el.die2) renderDieFace(el.die2, 1);
+    if (el.diceSumBadge) el.diceSumBadge.textContent = '-';
 
     // Check URL Hash for Room Code
     const hash = (window.location.hash || '').replace('#', '').trim().toUpperCase();

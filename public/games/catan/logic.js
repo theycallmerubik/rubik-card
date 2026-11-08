@@ -362,6 +362,7 @@
       activePlayer: 0,
       lastDice: null,
       lastDiceSum: null,
+      turnCount: 0,
       discardQueue: [], // Players needing to discard on 7
       stealCandidates: [], // Players adjacent to new robber hex
       devCardPlayedThisTurn: false,
@@ -526,17 +527,6 @@
     if (isSetup) {
       state.lastSetupSettlementVertex = vertexId;
       state.phase = 'SETUP_ROAD';
-
-      // If this is Round 2 of setup, grant initial resources from adjacent hexes!
-      if (state.setupIndex >= state.playerCount) {
-        const vObj = BOARD_GRAPH.vertices[vertexId];
-        for (const hId of vObj.hexIds) {
-          const tile = state.tiles[hId];
-          if (tile && tile.resource) {
-            player.resources[tile.resource] = (player.resources[tile.resource] || 0) + 1;
-          }
-        }
-      }
     }
 
     checkLongestRoad(state);
@@ -856,8 +846,7 @@
     // Pass turn to next player
     state.activePlayer = (state.activePlayer + 1) % state.playerCount;
     state.phase = 'ROLL_DICE';
-    state.lastDice = null;
-    state.lastDiceSum = null;
+    // Note: state.lastDice and state.lastDiceSum persist across turns so players see the last roll
     state.devCardPlayedThisTurn = false;
     state.tradeOffer = null;
     state.turnCount = (state.turnCount || 0) + 1;

@@ -423,6 +423,44 @@ body {
   display: inline-block;
 }
 
+/* Resources Breakdown under each player card */
+.hud-resources-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-res-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 3px;
+  border-radius: 4px;
+  line-height: 1.1;
+  user-select: none;
+}
+
+.hud-res-item.res-lumber { border-left: 2px solid var(--res-lumber-border); }
+.hud-res-item.res-brick { border-left: 2px solid var(--res-brick-border); }
+.hud-res-item.res-wool { border-left: 2px solid var(--res-wool-border); }
+.hud-res-item.res-grain { border-left: 2px solid var(--res-grain-border); }
+.hud-res-item.res-ore { border-left: 2px solid var(--res-ore-border); }
+
+.hud-res-emoji {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
 /* ==========================================================================
    BOARD DISPLAY & SVG
    ========================================================================== */
@@ -753,9 +791,30 @@ body {
   to { r: 11; stroke-opacity: 1; }
 }
 
+/* City Upgrade Aura (Surrounds existing settlement) */
+.board-vertex-hitbox.selectable-city + .board-vertex-visual {
+  fill: rgba(245, 197, 24, 0.45);
+  stroke: #ffd700;
+  stroke-width: 3.5;
+  animation: pulseCityUpgrade 0.85s infinite alternate;
+}
+
+.board-vertex-hitbox.selectable-city:hover + .board-vertex-visual {
+  fill: rgba(245, 197, 24, 0.7);
+  stroke: #ffffff;
+  r: 22;
+}
+
+@keyframes pulseCityUpgrade {
+  from { r: 16; stroke-opacity: 0.7; }
+  to { r: 21; stroke-opacity: 1; }
+}
+
 /* Built Settlement / City on Board */
 .board-building {
-  cursor: default;
+  cursor: pointer;
+  pointer-events: none !important;
+  user-select: none;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.7));
   transition: transform 0.2s ease;
 }
@@ -1567,6 +1626,17 @@ body {
 
 .dev-card-icon {
   font-size: 1.5rem;
+}
+
+.dev-card-locked-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 /* ==========================================================================
