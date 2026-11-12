@@ -47,6 +47,36 @@ class CatanSoundEngine {
     } catch (_) {}
   }
 
+  // Distinct Pleasant Chime when it becomes Local Player's Turn
+  playYourTurn() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      // Elegant rising major chord chime: C5 (523.25), E5 (659.25), G5 (783.99), C6 (1046.50)
+      const chord = [523.25, 659.25, 783.99, 1046.50];
+      chord.forEach((freq, idx) => {
+        const noteTime = now + (idx * 0.07);
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, noteTime);
+
+        gain.gain.setValueAtTime(0.22, noteTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.45);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(noteTime);
+        osc.stop(noteTime + 0.48);
+      });
+    } catch (_) {}
+  }
+
   // Realistic 2d6 Dice Roll Rattle & Drop
   playDiceRoll() {
     if (this.muted) return;

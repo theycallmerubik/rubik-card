@@ -1,0 +1,593 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <defs>
+    <!-- TERRAIN TILES (Hexagonal ViewBox 0 0 100 115.47) -->
+    <!-- Center (50, 57.74), radius R=50. Vertices at (50, 7.74), (93.3, 32.74), (93.3, 82.74), (50, 107.74), (6.7, 82.74), (6.7, 32.74) -->
+
+    <!-- FOREST (Lumber) -->
+    <symbol id="tile-forest" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#2d6a4f" stroke="#1b4332" stroke-width="2.5"/>
+      <!-- Soft depth shading -->
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#1b4332" opacity="0.15"/>
+      <!-- Pine Trees Silhouettes -->
+      <g fill="#1b4332">
+        <!-- Center Big Pine -->
+        <polygon points="50,26 42,40 45,40 38,54 43,54 35,68 65,68 57,54 62,54 55,40 58,40"/>
+        <rect x="48" y="68" width="4" height="8" fill="#402010"/>
+        <!-- Left Pine -->
+        <polygon points="28,42 22,52 24,52 19,62 23,62 17,74 39,74 33,62 37,62 32,52 34,52"/>
+        <rect x="26.5" y="74" width="3" height="6" fill="#402010"/>
+        <!-- Right Pine -->
+        <polygon points="72,42 66,52 68,52 63,62 67,62 61,74 83,74 77,62 81,62 76,52 78,52"/>
+        <rect x="70.5" y="74" width="3" height="6" fill="#402010"/>
+        <!-- Small Background Trees -->
+        <polygon points="38,28 32,38 44,38" opacity="0.7"/>
+        <polygon points="62,28 56,38 68,38" opacity="0.7"/>
+      </g>
+      <!-- Foliage texture highlights -->
+      <path d="M47 38 L50 33 L53 38 M43 51 L50 44 L57 51 M40 64 L50 56 L60 64" stroke="#52b788" stroke-width="1.5" fill="none" opacity="0.8"/>
+    </symbol>
+
+    <!-- HILLS (Brick) -->
+    <symbol id="tile-hills" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#b05d3b" stroke="#78341c" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#78341c" opacity="0.15"/>
+      <!-- Hill Curves and Terraces -->
+      <path d="M10 75 Q 35 55 60 70 T 92 65" fill="none" stroke="#d97750" stroke-width="2" opacity="0.6"/>
+      <path d="M8 50 Q 40 32 75 48" fill="none" stroke="#d97750" stroke-width="2" opacity="0.6"/>
+      <!-- Brickwork / Masonry courses in hill face -->
+      <g fill="#78341c" stroke="#502010" stroke-width="0.8">
+        <!-- Row 1 -->
+        <rect x="36" y="44" width="12" height="6" rx="0.5"/>
+        <rect x="50" y="44" width="12" height="6" rx="0.5"/>
+        <!-- Row 2 -->
+        <rect x="30" y="52" width="11" height="6" rx="0.5"/>
+        <rect x="43" y="52" width="12" height="6" rx="0.5"/>
+        <rect x="57" y="52" width="11" height="6" rx="0.5"/>
+        <!-- Row 3 -->
+        <rect x="24" y="60" width="12" height="6" rx="0.5"/>
+        <rect x="38" y="60" width="11" height="6" rx="0.5"/>
+        <rect x="51" y="60" width="11" height="6" rx="0.5"/>
+        <rect x="64" y="60" width="12" height="6" rx="0.5"/>
+        <!-- Row 4 -->
+        <rect x="32" y="68" width="12" height="6" rx="0.5"/>
+        <rect x="46" y="68" width="12" height="6" rx="0.5"/>
+        <rect x="60" y="68" width="12" height="6" rx="0.5"/>
+      </g>
+    </symbol>
+
+    <!-- PASTURE (Wool) -->
+    <symbol id="tile-pasture" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#70a944" stroke="#487524" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#487524" opacity="0.12"/>
+      <!-- Rolling meadow hills -->
+      <path d="M6 68 Q 30 45 65 65 T 94 62 M12 48 Q 50 30 88 46" fill="none" stroke="#92cf5b" stroke-width="2"/>
+      <!-- Sheep Silhouette 1 (Center) -->
+      <g transform="translate(42, 54)">
+        <path d="M4 12 L4 18 M14 12 L14 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0" stroke="#d5dad0" stroke-width="1"/>
+        <circle cx="4" cy="7" r="3.5" fill="#f4f6f0"/>
+        <circle cx="14" cy="7" r="3.5" fill="#f4f6f0"/>
+        <circle cx="9" cy="4" r="3.5" fill="#f4f6f0"/>
+        <ellipse cx="17" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+      <!-- Small Sheep 2 (Right pasture) -->
+      <g transform="translate(68, 40) scale(0.65)">
+        <path d="M4 12 L4 18 M13 12 L13 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0"/>
+        <ellipse cx="17" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+      <!-- Small Sheep 3 (Left pasture) -->
+      <g transform="translate(18, 62) scale(0.65)">
+        <path d="M4 12 L4 18 M13 12 L13 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0"/>
+        <ellipse cx="1" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+    </symbol>
+
+    <!-- FIELDS (Grain) -->
+    <symbol id="tile-fields" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#e9b634" stroke="#a67c17" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#a67c17" opacity="0.15"/>
+      <!-- Furrow lines across agricultural fields -->
+      <path d="M12 75 L 88 45 M16 65 L 84 35 M22 85 L 78 55" stroke="#f6ce65" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <!-- Wheat stalk sheaves -->
+      <g stroke="#8c6508" stroke-width="1.4" fill="none">
+        <!-- Sheaf 1 -->
+        <path d="M48 76 Q 49 52 42 36 M50 76 L 50 34 M52 76 Q 51 52 58 36"/>
+        <!-- Sheaf 2 Left -->
+        <path d="M28 72 Q 29 55 24 44 M30 72 L 30 42 M32 72 Q 31 55 36 44"/>
+        <!-- Sheaf 3 Right -->
+        <path d="M68 72 Q 69 55 64 44 M70 72 L 70 42 M72 72 Q 71 55 76 44"/>
+      </g>
+      <!-- Wheat grains -->
+      <g fill="#fff0a0" stroke="#8c6508" stroke-width="0.8">
+        <ellipse cx="50" cy="34" rx="2" ry="4"/>
+        <ellipse cx="43" cy="38" rx="2" ry="3.5" transform="rotate(-20 43 38)"/>
+        <ellipse cx="57" cy="38" rx="2" ry="3.5" transform="rotate(20 57 38)"/>
+        <ellipse cx="44" cy="46" rx="2" ry="3.5" transform="rotate(-20 44 46)"/>
+        <ellipse cx="56" cy="46" rx="2" ry="3.5" transform="rotate(20 56 46)"/>
+        <!-- Tied ribbon on bundle -->
+        <rect x="47" y="60" width="6" height="3" rx="1" fill="#b9381e"/>
+      </g>
+    </symbol>
+
+    <!-- MOUNTAINS (Ore) -->
+    <symbol id="tile-mountains" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#6d7582" stroke="#444b55" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#444b55" opacity="0.15"/>
+      <!-- Background Peak -->
+      <polygon points="32,32 18,65 46,65" fill="#4a525e"/>
+      <polygon points="32,32 30,42 34,44 32,48 40,46" fill="#d8e1e8"/>
+      <!-- Main Center Jagged Mountain Peak -->
+      <polygon points="52,22 28,78 76,78" fill="#5a626f" stroke="#333840" stroke-width="1.5"/>
+      <!-- Dark Shaded Mountain Flank -->
+      <polygon points="52,22 52,78 76,78" fill="#3b414a"/>
+      <!-- Crisp Snow Cap -->
+      <polygon points="52,22 42,42 46,45 44,50 52,48 57,51 55,44 62,42" fill="#f0f5fa" stroke="#cad5e0" stroke-width="0.8"/>
+      <!-- Right Mountain Peak -->
+      <polygon points="72,36 56,76 88,76" fill="#4f5663" stroke="#333840" stroke-width="1.2"/>
+      <polygon points="72,36 72,76 88,76" fill="#323740"/>
+      <polygon points="72,36 65,48 69,51 72,50 75,53 78,48" fill="#e8eff5"/>
+      <!-- Ore Vein / Mineral Strata -->
+      <path d="M38 68 L 46 64 M58 66 L 68 62" stroke="#b8c8d8" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- DESERT (Bandit Domain) -->
+    <symbol id="tile-desert" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#dfbe84" stroke="#a48446" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#a48446" opacity="0.15"/>
+      <!-- Sweeping Sand Dunes -->
+      <path d="M8 48 Q 45 32 80 50" fill="none" stroke="#caa260" stroke-width="2.2"/>
+      <path d="M20 66 Q 55 52 92 68" fill="none" stroke="#b8904e" stroke-width="2.5"/>
+      <path d="M6 82 Q 40 70 82 86" fill="none" stroke="#a8803e" stroke-width="2"/>
+      <!-- Desert Cactus -->
+      <g fill="#527845" stroke="#2d4a22" stroke-width="1">
+        <!-- Trunk -->
+        <rect x="48" y="44" width="5" height="24" rx="2.5"/>
+        <!-- Left arm -->
+        <path d="M42 50 L 42 56 Q 42 58 48 58" fill="none" stroke="#527845" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M42 50 L 42 56 Q 42 58 48 58" fill="none" stroke="#2d4a22" stroke-width="1"/>
+        <!-- Right arm -->
+        <path d="M59 47 L 59 52 Q 59 54 53 54" fill="none" stroke="#527845" stroke-width="4" stroke-linecap="round"/>
+        <path d="M59 47 L 59 52 Q 59 54 53 54" fill="none" stroke="#2d4a22" stroke-width="1"/>
+      </g>
+      <!-- Sun rays heat ripple -->
+      <circle cx="50.5" cy="30" r="4.5" fill="#f8d488" stroke="#d8a848" stroke-width="1.2"/>
+    </symbol>
+
+    <!-- RESOURCE ICONS (ViewBox 0 0 32 32) -->
+
+    <!-- LUMBER ICON -->
+    <symbol id="icon-lumber" viewBox="0 0 32 32">
+      <!-- Stack of three timber logs -->
+      <g stroke="#3a1d0d" stroke-width="1.2">
+        <!-- Bottom left log -->
+        <path d="M6 18 L 22 18 Q 24 18 24 22 Q 24 26 22 26 L 6 26 Z" fill="#78401c"/>
+        <ellipse cx="6" cy="22" rx="3.5" ry="4" fill="#a46032"/>
+        <circle cx="6" cy="22" r="1.5" fill="#582a10"/>
+        <!-- Bottom right log -->
+        <path d="M12 18 L 26 18 Q 28 18 28 22 Q 28 26 26 26 L 12 26 Z" fill="#884820"/>
+        <ellipse cx="12" cy="22" rx="3.5" ry="4" fill="#b06c3a"/>
+        <circle cx="12" cy="22" r="1.5" fill="#683214"/>
+        <!-- Top log -->
+        <path d="M9 10 L 25 10 Q 27 10 27 14 Q 27 18 25 18 L 9 18 Z" fill="#9e5628"/>
+        <ellipse cx="9" cy="14" rx="3.5" ry="4" fill="#c47d44"/>
+        <circle cx="9" cy="14" r="1.5" fill="#783c18"/>
+      </g>
+    </symbol>
+
+    <!-- BRICK ICON -->
+    <symbol id="icon-brick" viewBox="0 0 32 32">
+      <!-- 3D Mortared Clay Bricks -->
+      <g stroke="#4f1b0a" stroke-width="1.1">
+        <!-- Top Brick -->
+        <path d="M7 8 L 19 8 L 25 12 L 13 12 Z" fill="#d96c4a"/>
+        <path d="M7 8 L 13 12 L 13 17 L 7 13 Z" fill="#943618"/>
+        <path d="M13 12 L 25 12 L 25 17 L 13 17 Z" fill="#b84c28"/>
+        <!-- Bottom Brick -->
+        <path d="M13 17 L 21 17 L 27 21 L 19 21 Z" fill="#d96c4a"/>
+        <path d="M5 21 L 19 21 L 19 26 L 5 26 Z" fill="#b84c28"/>
+        <path d="M19 21 L 27 21 L 27 26 L 19 26 Z" fill="#943618"/>
+      </g>
+    </symbol>
+
+    <!-- WOOL ICON -->
+    <symbol id="icon-wool" viewBox="0 0 32 32">
+      <!-- Fluffy Cloud-like Sheep Fleece / Yarn Ball -->
+      <g stroke="#405030" stroke-width="1.2">
+        <circle cx="16" cy="16" r="11" fill="#f0f6e8"/>
+        <!-- Fluffy bumps -->
+        <circle cx="10" cy="11" r="5" fill="#ffffff"/>
+        <circle cx="17" cy="8" r="5" fill="#ffffff"/>
+        <circle cx="23" cy="12" r="5" fill="#ffffff"/>
+        <circle cx="24" cy="19" r="5" fill="#ffffff"/>
+        <circle cx="19" cy="23" r="5" fill="#ffffff"/>
+        <circle cx="11" cy="21" r="5" fill="#ffffff"/>
+        <circle cx="7" cy="16" r="4.5" fill="#ffffff"/>
+        <!-- Sheep face badge in center -->
+        <ellipse cx="16" cy="16" rx="4.5" ry="4" fill="#30353b"/>
+        <ellipse cx="13" cy="14" rx="1.5" ry="1.2" fill="#30353b" transform="rotate(-30 13 14)"/>
+        <ellipse cx="19" cy="14" rx="1.5" ry="1.2" fill="#30353b" transform="rotate(30 19 14)"/>
+        <circle cx="14.5" cy="15.5" r="0.7" fill="#ffffff"/>
+        <circle cx="17.5" cy="15.5" r="0.7" fill="#ffffff"/>
+      </g>
+    </symbol>
+
+    <!-- GRAIN ICON -->
+    <symbol id="icon-grain" viewBox="0 0 32 32">
+      <!-- Golden Sheaves of Wheat -->
+      <g stroke="#7a5506" stroke-width="1.2">
+        <!-- Stem -->
+        <path d="M8 27 Q 16 23 20 8" fill="none" stroke-width="1.8"/>
+        <!-- Left grains -->
+        <ellipse cx="12" cy="21" rx="2.5" ry="4.5" fill="#f6c844" transform="rotate(-35 12 21)"/>
+        <ellipse cx="14" cy="15" rx="2.5" ry="4.5" fill="#f8d660" transform="rotate(-35 14 15)"/>
+        <ellipse cx="17" cy="9" rx="2.2" ry="4" fill="#fae280" transform="rotate(-30 17 9)"/>
+        <!-- Right grains -->
+        <ellipse cx="18" cy="23" rx="2.5" ry="4.5" fill="#f6c844" transform="rotate(35 18 23)"/>
+        <ellipse cx="20" cy="17" rx="2.5" ry="4.5" fill="#f8d660" transform="rotate(35 20 17)"/>
+        <ellipse cx="22" cy="11" rx="2.2" ry="4" fill="#fae280" transform="rotate(30 22 11)"/>
+        <!-- Tip grain -->
+        <ellipse cx="20" cy="6" rx="2" ry="3.5" fill="#fff099"/>
+      </g>
+    </symbol>
+
+    <!-- ORE ICON -->
+    <symbol id="icon-ore" viewBox="0 0 32 32">
+      <!-- Crystalline Rock/Ore Boulder with Facets -->
+      <g stroke="#262d36" stroke-width="1.2">
+        <polygon points="16,4 27,10 28,21 19,28 7,24 5,12" fill="#717c8d"/>
+        <!-- Facets -->
+        <polygon points="16,4 12,13 19,16 27,10" fill="#9ba8bb"/>
+        <polygon points="12,13 5,12 7,24 13,20" fill="#586373"/>
+        <polygon points="12,13 13,20 19,28 19,16" fill="#46505e"/>
+        <polygon points="19,16 19,28 28,21 27,10" fill="#353c47"/>
+        <!-- Shiny ore glint -->
+        <polygon points="15,6 18,7 16,10 13,9" fill="#eaf0f8"/>
+      </g>
+    </symbol>
+
+    <!-- NUMBER TOKENS (ViewBox 0 0 40 40) -->
+
+    <!-- Standard Token (2, 3, 4, 5, 9, 10, 11, 12) -->
+    <symbol id="token-standard" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="#f5ede0" stroke="#bfa682" stroke-width="2"/>
+      <circle cx="20" cy="20" r="14.5" fill="none" stroke="#d5c09e" stroke-width="0.8"/>
+    </symbol>
+
+    <!-- High-Probability Token (6 & 8) with Double Concentric Ring -->
+    <symbol id="token-high-prob" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="#fff7eb" stroke="#c0392b" stroke-width="2.5"/>
+      <circle cx="20" cy="20" r="14.5" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="4 2"/>
+    </symbol>
+
+    <!-- HARBOR DOCK & SHIP (ViewBox 0 0 48 36) -->
+    <symbol id="harbor-dock" viewBox="0 0 48 36">
+      <!-- Wooden Pier Planks -->
+      <line x1="8" y1="28" x2="20" y2="16" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="40" y1="28" x2="28" y2="16" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>
+      <path d="M16 16 L 32 16 L 30 19 L 18 19 Z" fill="#5c3818"/>
+      <!-- Merchant Sailing Ship -->
+      <g stroke="#1a2530" stroke-width="1">
+        <!-- Hull -->
+        <path d="M14 18 L 34 18 Q 36 24 30 25 L 18 25 Q 12 24 14 18 Z" fill="#6d4722"/>
+        <!-- Mast -->
+        <line x1="24" y1="7" x2="24" y2="18" stroke="#333" stroke-width="1.5"/>
+        <!-- White Canvas Sails -->
+        <path d="M24 8 Q 16 11 17 17 L 24 17 Z" fill="#f4f6fa"/>
+        <path d="M25 9 Q 32 12 31 17 L 25 17 Z" fill="#e2e6ee"/>
+        <!-- Pennant Flag -->
+        <polygon points="24,7 28,5 24,5" fill="#d93829"/>
+      </g>
+    </symbol>
+
+    <!-- PLAYER PIECES (Road, Settlement, City) with currentColor and outline -->
+
+    <!-- ROAD PIECE (ViewBox 0 0 40 16) -->
+    <symbol id="piece-road" viewBox="0 0 40 16">
+      <rect x="2" y="3" width="36" height="10" rx="3" fill="currentColor" stroke="#111111" stroke-width="1.8"/>
+      <rect x="5" y="5" width="30" height="2" fill="#ffffff" opacity="0.3"/>
+    </symbol>
+
+    <!-- SETTLEMENT PIECE (ViewBox 0 0 32 32) -->
+    <symbol id="piece-settlement" viewBox="0 0 32 32">
+      <!-- Small House silhouette with peaked roof and chimney -->
+      <polygon points="16,4 4,14 7,14 7,27 25,27 25,14 28,14" fill="currentColor" stroke="#111111" stroke-width="2"/>
+      <!-- Chimney -->
+      <rect x="20" y="6" width="3.5" height="6" fill="currentColor" stroke="#111111" stroke-width="1.5"/>
+      <!-- Light Roof Highlight -->
+      <polygon points="16,6 6,14 9,14 16,8 23,14 26,14" fill="#ffffff" opacity="0.35"/>
+      <!-- Door -->
+      <rect x="13.5" y="19" width="5" height="8" rx="1" fill="#111111" opacity="0.75"/>
+    </symbol>
+
+    <!-- CITY PIECE (ViewBox 0 0 40 36) -->
+    <symbol id="piece-city" viewBox="0 0 40 36">
+      <!-- Large Citadel building with crenellated tower and house wing -->
+      <g stroke="#111111" stroke-width="2" fill="currentColor">
+        <!-- Main body with tower on left and peaked hall on right -->
+        <path d="M4 10 L 8 10 L 8 12 L 12 12 L 12 10 L 16 10 L 16 16 L 28 6 L 37 14 L 37 32 L 4 32 Z"/>
+      </g>
+      <!-- Highlights & windows -->
+      <polygon points="28,8 19,16 35,16" fill="#ffffff" opacity="0.35"/>
+      <!-- Tower slits -->
+      <rect x="8" y="15" width="4" height="6" rx="1" fill="#111111" opacity="0.75"/>
+      <rect x="8" y="24" width="4" height="6" rx="1" fill="#111111" opacity="0.75"/>
+      <!-- Main Arch Gate -->
+      <path d="M22 24 Q 22 20 26 20 Q 30 20 30 24 L 30 32 L 22 32 Z" fill="#111111" opacity="0.75"/>
+    </symbol>
+
+    <!-- NON-COLOR GEOMETRIC MARKERS (For Color-blind accessibility, ViewBox 0 0 20 20) -->
+    <symbol id="marker-circle" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-square" viewBox="0 0 20 20">
+      <rect x="3.5" y="3.5" width="13" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-triangle" viewBox="0 0 20 20">
+      <polygon points="10,3 17.5,16 2.5,16" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-diamond" viewBox="0 0 20 20">
+      <polygon points="10,2.5 17.5,10 10,17.5 2.5,10" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-star" viewBox="0 0 20 20">
+      <polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="marker-cross" viewBox="0 0 20 20">
+      <path d="M4 4 L 16 16 M16 4 L 4 16" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="marker-hexagon" viewBox="0 0 20 20">
+      <polygon points="10,2.5 16.5,6.5 16.5,13.5 10,17.5 3.5,13.5 3.5,6.5" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-plus" viewBox="0 0 20 20">
+      <path d="M10 3 L 10 17 M3 10 L 17 10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- BANDIT PAWN (ViewBox 0 0 36 44) -->
+    <symbol id="piece-bandit" viewBox="0 0 36 44">
+      <!-- Soft base drop shadow -->
+      <ellipse cx="18" cy="40" rx="14" ry="4" fill="#000000" opacity="0.38"/>
+      <!-- Bandit Chess Pawn silhouette -->
+      <g stroke="#111111" stroke-width="1.8">
+        <!-- Head -->
+        <circle cx="18" cy="11" r="7.5" fill="#2d3138"/>
+        <!-- Collar ring -->
+        <ellipse cx="18" cy="18" rx="6" ry="2.2" fill="#1f2227"/>
+        <!-- Tapered torso -->
+        <path d="M13 19 Q 10 30 7 35 L 29 35 Q 26 30 23 19 Z" fill="#2d3138"/>
+        <!-- Base pedestal -->
+        <rect x="5" y="34" width="26" height="5" rx="2.5" fill="#1f2227"/>
+      </g>
+      <!-- Bandit Mask / Highlight -->
+      <path d="M13 11 Q 18 13 23 11" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- DEVELOPMENT CARD ART & ICONS (ViewBox 0 0 48 48) -->
+
+    <!-- Card: Knight -->
+    <symbol id="card-knight" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <!-- Crossed swords and helmet -->
+      <g stroke="#991b1b" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="12" x2="36" y2="36"/>
+        <line x1="36" y1="12" x2="12" y2="36"/>
+        <line x1="10" y1="16" x2="16" y2="10"/>
+        <line x1="38" y1="16" x2="32" y2="10"/>
+      </g>
+      <!-- Crusader Knight Helmet -->
+      <g stroke="#1f2937" stroke-width="1.5">
+        <path d="M17 18 Q 24 14 31 18 L 31 30 Q 24 35 17 30 Z" fill="#e5e7eb"/>
+        <!-- Visor slit cross -->
+        <line x1="24" y1="19" x2="24" y2="30" stroke="#991b1b" stroke-width="2"/>
+        <line x1="19" y1="23" x2="29" y2="23" stroke="#991b1b" stroke-width="2"/>
+      </g>
+    </symbol>
+
+    <!-- Card: Road Building -->
+    <symbol id="card-road-building" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+      <!-- Two connected road segments -->
+      <g stroke="#1e1b4b" stroke-width="1.5">
+        <path d="M8 32 L 22 20 L 40 26" fill="none" stroke="#4f46e5" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 32 L 22 20 L 40 26" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>
+        <!-- Shovel / pickax tool -->
+        <line x1="14" y1="12" x2="30" y2="28" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M11 9 L 16 14 L 14 17 L 9 12 Z" fill="#9ca3af" stroke="#374151" stroke-width="1"/>
+      </g>
+    </symbol>
+    <symbol id="card-road_building" viewBox="0 0 48 48"><use href="#card-road-building"/></symbol>
+
+    <!-- Card: Year of Plenty -->
+    <symbol id="card-year-of-plenty" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <!-- Cornucopia overflowing with fruits & grains -->
+      <g stroke="#78350f" stroke-width="1.5">
+        <path d="M38 16 Q 30 14 22 20 Q 14 26 8 36 Q 14 36 22 30 Q 30 24 38 28 Z" fill="#b45309"/>
+        <ellipse cx="38" cy="22" rx="4" ry="6" fill="#fef08a"/>
+        <!-- Spilling harvest -->
+        <circle cx="34" cy="26" r="3.5" fill="#ef4444"/>
+        <circle cx="39" cy="28" r="3" fill="#84cc16"/>
+        <circle cx="35" cy="32" r="3" fill="#eab308"/>
+        <circle cx="41" cy="33" r="2.5" fill="#a855f7"/>
+      </g>
+    </symbol>
+    <symbol id="card-year_of_plenty" viewBox="0 0 48 48"><use href="#card-year-of-plenty"/></symbol>
+
+    <!-- Card: Monopoly -->
+    <symbol id="card-monopoly" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <!-- Grasping Wealth Hand / Treasure Coin Stacks -->
+      <g stroke="#064e3b" stroke-width="1.5">
+        <!-- Coin stack 1 -->
+        <ellipse cx="18" cy="22" rx="6" ry="2.5" fill="#fbbf24"/>
+        <path d="M12 22 L 12 30 Q 18 33 24 30 L 24 22 Z" fill="#f59e0b"/>
+        <!-- Coin stack 2 (higher) -->
+        <ellipse cx="28" cy="18" rx="6" ry="2.5" fill="#fde047"/>
+        <path d="M22 18 L 22 30 Q 28 33 34 30 L 34 18 Z" fill="#fbbf24"/>
+        <!-- Big Gold Dollar/Coin Center -->
+        <circle cx="24" cy="20" r="7" fill="#fbbf24" stroke="#78350f" stroke-width="1.8"/>
+        <text x="24" y="24" font-size="10" font-weight="900" text-anchor="middle" fill="#78350f">M</text>
+      </g>
+    </symbol>
+
+    <!-- Card: Victory Point (Monument / Trophy / Star) -->
+    <symbol id="card-victory-point" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fdf4ff" stroke="#a855f7" stroke-width="2"/>
+      <!-- Classical Golden Trophy Cup -->
+      <g stroke="#581c87" stroke-width="1.5">
+        <!-- Cup bowl -->
+        <path d="M15 12 L 33 12 L 31 23 Q 24 28 17 23 Z" fill="#facc15"/>
+        <!-- Handles -->
+        <path d="M15 14 Q 10 16 12 20 Q 14 24 18 22" fill="none" stroke-width="2"/>
+        <path d="M33 14 Q 38 16 36 20 Q 34 24 30 22" fill="none" stroke-width="2"/>
+        <!-- Stem & Base -->
+        <rect x="22" y="27" width="4" height="6" fill="#eab308"/>
+        <rect x="16" y="33" width="16" height="5" rx="1.5" fill="#ca8a04"/>
+        <!-- Victory Star -->
+        <polygon points="24,14 25.5,17.5 29,18 26.5,20.5 27,24 24,22 21,24 21.5,20.5 19,18 22.5,17.5" fill="#ffffff" stroke="none"/>
+      </g>
+    </symbol>
+    <symbol id="card-victory_point" viewBox="0 0 48 48"><use href="#card-victory-point"/></symbol>
+
+    <!-- Card Back (ViewBox 0 0 48 64) -->
+    <symbol id="card-back" viewBox="0 0 48 64">
+      <rect x="2" y="2" width="44" height="60" rx="4" fill="#7f1d1d" stroke="#fef2f2" stroke-width="1.8"/>
+      <rect x="5" y="5" width="38" height="54" rx="2" fill="none" stroke="#fca5a5" stroke-width="1" stroke-dasharray="3 2"/>
+      <!-- Compass Rose / Hexagon Crest -->
+      <polygon points="24,18 34,24 34,36 24,42 14,36 14,24" fill="#991b1b" stroke="#fef2f2" stroke-width="1.2"/>
+      <polygon points="24,22 30,26 30,34 24,38 18,34 18,26" fill="#b91c1c"/>
+      <circle cx="24" cy="30" r="3" fill="#fef2f2"/>
+    </symbol>
+
+    <!-- GENERAL ICONS (Trophies, Dice, Bank, Bot, etc., ViewBox 0 0 24 24) -->
+
+    <!-- Trophy / VP Icon -->
+    <symbol id="icon-vp" viewBox="0 0 24 24">
+      <path d="M7 4 L 17 4 L 16 11 Q 12 15 8 11 Z" fill="#eab308" stroke="#854d0e" stroke-width="1.5"/>
+      <path d="M7 6 Q 4 8 5 11 Q 6 13 8 12" fill="none" stroke="#854d0e" stroke-width="1.5"/>
+      <path d="M17 6 Q 20 8 19 11 Q 18 13 16 12" fill="none" stroke="#854d0e" stroke-width="1.5"/>
+      <rect x="11" y="14" width="2" height="4" fill="#ca8a04"/>
+      <rect x="7" y="18" width="10" height="3" rx="1" fill="#a16207"/>
+    </symbol>
+
+    <!-- Longest Road Pennant -->
+    <symbol id="icon-longest-road" viewBox="0 0 24 24">
+      <path d="M4 20 L 10 12 L 14 16 L 20 4" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="4" cy="20" r="2.5" fill="#1d4ed8"/>
+      <circle cx="10" cy="12" r="2.5" fill="#1d4ed8"/>
+      <circle cx="14" cy="16" r="2.5" fill="#1d4ed8"/>
+      <circle cx="20" cy="4" r="2.5" fill="#1d4ed8"/>
+    </symbol>
+
+    <!-- Largest Army Shield -->
+    <symbol id="icon-army" viewBox="0 0 24 24">
+      <path d="M12 2 L 19 5 L 19 12 Q 19 18 12 22 Q 5 18 5 12 L 5 5 Z" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
+      <line x1="12" y1="6" x2="12" y2="18" stroke="#fee2e2" stroke-width="1.5"/>
+      <line x1="8" y1="10" x2="16" y2="10" stroke="#fee2e2" stroke-width="1.5"/>
+    </symbol>
+
+    <!-- Dice Pair -->
+    <symbol id="icon-dice" viewBox="0 0 24 24">
+      <rect x="2" y="6" width="12" height="12" rx="2.5" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+      <circle cx="5" cy="9" r="1" fill="#1f2937"/>
+      <circle cx="8" cy="12" r="1" fill="#dc2626"/>
+      <circle cx="11" cy="15" r="1" fill="#1f2937"/>
+      <rect x="10" y="2" width="12" height="12" rx="2.5" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+      <circle cx="13" cy="5" r="1" fill="#1f2937"/>
+      <circle cx="19" cy="11" r="1" fill="#1f2937"/>
+    </symbol>
+
+    <!-- Bank Facade -->
+    <symbol id="icon-bank" viewBox="0 0 24 24">
+      <!-- Pediment -->
+      <polygon points="12,3 2,8 22,8" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+      <!-- Columns -->
+      <rect x="4" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="8.7" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="13.3" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="18" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <!-- Base -->
+      <rect x="2" y="19" width="20" height="3" rx="0.5" fill="#475569" stroke="#334155" stroke-width="1"/>
+    </symbol>
+
+    <!-- Bot / Robot Icon -->
+    <symbol id="icon-bot" viewBox="0 0 24 24">
+      <!-- Antenna -->
+      <line x1="12" y1="2" x2="12" y2="5" stroke="#6366f1" stroke-width="2"/>
+      <circle cx="12" cy="2" r="1.5" fill="#4338ca"/>
+      <!-- Robot Head -->
+      <rect x="4" y="6" width="16" height="13" rx="3" fill="#818cf8" stroke="#3730a3" stroke-width="1.5"/>
+      <!-- Eyes -->
+      <circle cx="8.5" cy="11" r="2" fill="#1e1b4b"/>
+      <circle cx="8.5" cy="11" r="0.8" fill="#a5f3fc"/>
+      <circle cx="15.5" cy="11" r="2" fill="#1e1b4b"/>
+      <circle cx="15.5" cy="11" r="0.8" fill="#a5f3fc"/>
+      <!-- Mouth -->
+      <line x1="8" y1="15" x2="16" y2="15" stroke="#1e1b4b" stroke-width="1.5" stroke-dasharray="2 1"/>
+      <!-- Ear bolts -->
+      <rect x="1.5" y="10" width="2.5" height="5" rx="1" fill="#4338ca"/>
+      <rect x="20" y="10" width="2.5" height="5" rx="1" fill="#4338ca"/>
+    </symbol>
+
+    <!-- Timer / Stopwatch -->
+    <symbol id="icon-timer" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="12" y1="13" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="10" y1="2" x2="14" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- Lock / Hidden -->
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor" stroke="#111" stroke-width="1.2"/>
+      <path d="M8 10 L 8 6 Q 8 2 12 2 Q 16 2 16 6 L 16 10" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="12" cy="15" r="1.5" fill="#fff"/>
+    </symbol>
+
+    <!-- Map Editor & Zoom Tools -->
+    <symbol id="icon-zoom-in" viewBox="0 0 24 24">
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="10" y1="7" x2="10" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="7" y1="10" x2="13" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-zoom-out" viewBox="0 0 24 24">
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="7" y1="10" x2="13" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-zoom-reset" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-undo" viewBox="0 0 24 24">
+      <path d="M9 14 L 4 9 L 9 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4 9 L 14 9 Q 20 9 20 15 Q 20 20 14 20 L 8 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-redo" viewBox="0 0 24 24">
+      <path d="M15 14 L 20 9 L 15 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 9 L 10 9 Q 4 9 4 15 Q 4 20 10 20 L 16 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-brush" viewBox="0 0 24 24">
+      <path d="M18 3 L 21 6 L 12 15 L 9 15 L 9 12 Z" fill="currentColor" stroke="#111" stroke-width="1.2"/>
+      <path d="M9 15 Q 5 17 4 21 Q 8 21 10 17 Z" fill="#d97706"/>
+    </symbol>
+
+    <symbol id="icon-wrench" viewBox="0 0 24 24">
+      <path d="M14 4 Q 17 1 20 4 Q 23 7 20 10 L 9 21 L 4 21 L 4 16 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+  </defs>
+</svg>

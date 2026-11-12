@@ -8,6 +8,604 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- INLINE SVG SPRITE (Loaded synchronously in-DOM, 0 network requests) -->
+  <div id="catan-svg-sprite-container" style="display:none;" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <defs>
+    <!-- TERRAIN TILES (Hexagonal ViewBox 0 0 100 115.47) -->
+    <!-- Center (50, 57.74), radius R=50. Vertices at (50, 7.74), (93.3, 32.74), (93.3, 82.74), (50, 107.74), (6.7, 82.74), (6.7, 32.74) -->
+
+    <!-- FOREST (Lumber) -->
+    <symbol id="tile-forest" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#2d6a4f" stroke="#1b4332" stroke-width="2.5"/>
+      <!-- Soft depth shading -->
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#1b4332" opacity="0.15"/>
+      <!-- Pine Trees Silhouettes -->
+      <g fill="#1b4332">
+        <!-- Center Big Pine -->
+        <polygon points="50,26 42,40 45,40 38,54 43,54 35,68 65,68 57,54 62,54 55,40 58,40"/>
+        <rect x="48" y="68" width="4" height="8" fill="#402010"/>
+        <!-- Left Pine -->
+        <polygon points="28,42 22,52 24,52 19,62 23,62 17,74 39,74 33,62 37,62 32,52 34,52"/>
+        <rect x="26.5" y="74" width="3" height="6" fill="#402010"/>
+        <!-- Right Pine -->
+        <polygon points="72,42 66,52 68,52 63,62 67,62 61,74 83,74 77,62 81,62 76,52 78,52"/>
+        <rect x="70.5" y="74" width="3" height="6" fill="#402010"/>
+        <!-- Small Background Trees -->
+        <polygon points="38,28 32,38 44,38" opacity="0.7"/>
+        <polygon points="62,28 56,38 68,38" opacity="0.7"/>
+      </g>
+      <!-- Foliage texture highlights -->
+      <path d="M47 38 L50 33 L53 38 M43 51 L50 44 L57 51 M40 64 L50 56 L60 64" stroke="#52b788" stroke-width="1.5" fill="none" opacity="0.8"/>
+    </symbol>
+
+    <!-- HILLS (Brick) -->
+    <symbol id="tile-hills" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#b05d3b" stroke="#78341c" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#78341c" opacity="0.15"/>
+      <!-- Hill Curves and Terraces -->
+      <path d="M10 75 Q 35 55 60 70 T 92 65" fill="none" stroke="#d97750" stroke-width="2" opacity="0.6"/>
+      <path d="M8 50 Q 40 32 75 48" fill="none" stroke="#d97750" stroke-width="2" opacity="0.6"/>
+      <!-- Brickwork / Masonry courses in hill face -->
+      <g fill="#78341c" stroke="#502010" stroke-width="0.8">
+        <!-- Row 1 -->
+        <rect x="36" y="44" width="12" height="6" rx="0.5"/>
+        <rect x="50" y="44" width="12" height="6" rx="0.5"/>
+        <!-- Row 2 -->
+        <rect x="30" y="52" width="11" height="6" rx="0.5"/>
+        <rect x="43" y="52" width="12" height="6" rx="0.5"/>
+        <rect x="57" y="52" width="11" height="6" rx="0.5"/>
+        <!-- Row 3 -->
+        <rect x="24" y="60" width="12" height="6" rx="0.5"/>
+        <rect x="38" y="60" width="11" height="6" rx="0.5"/>
+        <rect x="51" y="60" width="11" height="6" rx="0.5"/>
+        <rect x="64" y="60" width="12" height="6" rx="0.5"/>
+        <!-- Row 4 -->
+        <rect x="32" y="68" width="12" height="6" rx="0.5"/>
+        <rect x="46" y="68" width="12" height="6" rx="0.5"/>
+        <rect x="60" y="68" width="12" height="6" rx="0.5"/>
+      </g>
+    </symbol>
+
+    <!-- PASTURE (Wool) -->
+    <symbol id="tile-pasture" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#70a944" stroke="#487524" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#487524" opacity="0.12"/>
+      <!-- Rolling meadow hills -->
+      <path d="M6 68 Q 30 45 65 65 T 94 62 M12 48 Q 50 30 88 46" fill="none" stroke="#92cf5b" stroke-width="2"/>
+      <!-- Sheep Silhouette 1 (Center) -->
+      <g transform="translate(42, 54)">
+        <path d="M4 12 L4 18 M14 12 L14 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0" stroke="#d5dad0" stroke-width="1"/>
+        <circle cx="4" cy="7" r="3.5" fill="#f4f6f0"/>
+        <circle cx="14" cy="7" r="3.5" fill="#f4f6f0"/>
+        <circle cx="9" cy="4" r="3.5" fill="#f4f6f0"/>
+        <ellipse cx="17" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+      <!-- Small Sheep 2 (Right pasture) -->
+      <g transform="translate(68, 40) scale(0.65)">
+        <path d="M4 12 L4 18 M13 12 L13 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0"/>
+        <ellipse cx="17" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+      <!-- Small Sheep 3 (Left pasture) -->
+      <g transform="translate(18, 62) scale(0.65)">
+        <path d="M4 12 L4 18 M13 12 L13 18" stroke="#222" stroke-width="2"/>
+        <ellipse cx="9" cy="9" rx="8" ry="6" fill="#f4f6f0"/>
+        <ellipse cx="1" cy="6" rx="3.5" ry="3" fill="#2b2d2f"/>
+      </g>
+    </symbol>
+
+    <!-- FIELDS (Grain) -->
+    <symbol id="tile-fields" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#e9b634" stroke="#a67c17" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#a67c17" opacity="0.15"/>
+      <!-- Furrow lines across agricultural fields -->
+      <path d="M12 75 L 88 45 M16 65 L 84 35 M22 85 L 78 55" stroke="#f6ce65" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <!-- Wheat stalk sheaves -->
+      <g stroke="#8c6508" stroke-width="1.4" fill="none">
+        <!-- Sheaf 1 -->
+        <path d="M48 76 Q 49 52 42 36 M50 76 L 50 34 M52 76 Q 51 52 58 36"/>
+        <!-- Sheaf 2 Left -->
+        <path d="M28 72 Q 29 55 24 44 M30 72 L 30 42 M32 72 Q 31 55 36 44"/>
+        <!-- Sheaf 3 Right -->
+        <path d="M68 72 Q 69 55 64 44 M70 72 L 70 42 M72 72 Q 71 55 76 44"/>
+      </g>
+      <!-- Wheat grains -->
+      <g fill="#fff0a0" stroke="#8c6508" stroke-width="0.8">
+        <ellipse cx="50" cy="34" rx="2" ry="4"/>
+        <ellipse cx="43" cy="38" rx="2" ry="3.5" transform="rotate(-20 43 38)"/>
+        <ellipse cx="57" cy="38" rx="2" ry="3.5" transform="rotate(20 57 38)"/>
+        <ellipse cx="44" cy="46" rx="2" ry="3.5" transform="rotate(-20 44 46)"/>
+        <ellipse cx="56" cy="46" rx="2" ry="3.5" transform="rotate(20 56 46)"/>
+        <!-- Tied ribbon on bundle -->
+        <rect x="47" y="60" width="6" height="3" rx="1" fill="#b9381e"/>
+      </g>
+    </symbol>
+
+    <!-- MOUNTAINS (Ore) -->
+    <symbol id="tile-mountains" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#6d7582" stroke="#444b55" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#444b55" opacity="0.15"/>
+      <!-- Background Peak -->
+      <polygon points="32,32 18,65 46,65" fill="#4a525e"/>
+      <polygon points="32,32 30,42 34,44 32,48 40,46" fill="#d8e1e8"/>
+      <!-- Main Center Jagged Mountain Peak -->
+      <polygon points="52,22 28,78 76,78" fill="#5a626f" stroke="#333840" stroke-width="1.5"/>
+      <!-- Dark Shaded Mountain Flank -->
+      <polygon points="52,22 52,78 76,78" fill="#3b414a"/>
+      <!-- Crisp Snow Cap -->
+      <polygon points="52,22 42,42 46,45 44,50 52,48 57,51 55,44 62,42" fill="#f0f5fa" stroke="#cad5e0" stroke-width="0.8"/>
+      <!-- Right Mountain Peak -->
+      <polygon points="72,36 56,76 88,76" fill="#4f5663" stroke="#333840" stroke-width="1.2"/>
+      <polygon points="72,36 72,76 88,76" fill="#323740"/>
+      <polygon points="72,36 65,48 69,51 72,50 75,53 78,48" fill="#e8eff5"/>
+      <!-- Ore Vein / Mineral Strata -->
+      <path d="M38 68 L 46 64 M58 66 L 68 62" stroke="#b8c8d8" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- DESERT (Bandit Domain) -->
+    <symbol id="tile-desert" viewBox="0 0 100 116">
+      <polygon points="50,4 95,30 95,86 50,112 5,86 5,30" fill="#dfbe84" stroke="#a48446" stroke-width="2.5"/>
+      <polygon points="50,4 95,30 95,86 50,112 50,58" fill="#a48446" opacity="0.15"/>
+      <!-- Sweeping Sand Dunes -->
+      <path d="M8 48 Q 45 32 80 50" fill="none" stroke="#caa260" stroke-width="2.2"/>
+      <path d="M20 66 Q 55 52 92 68" fill="none" stroke="#b8904e" stroke-width="2.5"/>
+      <path d="M6 82 Q 40 70 82 86" fill="none" stroke="#a8803e" stroke-width="2"/>
+      <!-- Desert Cactus -->
+      <g fill="#527845" stroke="#2d4a22" stroke-width="1">
+        <!-- Trunk -->
+        <rect x="48" y="44" width="5" height="24" rx="2.5"/>
+        <!-- Left arm -->
+        <path d="M42 50 L 42 56 Q 42 58 48 58" fill="none" stroke="#527845" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M42 50 L 42 56 Q 42 58 48 58" fill="none" stroke="#2d4a22" stroke-width="1"/>
+        <!-- Right arm -->
+        <path d="M59 47 L 59 52 Q 59 54 53 54" fill="none" stroke="#527845" stroke-width="4" stroke-linecap="round"/>
+        <path d="M59 47 L 59 52 Q 59 54 53 54" fill="none" stroke="#2d4a22" stroke-width="1"/>
+      </g>
+      <!-- Sun rays heat ripple -->
+      <circle cx="50.5" cy="30" r="4.5" fill="#f8d488" stroke="#d8a848" stroke-width="1.2"/>
+    </symbol>
+
+    <!-- RESOURCE ICONS (ViewBox 0 0 32 32) -->
+
+    <!-- LUMBER ICON -->
+    <symbol id="icon-lumber" viewBox="0 0 32 32">
+      <!-- Stack of three timber logs -->
+      <g stroke="#3a1d0d" stroke-width="1.2">
+        <!-- Bottom left log -->
+        <path d="M6 18 L 22 18 Q 24 18 24 22 Q 24 26 22 26 L 6 26 Z" fill="#78401c"/>
+        <ellipse cx="6" cy="22" rx="3.5" ry="4" fill="#a46032"/>
+        <circle cx="6" cy="22" r="1.5" fill="#582a10"/>
+        <!-- Bottom right log -->
+        <path d="M12 18 L 26 18 Q 28 18 28 22 Q 28 26 26 26 L 12 26 Z" fill="#884820"/>
+        <ellipse cx="12" cy="22" rx="3.5" ry="4" fill="#b06c3a"/>
+        <circle cx="12" cy="22" r="1.5" fill="#683214"/>
+        <!-- Top log -->
+        <path d="M9 10 L 25 10 Q 27 10 27 14 Q 27 18 25 18 L 9 18 Z" fill="#9e5628"/>
+        <ellipse cx="9" cy="14" rx="3.5" ry="4" fill="#c47d44"/>
+        <circle cx="9" cy="14" r="1.5" fill="#783c18"/>
+      </g>
+    </symbol>
+
+    <!-- BRICK ICON -->
+    <symbol id="icon-brick" viewBox="0 0 32 32">
+      <!-- 3D Mortared Clay Bricks -->
+      <g stroke="#4f1b0a" stroke-width="1.1">
+        <!-- Top Brick -->
+        <path d="M7 8 L 19 8 L 25 12 L 13 12 Z" fill="#d96c4a"/>
+        <path d="M7 8 L 13 12 L 13 17 L 7 13 Z" fill="#943618"/>
+        <path d="M13 12 L 25 12 L 25 17 L 13 17 Z" fill="#b84c28"/>
+        <!-- Bottom Brick -->
+        <path d="M13 17 L 21 17 L 27 21 L 19 21 Z" fill="#d96c4a"/>
+        <path d="M5 21 L 19 21 L 19 26 L 5 26 Z" fill="#b84c28"/>
+        <path d="M19 21 L 27 21 L 27 26 L 19 26 Z" fill="#943618"/>
+      </g>
+    </symbol>
+
+    <!-- WOOL ICON -->
+    <symbol id="icon-wool" viewBox="0 0 32 32">
+      <!-- Fluffy Cloud-like Sheep Fleece / Yarn Ball -->
+      <g stroke="#405030" stroke-width="1.2">
+        <circle cx="16" cy="16" r="11" fill="#f0f6e8"/>
+        <!-- Fluffy bumps -->
+        <circle cx="10" cy="11" r="5" fill="#ffffff"/>
+        <circle cx="17" cy="8" r="5" fill="#ffffff"/>
+        <circle cx="23" cy="12" r="5" fill="#ffffff"/>
+        <circle cx="24" cy="19" r="5" fill="#ffffff"/>
+        <circle cx="19" cy="23" r="5" fill="#ffffff"/>
+        <circle cx="11" cy="21" r="5" fill="#ffffff"/>
+        <circle cx="7" cy="16" r="4.5" fill="#ffffff"/>
+        <!-- Sheep face badge in center -->
+        <ellipse cx="16" cy="16" rx="4.5" ry="4" fill="#30353b"/>
+        <ellipse cx="13" cy="14" rx="1.5" ry="1.2" fill="#30353b" transform="rotate(-30 13 14)"/>
+        <ellipse cx="19" cy="14" rx="1.5" ry="1.2" fill="#30353b" transform="rotate(30 19 14)"/>
+        <circle cx="14.5" cy="15.5" r="0.7" fill="#ffffff"/>
+        <circle cx="17.5" cy="15.5" r="0.7" fill="#ffffff"/>
+      </g>
+    </symbol>
+
+    <!-- GRAIN ICON -->
+    <symbol id="icon-grain" viewBox="0 0 32 32">
+      <!-- Golden Sheaves of Wheat -->
+      <g stroke="#7a5506" stroke-width="1.2">
+        <!-- Stem -->
+        <path d="M8 27 Q 16 23 20 8" fill="none" stroke-width="1.8"/>
+        <!-- Left grains -->
+        <ellipse cx="12" cy="21" rx="2.5" ry="4.5" fill="#f6c844" transform="rotate(-35 12 21)"/>
+        <ellipse cx="14" cy="15" rx="2.5" ry="4.5" fill="#f8d660" transform="rotate(-35 14 15)"/>
+        <ellipse cx="17" cy="9" rx="2.2" ry="4" fill="#fae280" transform="rotate(-30 17 9)"/>
+        <!-- Right grains -->
+        <ellipse cx="18" cy="23" rx="2.5" ry="4.5" fill="#f6c844" transform="rotate(35 18 23)"/>
+        <ellipse cx="20" cy="17" rx="2.5" ry="4.5" fill="#f8d660" transform="rotate(35 20 17)"/>
+        <ellipse cx="22" cy="11" rx="2.2" ry="4" fill="#fae280" transform="rotate(30 22 11)"/>
+        <!-- Tip grain -->
+        <ellipse cx="20" cy="6" rx="2" ry="3.5" fill="#fff099"/>
+      </g>
+    </symbol>
+
+    <!-- ORE ICON -->
+    <symbol id="icon-ore" viewBox="0 0 32 32">
+      <!-- Crystalline Rock/Ore Boulder with Facets -->
+      <g stroke="#262d36" stroke-width="1.2">
+        <polygon points="16,4 27,10 28,21 19,28 7,24 5,12" fill="#717c8d"/>
+        <!-- Facets -->
+        <polygon points="16,4 12,13 19,16 27,10" fill="#9ba8bb"/>
+        <polygon points="12,13 5,12 7,24 13,20" fill="#586373"/>
+        <polygon points="12,13 13,20 19,28 19,16" fill="#46505e"/>
+        <polygon points="19,16 19,28 28,21 27,10" fill="#353c47"/>
+        <!-- Shiny ore glint -->
+        <polygon points="15,6 18,7 16,10 13,9" fill="#eaf0f8"/>
+      </g>
+    </symbol>
+
+    <!-- NUMBER TOKENS (ViewBox 0 0 40 40) -->
+
+    <!-- Standard Token (2, 3, 4, 5, 9, 10, 11, 12) -->
+    <symbol id="token-standard" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="#f5ede0" stroke="#bfa682" stroke-width="2"/>
+      <circle cx="20" cy="20" r="14.5" fill="none" stroke="#d5c09e" stroke-width="0.8"/>
+    </symbol>
+
+    <!-- High-Probability Token (6 & 8) with Double Concentric Ring -->
+    <symbol id="token-high-prob" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="#fff7eb" stroke="#c0392b" stroke-width="2.5"/>
+      <circle cx="20" cy="20" r="14.5" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="4 2"/>
+    </symbol>
+
+    <!-- HARBOR DOCK & SHIP (ViewBox 0 0 48 36) -->
+    <symbol id="harbor-dock" viewBox="0 0 48 36">
+      <!-- Wooden Pier Planks -->
+      <line x1="8" y1="28" x2="20" y2="16" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="40" y1="28" x2="28" y2="16" stroke="#8b5a2b" stroke-width="3" stroke-linecap="round"/>
+      <path d="M16 16 L 32 16 L 30 19 L 18 19 Z" fill="#5c3818"/>
+      <!-- Merchant Sailing Ship -->
+      <g stroke="#1a2530" stroke-width="1">
+        <!-- Hull -->
+        <path d="M14 18 L 34 18 Q 36 24 30 25 L 18 25 Q 12 24 14 18 Z" fill="#6d4722"/>
+        <!-- Mast -->
+        <line x1="24" y1="7" x2="24" y2="18" stroke="#333" stroke-width="1.5"/>
+        <!-- White Canvas Sails -->
+        <path d="M24 8 Q 16 11 17 17 L 24 17 Z" fill="#f4f6fa"/>
+        <path d="M25 9 Q 32 12 31 17 L 25 17 Z" fill="#e2e6ee"/>
+        <!-- Pennant Flag -->
+        <polygon points="24,7 28,5 24,5" fill="#d93829"/>
+      </g>
+    </symbol>
+
+    <!-- PLAYER PIECES (Road, Settlement, City) with currentColor and outline -->
+
+    <!-- ROAD PIECE (ViewBox 0 0 40 16) -->
+    <symbol id="piece-road" viewBox="0 0 40 16">
+      <rect x="2" y="3" width="36" height="10" rx="3" fill="currentColor" stroke="#111111" stroke-width="1.8"/>
+      <rect x="5" y="5" width="30" height="2" fill="#ffffff" opacity="0.3"/>
+    </symbol>
+
+    <!-- SETTLEMENT PIECE (ViewBox 0 0 32 32) -->
+    <symbol id="piece-settlement" viewBox="0 0 32 32">
+      <!-- Small House silhouette with peaked roof and chimney -->
+      <polygon points="16,4 4,14 7,14 7,27 25,27 25,14 28,14" fill="currentColor" stroke="#111111" stroke-width="2"/>
+      <!-- Chimney -->
+      <rect x="20" y="6" width="3.5" height="6" fill="currentColor" stroke="#111111" stroke-width="1.5"/>
+      <!-- Light Roof Highlight -->
+      <polygon points="16,6 6,14 9,14 16,8 23,14 26,14" fill="#ffffff" opacity="0.35"/>
+      <!-- Door -->
+      <rect x="13.5" y="19" width="5" height="8" rx="1" fill="#111111" opacity="0.75"/>
+    </symbol>
+
+    <!-- CITY PIECE (ViewBox 0 0 40 36) -->
+    <symbol id="piece-city" viewBox="0 0 40 36">
+      <!-- Large Citadel building with crenellated tower and house wing -->
+      <g stroke="#111111" stroke-width="2" fill="currentColor">
+        <!-- Main body with tower on left and peaked hall on right -->
+        <path d="M4 10 L 8 10 L 8 12 L 12 12 L 12 10 L 16 10 L 16 16 L 28 6 L 37 14 L 37 32 L 4 32 Z"/>
+      </g>
+      <!-- Highlights & windows -->
+      <polygon points="28,8 19,16 35,16" fill="#ffffff" opacity="0.35"/>
+      <!-- Tower slits -->
+      <rect x="8" y="15" width="4" height="6" rx="1" fill="#111111" opacity="0.75"/>
+      <rect x="8" y="24" width="4" height="6" rx="1" fill="#111111" opacity="0.75"/>
+      <!-- Main Arch Gate -->
+      <path d="M22 24 Q 22 20 26 20 Q 30 20 30 24 L 30 32 L 22 32 Z" fill="#111111" opacity="0.75"/>
+    </symbol>
+
+    <!-- NON-COLOR GEOMETRIC MARKERS (For Color-blind accessibility, ViewBox 0 0 20 20) -->
+    <symbol id="marker-circle" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-square" viewBox="0 0 20 20">
+      <rect x="3.5" y="3.5" width="13" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-triangle" viewBox="0 0 20 20">
+      <polygon points="10,3 17.5,16 2.5,16" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-diamond" viewBox="0 0 20 20">
+      <polygon points="10,2.5 17.5,10 10,17.5 2.5,10" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-star" viewBox="0 0 20 20">
+      <polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="marker-cross" viewBox="0 0 20 20">
+      <path d="M4 4 L 16 16 M16 4 L 4 16" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="marker-hexagon" viewBox="0 0 20 20">
+      <polygon points="10,2.5 16.5,6.5 16.5,13.5 10,17.5 3.5,13.5 3.5,6.5" fill="none" stroke="currentColor" stroke-width="3"/>
+    </symbol>
+
+    <symbol id="marker-plus" viewBox="0 0 20 20">
+      <path d="M10 3 L 10 17 M3 10 L 17 10" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- BANDIT PAWN (ViewBox 0 0 36 44) -->
+    <symbol id="piece-bandit" viewBox="0 0 36 44">
+      <!-- Soft base drop shadow -->
+      <ellipse cx="18" cy="40" rx="14" ry="4" fill="#000000" opacity="0.38"/>
+      <!-- Bandit Chess Pawn silhouette -->
+      <g stroke="#111111" stroke-width="1.8">
+        <!-- Head -->
+        <circle cx="18" cy="11" r="7.5" fill="#2d3138"/>
+        <!-- Collar ring -->
+        <ellipse cx="18" cy="18" rx="6" ry="2.2" fill="#1f2227"/>
+        <!-- Tapered torso -->
+        <path d="M13 19 Q 10 30 7 35 L 29 35 Q 26 30 23 19 Z" fill="#2d3138"/>
+        <!-- Base pedestal -->
+        <rect x="5" y="34" width="26" height="5" rx="2.5" fill="#1f2227"/>
+      </g>
+      <!-- Bandit Mask / Highlight -->
+      <path d="M13 11 Q 18 13 23 11" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- DEVELOPMENT CARD ART & ICONS (ViewBox 0 0 48 48) -->
+
+    <!-- Card: Knight -->
+    <symbol id="card-knight" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <!-- Crossed swords and helmet -->
+      <g stroke="#991b1b" stroke-width="2" stroke-linecap="round">
+        <line x1="12" y1="12" x2="36" y2="36"/>
+        <line x1="36" y1="12" x2="12" y2="36"/>
+        <line x1="10" y1="16" x2="16" y2="10"/>
+        <line x1="38" y1="16" x2="32" y2="10"/>
+      </g>
+      <!-- Crusader Knight Helmet -->
+      <g stroke="#1f2937" stroke-width="1.5">
+        <path d="M17 18 Q 24 14 31 18 L 31 30 Q 24 35 17 30 Z" fill="#e5e7eb"/>
+        <!-- Visor slit cross -->
+        <line x1="24" y1="19" x2="24" y2="30" stroke="#991b1b" stroke-width="2"/>
+        <line x1="19" y1="23" x2="29" y2="23" stroke="#991b1b" stroke-width="2"/>
+      </g>
+    </symbol>
+
+    <!-- Card: Road Building -->
+    <symbol id="card-road-building" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+      <!-- Two connected road segments -->
+      <g stroke="#1e1b4b" stroke-width="1.5">
+        <path d="M8 32 L 22 20 L 40 26" fill="none" stroke="#4f46e5" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 32 L 22 20 L 40 26" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>
+        <!-- Shovel / pickax tool -->
+        <line x1="14" y1="12" x2="30" y2="28" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M11 9 L 16 14 L 14 17 L 9 12 Z" fill="#9ca3af" stroke="#374151" stroke-width="1"/>
+      </g>
+    </symbol>
+    <symbol id="card-road_building" viewBox="0 0 48 48"><use href="#card-road-building"/></symbol>
+
+    <!-- Card: Year of Plenty -->
+    <symbol id="card-year-of-plenty" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <!-- Cornucopia overflowing with fruits & grains -->
+      <g stroke="#78350f" stroke-width="1.5">
+        <path d="M38 16 Q 30 14 22 20 Q 14 26 8 36 Q 14 36 22 30 Q 30 24 38 28 Z" fill="#b45309"/>
+        <ellipse cx="38" cy="22" rx="4" ry="6" fill="#fef08a"/>
+        <!-- Spilling harvest -->
+        <circle cx="34" cy="26" r="3.5" fill="#ef4444"/>
+        <circle cx="39" cy="28" r="3" fill="#84cc16"/>
+        <circle cx="35" cy="32" r="3" fill="#eab308"/>
+        <circle cx="41" cy="33" r="2.5" fill="#a855f7"/>
+      </g>
+    </symbol>
+    <symbol id="card-year_of_plenty" viewBox="0 0 48 48"><use href="#card-year-of-plenty"/></symbol>
+
+    <!-- Card: Monopoly -->
+    <symbol id="card-monopoly" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <!-- Grasping Wealth Hand / Treasure Coin Stacks -->
+      <g stroke="#064e3b" stroke-width="1.5">
+        <!-- Coin stack 1 -->
+        <ellipse cx="18" cy="22" rx="6" ry="2.5" fill="#fbbf24"/>
+        <path d="M12 22 L 12 30 Q 18 33 24 30 L 24 22 Z" fill="#f59e0b"/>
+        <!-- Coin stack 2 (higher) -->
+        <ellipse cx="28" cy="18" rx="6" ry="2.5" fill="#fde047"/>
+        <path d="M22 18 L 22 30 Q 28 33 34 30 L 34 18 Z" fill="#fbbf24"/>
+        <!-- Big Gold Dollar/Coin Center -->
+        <circle cx="24" cy="20" r="7" fill="#fbbf24" stroke="#78350f" stroke-width="1.8"/>
+        <text x="24" y="24" font-size="10" font-weight="900" text-anchor="middle" fill="#78350f">M</text>
+      </g>
+    </symbol>
+
+    <!-- Card: Victory Point (Monument / Trophy / Star) -->
+    <symbol id="card-victory-point" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="22" fill="#fdf4ff" stroke="#a855f7" stroke-width="2"/>
+      <!-- Classical Golden Trophy Cup -->
+      <g stroke="#581c87" stroke-width="1.5">
+        <!-- Cup bowl -->
+        <path d="M15 12 L 33 12 L 31 23 Q 24 28 17 23 Z" fill="#facc15"/>
+        <!-- Handles -->
+        <path d="M15 14 Q 10 16 12 20 Q 14 24 18 22" fill="none" stroke-width="2"/>
+        <path d="M33 14 Q 38 16 36 20 Q 34 24 30 22" fill="none" stroke-width="2"/>
+        <!-- Stem & Base -->
+        <rect x="22" y="27" width="4" height="6" fill="#eab308"/>
+        <rect x="16" y="33" width="16" height="5" rx="1.5" fill="#ca8a04"/>
+        <!-- Victory Star -->
+        <polygon points="24,14 25.5,17.5 29,18 26.5,20.5 27,24 24,22 21,24 21.5,20.5 19,18 22.5,17.5" fill="#ffffff" stroke="none"/>
+      </g>
+    </symbol>
+    <symbol id="card-victory_point" viewBox="0 0 48 48"><use href="#card-victory-point"/></symbol>
+
+    <!-- Card Back (ViewBox 0 0 48 64) -->
+    <symbol id="card-back" viewBox="0 0 48 64">
+      <rect x="2" y="2" width="44" height="60" rx="4" fill="#7f1d1d" stroke="#fef2f2" stroke-width="1.8"/>
+      <rect x="5" y="5" width="38" height="54" rx="2" fill="none" stroke="#fca5a5" stroke-width="1" stroke-dasharray="3 2"/>
+      <!-- Compass Rose / Hexagon Crest -->
+      <polygon points="24,18 34,24 34,36 24,42 14,36 14,24" fill="#991b1b" stroke="#fef2f2" stroke-width="1.2"/>
+      <polygon points="24,22 30,26 30,34 24,38 18,34 18,26" fill="#b91c1c"/>
+      <circle cx="24" cy="30" r="3" fill="#fef2f2"/>
+    </symbol>
+
+    <!-- GENERAL ICONS (Trophies, Dice, Bank, Bot, etc., ViewBox 0 0 24 24) -->
+
+    <!-- Trophy / VP Icon -->
+    <symbol id="icon-vp" viewBox="0 0 24 24">
+      <path d="M7 4 L 17 4 L 16 11 Q 12 15 8 11 Z" fill="#eab308" stroke="#854d0e" stroke-width="1.5"/>
+      <path d="M7 6 Q 4 8 5 11 Q 6 13 8 12" fill="none" stroke="#854d0e" stroke-width="1.5"/>
+      <path d="M17 6 Q 20 8 19 11 Q 18 13 16 12" fill="none" stroke="#854d0e" stroke-width="1.5"/>
+      <rect x="11" y="14" width="2" height="4" fill="#ca8a04"/>
+      <rect x="7" y="18" width="10" height="3" rx="1" fill="#a16207"/>
+    </symbol>
+
+    <!-- Longest Road Pennant -->
+    <symbol id="icon-longest-road" viewBox="0 0 24 24">
+      <path d="M4 20 L 10 12 L 14 16 L 20 4" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="4" cy="20" r="2.5" fill="#1d4ed8"/>
+      <circle cx="10" cy="12" r="2.5" fill="#1d4ed8"/>
+      <circle cx="14" cy="16" r="2.5" fill="#1d4ed8"/>
+      <circle cx="20" cy="4" r="2.5" fill="#1d4ed8"/>
+    </symbol>
+
+    <!-- Largest Army Shield -->
+    <symbol id="icon-army" viewBox="0 0 24 24">
+      <path d="M12 2 L 19 5 L 19 12 Q 19 18 12 22 Q 5 18 5 12 L 5 5 Z" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
+      <line x1="12" y1="6" x2="12" y2="18" stroke="#fee2e2" stroke-width="1.5"/>
+      <line x1="8" y1="10" x2="16" y2="10" stroke="#fee2e2" stroke-width="1.5"/>
+    </symbol>
+
+    <!-- Dice Pair -->
+    <symbol id="icon-dice" viewBox="0 0 24 24">
+      <rect x="2" y="6" width="12" height="12" rx="2.5" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+      <circle cx="5" cy="9" r="1" fill="#1f2937"/>
+      <circle cx="8" cy="12" r="1" fill="#dc2626"/>
+      <circle cx="11" cy="15" r="1" fill="#1f2937"/>
+      <rect x="10" y="2" width="12" height="12" rx="2.5" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+      <circle cx="13" cy="5" r="1" fill="#1f2937"/>
+      <circle cx="19" cy="11" r="1" fill="#1f2937"/>
+    </symbol>
+
+    <!-- Bank Facade -->
+    <symbol id="icon-bank" viewBox="0 0 24 24">
+      <!-- Pediment -->
+      <polygon points="12,3 2,8 22,8" fill="#64748b" stroke="#334155" stroke-width="1.2"/>
+      <!-- Columns -->
+      <rect x="4" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="8.7" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="13.3" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <rect x="18" y="9" width="2.5" height="9" fill="#94a3b8" stroke="#334155" stroke-width="0.8"/>
+      <!-- Base -->
+      <rect x="2" y="19" width="20" height="3" rx="0.5" fill="#475569" stroke="#334155" stroke-width="1"/>
+    </symbol>
+
+    <!-- Bot / Robot Icon -->
+    <symbol id="icon-bot" viewBox="0 0 24 24">
+      <!-- Antenna -->
+      <line x1="12" y1="2" x2="12" y2="5" stroke="#6366f1" stroke-width="2"/>
+      <circle cx="12" cy="2" r="1.5" fill="#4338ca"/>
+      <!-- Robot Head -->
+      <rect x="4" y="6" width="16" height="13" rx="3" fill="#818cf8" stroke="#3730a3" stroke-width="1.5"/>
+      <!-- Eyes -->
+      <circle cx="8.5" cy="11" r="2" fill="#1e1b4b"/>
+      <circle cx="8.5" cy="11" r="0.8" fill="#a5f3fc"/>
+      <circle cx="15.5" cy="11" r="2" fill="#1e1b4b"/>
+      <circle cx="15.5" cy="11" r="0.8" fill="#a5f3fc"/>
+      <!-- Mouth -->
+      <line x1="8" y1="15" x2="16" y2="15" stroke="#1e1b4b" stroke-width="1.5" stroke-dasharray="2 1"/>
+      <!-- Ear bolts -->
+      <rect x="1.5" y="10" width="2.5" height="5" rx="1" fill="#4338ca"/>
+      <rect x="20" y="10" width="2.5" height="5" rx="1" fill="#4338ca"/>
+    </symbol>
+
+    <!-- Timer / Stopwatch -->
+    <symbol id="icon-timer" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="12" y1="13" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="10" y1="2" x2="14" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- Lock / Hidden -->
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor" stroke="#111" stroke-width="1.2"/>
+      <path d="M8 10 L 8 6 Q 8 2 12 2 Q 16 2 16 6 L 16 10" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="12" cy="15" r="1.5" fill="#fff"/>
+    </symbol>
+
+    <!-- Map Editor & Zoom Tools -->
+    <symbol id="icon-zoom-in" viewBox="0 0 24 24">
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="10" y1="7" x2="10" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="7" y1="10" x2="13" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-zoom-out" viewBox="0 0 24 24">
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="15" y1="15" x2="21" y2="21" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="7" y1="10" x2="13" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-zoom-reset" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-undo" viewBox="0 0 24 24">
+      <path d="M9 14 L 4 9 L 9 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4 9 L 14 9 Q 20 9 20 15 Q 20 20 14 20 L 8 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-redo" viewBox="0 0 24 24">
+      <path d="M15 14 L 20 9 L 15 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 9 L 10 9 Q 4 9 4 15 Q 4 20 10 20 L 16 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-brush" viewBox="0 0 24 24">
+      <path d="M18 3 L 21 6 L 12 15 L 9 15 L 9 12 Z" fill="currentColor" stroke="#111" stroke-width="1.2"/>
+      <path d="M9 15 Q 5 17 4 21 Q 8 21 10 17 Z" fill="#d97706"/>
+    </symbol>
+
+    <symbol id="icon-wrench" viewBox="0 0 24 24">
+      <path d="M14 4 Q 17 1 20 4 Q 23 7 20 10 L 9 21 L 4 21 L 4 16 L 15 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+  </defs>
+</svg>
+
+  </div>
+
 
   <!-- Top Sticky Header -->
   <header class="top-bar">
@@ -32,12 +630,14 @@
     <!-- Header Actions -->
     <div class="header-right">
       <div class="header-desktop-actions">
-        <button class="btn-icon" id="btn-sound" title="صدا (قطع/وصل)" data-i18n-title="soundTooltip">🔊</button>
-        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)" data-i18n-title="langTooltip">🌐</button>
-        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین" data-i18n-title="multiplayerTooltip">👥</button>
-        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما" data-i18n-title="rulesTooltip">📜</button>
-        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت" data-i18n-title="chatTooltip">💬</button>
-        <button class="btn-icon" id="btn-menu" title="منوی اصلی" data-i18n-title="menuTooltip">🏠</button>
+        <button class="btn-icon" id="btn-open-editor" title="طراحی و ویرایش نقشه"><svg class="ui-icon-svg"><use href="#icon-brush"/></svg></button>
+        <button class="btn-icon" id="btn-board-summary" title="خلاصه متنی جزیره"><svg class="ui-icon-svg"><use href="#icon-bank"/></svg></button>
+        <button class="btn-icon" id="btn-sound" title="صدا (قطع/وصل)" data-i18n-title="soundTooltip"><svg class="ui-icon-svg"><use href="#icon-timer"/></svg></button>
+        <button class="btn-icon" id="btn-lang" title="تغییر زبان (EN/FA)" data-i18n-title="langTooltip"><span style="font-weight:700; font-size:0.8rem;">FA/EN</span></button>
+        <button class="btn-icon" id="btn-multiplayer" title="بازی چندنفره آنلاین" data-i18n-title="multiplayerTooltip"><svg class="ui-icon-svg"><use href="#icon-bot"/></svg></button>
+        <button class="btn-icon" id="btn-rules" title="قوانین و راهنما" data-i18n-title="rulesTooltip"><svg class="ui-icon-svg"><use href="#icon-vp"/></svg></button>
+        <button class="btn-icon" id="btn-chat" title="پیام‌ها و چت" data-i18n-title="chatTooltip"><span style="font-size:1rem;">💬</span></button>
+        <button class="btn-icon" id="btn-menu" title="منوی اصلی" data-i18n-title="menuTooltip"><span style="font-size:1rem;">🏠</span></button>
       </div>
       <button class="btn-icon mobile-hamburger-btn" id="btn-mobile-nav" title="منو" data-i18n-title="mobileNavTooltip" aria-label="Open Navigation">☰</button>
       <div class="mobile-nav-dropdown" id="mobile-nav-dropdown">
@@ -77,10 +677,56 @@
     </div>
 
     <!-- Hexagonal Board Container -->
-    <!-- Middle Game Area: Board Map + Side Dock -->
+    <!-- Middle Game Area: Cards Dock (Right) + Board Map (Center) + Side Dock (Left) -->
     <div class="board-area-wrapper" id="board-area-wrapper">
 
-      <!-- Board SVG Container -->
+      <!-- Development Card Deck Beside Board (Right Side of Table) -->
+      <aside class="dev-deck-dock" id="dev-deck-dock">
+        <div class="dev-deck-widget" id="dev-deck-widget">
+          <div class="deck-widget-header">
+            <svg class="ui-icon-svg"><use href="#card-back"/></svg>
+            <span class="deck-title-text" data-i18n="devDeckTitle">کارت‌های شانس</span>
+            <span class="deck-count-badge" id="dev-deck-count" title="کارت‌های باقیمانده">25</span>
+          </div>
+
+          <!-- 3D Card Stack -->
+          <div class="dev-deck-stack-container" id="dev-deck-stack-container" title="Development Deck">
+            <div class="dev-deck-stack" id="dev-deck-stack">
+              <svg class="dev-card-back-svg" viewBox="0 0 48 64">
+                <use href="#card-back"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Buy Dev Card Control -->
+          <div class="dev-deck-buy-box">
+            <button type="button" class="btn-buy-deck" id="btn-buy-dev-deck" title="Buy Development Card">
+              <span class="btn-buy-label" data-i18n="buyDevBtn">خرید کارت</span>
+              <div class="buy-costs-row">
+                <span class="cost-item"><svg class="cost-icon-svg"><use href="#icon-ore"/></svg>1</span>
+                <span class="cost-item"><svg class="cost-icon-svg"><use href="#icon-grain"/></svg>1</span>
+                <span class="cost-item"><svg class="cost-icon-svg"><use href="#icon-wool"/></svg>1</span>
+              </div>
+            </button>
+            <div class="buy-deck-reason" id="buy-deck-reason" style="display:none;"></div>
+          </div>
+
+          <!-- Player Cards Table Around/Beside the Deck -->
+          <div class="dev-cards-table" id="dev-cards-table">
+            <div class="player-dev-tray local-tray" id="local-dev-tray">
+              <div class="tray-header">
+                <span class="tray-title" data-i18n="myDevCardsTitle">کارت‌های من</span>
+                <span class="tray-count" id="local-dev-count">0</span>
+              </div>
+              <div class="tray-cards-list" id="local-dev-cards-list"></div>
+            </div>
+
+            <div class="opponents-dev-trays" id="opponents-dev-trays"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Board SVG Container (Center) -->
       <div class="board-container" id="board-container">
         
         <!-- Interactive SVG Board -->
@@ -106,26 +752,72 @@
 
         <!-- Board Zoom & Pan Map Controls -->
         <div class="board-zoom-controls" id="board-zoom-controls">
-          <button type="button" class="btn-zoom" id="btn-zoom-in" title="بزرگ‌نمایی (+)" data-i18n-title="zoomInTooltip">➕</button>
-          <button type="button" class="btn-zoom" id="btn-zoom-reset" title="اندازه پیش‌فرض" data-i18n-title="zoomResetTooltip">🎯</button>
-          <button type="button" class="btn-zoom" id="btn-zoom-out" title="کوچک‌نمایی (−)" data-i18n-title="zoomOutTooltip">➖</button>
+          <button type="button" class="btn-zoom" id="btn-zoom-in" title="بزرگ‌نمایی (+)" data-i18n-title="zoomInTooltip"><svg class="zoom-icon-svg"><use href="#icon-zoom-in"/></svg></button>
+          <button type="button" class="btn-zoom" id="btn-zoom-reset" title="اندازه پیش‌فرض" data-i18n-title="zoomResetTooltip"><svg class="zoom-icon-svg"><use href="#icon-zoom-reset"/></svg></button>
+          <button type="button" class="btn-zoom" id="btn-zoom-out" title="کوچک‌نمایی (−)" data-i18n-title="zoomOutTooltip"><svg class="zoom-icon-svg"><use href="#icon-zoom-out"/></svg></button>
           <span class="zoom-level-text" id="zoom-level-text">100%</span>
         </div>
 
       </div>
 
-      <!-- Side Dock (Outside the map) -->
+      <!-- Side Dock (Left Side of Table) -->
       <aside class="board-side-dock" id="board-side-dock">
+        <!-- 1. Bank Stock Summary -->
+        <div class="bank-stock-card" id="bank-stock-card">
+          <div class="bank-card-header">
+            <svg class="ui-icon-svg"><use href="#icon-bank"/></svg>
+            <span data-i18n="bankStockTitle">ذخیره بانک کاتان</span>
+          </div>
+          <div class="bank-stock-grid" id="bank-stock-grid"></div>
+        </div>
+
+        <!-- 2. Build Costs Cheat Sheet -->
+        <div class="build-costs-card" id="build-costs-card">
+          <div class="build-card-header" id="btn-toggle-costs">
+            <span data-i18n="buildCostsTitle">📜 هزینه ساخت</span>
+            <span class="costs-chevron">▼</span>
+          </div>
+          <div class="build-costs-body" id="build-costs-body">
+            <div class="cost-row">
+              <span class="cost-name"><svg class="piece-icon-svg"><use href="#piece-road"/></svg> جاده:</span>
+              <span class="cost-res"><svg class="res-icon-svg"><use href="#icon-lumber"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-brick"/></svg>۱</span>
+            </div>
+            <div class="cost-row">
+              <span class="cost-name"><svg class="piece-icon-svg"><use href="#piece-settlement"/></svg> روستا:</span>
+              <span class="cost-res"><svg class="res-icon-svg"><use href="#icon-lumber"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-brick"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-wool"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-grain"/></svg>۱</span>
+            </div>
+            <div class="cost-row">
+              <span class="cost-name"><svg class="piece-icon-svg"><use href="#piece-city"/></svg> شهر:</span>
+              <span class="cost-res"><svg class="res-icon-svg"><use href="#icon-grain"/></svg>۲ <svg class="res-icon-svg"><use href="#icon-ore"/></svg>۳</span>
+            </div>
+            <div class="cost-row">
+              <span class="cost-name"><svg class="piece-icon-svg"><use href="#card-back"/></svg> کارت شانس:</span>
+              <span class="cost-res"><svg class="res-icon-svg"><use href="#icon-wool"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-grain"/></svg>۱ <svg class="res-icon-svg"><use href="#icon-ore"/></svg>۱</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Dice Side Widget (Left Side Bottom under Bank & Costs) -->
         <div class="dice-side-widget" id="dice-overlay-widget" title="Roll Dice">
           <div class="dice-widget-title">
-            <span>🎲</span>
+            <svg class="ui-icon-svg"><use href="#icon-dice"/></svg>
             <span data-i18n="diceLabel">تاس</span>
+            <button type="button" class="btn-toggle-histogram" id="btn-toggle-histogram" title="نمودار توزیع تاس">📊</button>
           </div>
           <div class="dice-container" id="dice-container">
             <div class="die" id="die-1" data-val="1"><div class="die-dot"></div></div>
             <div class="die" id="die-2" data-val="1"><div class="die-dot"></div></div>
           </div>
           <div class="dice-sum-badge" id="dice-sum-badge">-</div>
+        </div>
+
+        <!-- Dice 2-12 Distribution Histogram Panel -->
+        <div class="dice-histogram-panel" id="dice-histogram-panel" style="display:none;">
+          <div class="panel-section-header">
+            <span data-i18n="diceStatsTitle">توزیع پرتاب‌ها (۲ تا ۱۲)</span>
+            <span class="total-rolls-label" id="total-rolls-count">۰ پرتاب</span>
+          </div>
+          <div class="histogram-bars-container" id="histogram-bars-container"></div>
         </div>
       </aside>
 
@@ -150,28 +842,28 @@
 
       <!-- Resource Hand Cards -->
       <div class="resource-cards-hand" id="resource-cards-hand">
-        <div class="res-card lumber">
-          <span class="res-icon">🪵</span>
+        <div class="res-card lumber" data-res="lumber">
+          <svg class="res-card-icon-svg"><use href="#icon-lumber"/></svg>
           <span class="res-name" data-i18n="resLumber">چوب</span>
           <span class="res-count" id="count-lumber">0</span>
         </div>
-        <div class="res-card brick">
-          <span class="res-icon">🧱</span>
+        <div class="res-card brick" data-res="brick">
+          <svg class="res-card-icon-svg"><use href="#icon-brick"/></svg>
           <span class="res-name" data-i18n="resBrick">آجر</span>
           <span class="res-count" id="count-brick">0</span>
         </div>
-        <div class="res-card wool">
-          <span class="res-icon">🐑</span>
+        <div class="res-card wool" data-res="wool">
+          <svg class="res-card-icon-svg"><use href="#icon-wool"/></svg>
           <span class="res-name" data-i18n="resWool">گوسفند</span>
           <span class="res-count" id="count-wool">0</span>
         </div>
-        <div class="res-card grain">
-          <span class="res-icon">🌾</span>
+        <div class="res-card grain" data-res="grain">
+          <svg class="res-card-icon-svg"><use href="#icon-grain"/></svg>
           <span class="res-name" data-i18n="resGrain">گندم</span>
           <span class="res-count" id="count-grain">0</span>
         </div>
-        <div class="res-card ore">
-          <span class="res-icon">🪨</span>
+        <div class="res-card ore" data-res="ore">
+          <svg class="res-card-icon-svg"><use href="#icon-ore"/></svg>
           <span class="res-name" data-i18n="resOre">سنگ</span>
           <span class="res-count" id="count-ore">0</span>
         </div>
@@ -180,39 +872,103 @@
       <!-- Action Buttons Bar -->
       <div class="action-buttons-bar" id="action-buttons-bar">
         <button class="btn-action primary" id="btn-roll-dice" title="Roll Dice (2d6)">
-          <span>🎲</span>
-          <span data-i18n="rollDiceBtn">پرتاب تاس</span>
+          <span class="btn-icon-emoji">🎲</span>
+          <span class="btn-action-label" data-i18n="rollDiceBtn">پرتاب تاس</span>
         </button>
-        <button class="btn-action" id="btn-build-road" title="Road: 1 Wood, 1 Brick">
-          <span>🛣️</span>
-          <span data-i18n="buildRoadBtn">جاده</span>
+        <button class="btn-action" id="btn-build-road" title="Road: 1 Lumber, 1 Brick">
+          <span class="btn-icon-emoji">🛣️</span>
+          <div class="btn-label-stack">
+            <span class="btn-action-label" data-i18n="buildRoadBtn">جاده</span>
+            <span class="btn-cost-tag">🪵۱ 🧱۱</span>
+          </div>
         </button>
-        <button class="btn-action" id="btn-build-settlement" title="Settlement: 1 Wood, 1 Brick, 1 Sheep, 1 Wheat">
-          <span>🏠</span>
-          <span data-i18n="buildSettlementBtn">روستا</span>
+        <button class="btn-action" id="btn-build-settlement" title="Settlement: 1 Lumber, 1 Brick, 1 Wool, 1 Grain">
+          <span class="btn-icon-emoji">🏠</span>
+          <div class="btn-label-stack">
+            <span class="btn-action-label" data-i18n="buildSettlementBtn">روستا</span>
+            <span class="btn-cost-tag">🪵۱ 🧱۱ 🐑۱ 🌾۱</span>
+          </div>
         </button>
-        <button class="btn-action" id="btn-build-city" title="City: 2 Wheat, 3 Ore">
-          <span>🏛️</span>
-          <span data-i18n="buildCityBtn">شهر</span>
+        <button class="btn-action" id="btn-build-city" title="City: 2 Grain, 3 Ore">
+          <span class="btn-icon-emoji">🏛️</span>
+          <div class="btn-label-stack">
+            <span class="btn-action-label" data-i18n="buildCityBtn">شهر</span>
+            <span class="btn-cost-tag">🌾۲ 🪨۳</span>
+          </div>
         </button>
-        <button class="btn-action" id="btn-buy-dev" title="Dev Card: 1 Sheep, 1 Wheat, 1 Ore">
-          <span>📜</span>
-          <span data-i18n="buyDevBtn">کارت شانس</span>
+        <button class="btn-action" id="btn-buy-dev" title="Dev Card: 1 Wool, 1 Grain, 1 Ore">
+          <span class="btn-icon-emoji">📜</span>
+          <div class="btn-label-stack">
+            <span class="btn-action-label" data-i18n="buyDevBtn">کارت شانس</span>
+            <span class="btn-cost-tag">🐑۱ 🌾۱ 🪨۱</span>
+          </div>
         </button>
         <button class="btn-action" id="btn-my-devs" title="View & Play Dev Cards">
-          <span>🃏</span>
-          <span data-i18n="myDevsBtn">کارت‌های من</span> (<span id="my-dev-count">0</span>)
+          <span class="btn-icon-emoji">🃏</span>
+          <div class="btn-label-stack">
+            <span class="btn-action-label" data-i18n="myDevsBtn">کارت‌های من</span>
+            <span class="btn-count-tag" id="my-dev-count">0</span>
+          </div>
         </button>
         <button class="btn-action" id="btn-trade" title="Trade with Bank or Ports">
-          <span>🔄</span>
-          <span data-i18n="tradeBtn">تجارت</span>
+          <span class="btn-icon-emoji">🔄</span>
+          <span class="btn-action-label" data-i18n="tradeBtn">تجارت</span>
         </button>
         <button class="btn-action end-turn" id="btn-end-turn" title="End Turn">
-          <span>⏭️</span>
-          <span data-i18n="endTurnBtn">پایان نوبت</span>
+          <span class="btn-icon-emoji">⏭️</span>
+          <span class="btn-action-label" data-i18n="endTurnBtn">پایان نوبت</span>
         </button>
       </div>
 
+    </div>
+
+    <!-- Floating Activity Hub (Chat & Game Log Toggle on Bottom Right) -->
+    <div class="floating-activity-hub" id="floating-activity-hub">
+      <!-- Activity & Chat Hub Flyout Panel -->
+      <div class="activity-hub-panel" id="activity-hub-panel" style="display:none;">
+        <div class="activity-hub-header">
+          <div class="activity-tab-bar">
+            <button type="button" class="activity-tab-btn active" id="tab-btn-log">
+              <span>📜</span> <span data-i18n="gameLogTitle">گزارش بازی</span>
+            </button>
+            <button type="button" class="activity-tab-btn" id="tab-btn-chat">
+              <span>💬</span> <span data-i18n="chatTitle">گفتگو</span>
+            </button>
+          </div>
+          <button type="button" class="btn-close-activity" id="btn-close-activity" title="بستن">&times;</button>
+        </div>
+
+        <!-- Game Log View -->
+        <div class="activity-view-tab" id="activity-view-log">
+          <div class="game-log-stream" id="game-log-stream">
+            <div class="log-entry system">
+              <span class="log-icon">🏝️</span>
+              <span class="log-text">به بازی جزیره کاتان خوش آمدید! تاس بیندازید و شروع کنید.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- In-Game Chat View -->
+        <div class="activity-view-tab" id="activity-view-chat" style="display:none;">
+          <div class="side-chat-messages" id="side-chat-messages">
+            <div class="chat-bubble system">
+              <span class="chat-sender">سیستم:</span>
+              <span class="chat-text">گفتگو در بازی کاتان آغاز شد. پیام خود را بنویسید.</span>
+            </div>
+          </div>
+          <form class="side-chat-form" id="side-chat-form">
+            <input type="text" id="side-chat-input" class="side-chat-input" placeholder="پیام شما..." autocomplete="off" maxlength="120">
+            <button type="submit" class="side-chat-submit" id="side-chat-send" title="ارسال پیام">➤</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Toggle Button on Bottom-Right Beside Panel -->
+      <button type="button" class="btn-activity-toggle" id="btn-toggle-activity-hub" title="نمایش گفتگو و گزارش بازی">
+        <span class="toggle-icon">💬</span>
+        <span class="toggle-label" data-i18n="chatAndLogBtn">گفتگو و گزارش</span>
+        <span class="unread-chat-dot" id="unread-chat-dot" style="display:none;"></span>
+      </button>
     </div>
   </main>
 
@@ -272,6 +1028,7 @@
     </div>
   </div>
 
+
   <!-- Setup Modal (Solo / Pass & Play) -->
   <div class="modal-overlay" id="modal-setup">
     <div class="modal-card">
@@ -323,9 +1080,10 @@
     </div>
   </div>
 
+
   <!-- Multiplayer / Online Room Modal -->
   <div class="modal-overlay" id="modal-multiplayer">
-    <div class="modal-box" style="max-width: 540px;">
+    <div class="modal-box" style="max-width: 680px; width: 95vw;">
       <div class="modal-header">
         <h2 class="modal-title">🌐 <span data-i18n="multiplayerTitle">اتاق کاتان آنلاین / شبکه محلی</span></h2>
         <button class="btn-modal-close" id="btn-close-mp-header">&times;</button>
@@ -341,7 +1099,7 @@
           <button class="btn-secondary" id="btn-copy-room-link" data-i18n="copyLinkBtn">📋 کپی لینک</button>
         </div>
 
-        <!-- Dedicated Lobby Name Edit Bar (Persisted to rubik_player_name) -->
+        <!-- Dedicated Lobby Name Edit Bar -->
         <div class="lobby-name-bar" id="lobby-name-bar">
           <span class="lobby-name-label" data-i18n="yourNameLabel">نام شما:</span>
           <div class="lobby-name-controls">
@@ -350,9 +1108,60 @@
           </div>
         </div>
 
-        <!-- 4 Seats Container -->
-        <div class="lobby-seats" id="lobby-seats-container">
-          <!-- Dynamically populated (Seat 0 Red, Seat 1 Blue, Seat 2 Orange, Seat 3 Green) -->
+        <!-- Host Room Settings (Visible to host) -->
+        <div class="lobby-host-controls" id="lobby-host-controls">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" data-i18n="ruleProfileLabel">پروفایل قوانین:</label>
+              <select class="form-select" id="lobby-rule-profile-select">
+                <option value="base">استاندارد کاتان (۳-۴ نفره، ۱۰ امتیاز)</option>
+                <option value="extended">افزونه ۵-۶ نفره (۳۰ کاشی، ۱۱ امتیاز، فاز ساخت ویژه)</option>
+                <option value="custom">واریانت سفارشی ۳-۸ نفره (آزاد)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" data-i18n="playerCountLabel">تعداد کل بازیکنان:</label>
+              <select class="form-select" id="lobby-player-count-select">
+                <option value="3">۳ بازیکن</option>
+                <option value="4" selected>۴ بازیکن</option>
+                <option value="5">۵ بازیکن</option>
+                <option value="6">۶ بازیکن</option>
+                <option value="7">۷ بازیکن (سفارشی)</option>
+                <option value="8">۸ بازیکن (سفارشی)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Seed & Map Source -->
+          <div class="lobby-map-config-card" style="background:rgba(0,0,0,0.25); padding:10px; border-radius:8px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:700; font-size:0.85rem;">نقشه و سید قطعی:</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Generator v1.0.0</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" class="form-input" id="lobby-seed-input" placeholder="SEED123" style="text-transform:uppercase; font-weight:700;">
+              <button type="button" class="btn-secondary" id="btn-lobby-random-seed" title="سید تصادفی">🎲</button>
+              <button type="button" class="btn-secondary" id="btn-lobby-copy-seed" title="کپی سید">📋</button>
+              <button type="button" class="btn-secondary" id="btn-lobby-open-editor" title="شخصی‌سازی در ویرایشگر">🎨</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seats Container (3 to 8 players) -->
+        <div class="lobby-seats" id="lobby-seats-container"></div>
+
+        <!-- Live Map Preview Accordion -->
+        <div class="lobby-map-preview-panel" id="lobby-map-preview-panel" style="margin-top:10px; background:rgba(0,0,0,0.3); border-radius:8px; padding:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; font-size:0.85rem;">پیش‌نمایش جزیره بازی:</span>
+            <span class="preview-stats-pips" id="preview-stats-pips" style="font-size:0.8rem; color:var(--gold-primary);"></span>
+          </div>
+          <div style="max-height:160px; overflow:hidden; display:flex; justify-content:center;">
+            <svg id="lobby-preview-svg" viewBox="-50 0 540 480" style="max-height:160px; width:100%;">
+              <g id="lobby-preview-ocean"></g>
+              <g id="lobby-preview-tiles"></g>
+            </svg>
+          </div>
         </div>
 
         <div style="display:flex; gap:10px; justify-content:center; margin-top:12px; align-items:center; flex-wrap:wrap;">
@@ -371,11 +1180,21 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label" data-i18n="ruleProfileLabel">پروفایل قوانین مسابقه:</label>
+          <div class="modal-options-grid" id="entry-profile-options">
+            <button class="option-btn active" data-profile="base">استاندارد کاتان (۳-۴ نفره)</button>
+            <button class="option-btn" data-profile="extended">افزونه ۵-۶ نفره</button>
+            <button class="option-btn" data-profile="custom">سفارشی ۳-۸ نفره</button>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label" data-i18n="playerCountLabel">تعداد بازیکنان اتاق:</label>
           <div class="modal-options-grid" id="online-players-options">
-            <button class="option-btn" data-players="2" data-i18n="onlinePlayers2">۲ بازیکن</button>
-            <button class="option-btn active" data-players="3" data-i18n="onlinePlayers3">۳ بازیکن</button>
-            <button class="option-btn" data-players="4" data-i18n="onlinePlayers4">۴ بازیکن</button>
+            <button class="option-btn" data-players="3">۳ بازیکن</button>
+            <button class="option-btn active" data-players="4">۴ بازیکن</button>
+            <button class="option-btn" data-players="5">۵ بازیکن</button>
+            <button class="option-btn" data-players="6">۶ بازیکن</button>
           </div>
         </div>
 
@@ -407,75 +1226,240 @@
     </div>
   </div>
 
-  <!-- Bank Trade Modal -->
+  <!-- Trade Modal (Bank, Ports & Player-to-Player) -->
   <div class="modal-overlay" id="modal-trade">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width: 520px;">
       <div class="modal-header">
-        <h2 data-i18n="tradeModalTitle">🔄 تجارت با بانک و بنادر</h2>
+        <h2 data-i18n="tradeModalTitle">🔄 تجارت و معامله</h2>
         <button class="btn-modal-close" id="btn-close-trade">&times;</button>
       </div>
+
+      <!-- Trade Mode Tabs -->
+      <div class="trade-tabs">
+        <button type="button" class="trade-tab-btn active" id="tab-bank-trade" data-i18n="tabBankTrade">🏦 بانک و بنادر</button>
+        <button type="button" class="trade-tab-btn" id="tab-player-trade" data-i18n="tabPlayerTrade">🤝 معامله با بازیکنان</button>
+      </div>
+
       <div class="modal-body">
         
-        <div class="trade-section-title" data-i18n="giveResourceLabel">منبعی که می‌دهید:</div>
-        <div class="trade-res-selector" id="trade-give-selector">
-          <button class="trade-res-btn selected" data-res="lumber">
-            <span>🪵</span><span data-i18n="resLumber">چوب</span>
-          </button>
-          <button class="trade-res-btn" data-res="brick">
-            <span>🧱</span><span data-i18n="resBrick">آجر</span>
-          </button>
-          <button class="trade-res-btn" data-res="wool">
-            <span>🐑</span><span data-i18n="resWool">گوسفند</span>
-          </button>
-          <button class="trade-res-btn" data-res="grain">
-            <span>🌾</span><span data-i18n="resGrain">گندم</span>
-          </button>
-          <button class="trade-res-btn" data-res="ore">
-            <span>🪨</span><span data-i18n="resOre">سنگ</span>
+        <!-- Panel 1: Bank & Port Trade -->
+        <div id="panel-bank-trade">
+          <div class="trade-section-title" data-i18n="giveResourceLabel">منبعی که می‌دهید:</div>
+          <div class="trade-res-selector" id="trade-give-selector">
+            <button class="trade-res-btn selected" data-res="lumber">
+              <span>🪵</span><span data-i18n="resLumber">چوب</span>
+            </button>
+            <button class="trade-res-btn" data-res="brick">
+              <span>🧱</span><span data-i18n="resBrick">آجر</span>
+            </button>
+            <button class="trade-res-btn" data-res="wool">
+              <span>🐑</span><span data-i18n="resWool">گوسفند</span>
+            </button>
+            <button class="trade-res-btn" data-res="grain">
+              <span>🌾</span><span data-i18n="resGrain">گندم</span>
+            </button>
+            <button class="trade-res-btn" data-res="ore">
+              <span>🪨</span><span data-i18n="resOre">سنگ</span>
+            </button>
+          </div>
+
+          <div class="trade-rate-indicator" id="trade-rate-indicator" data-i18n="tradeRateDefault">
+            نرخ تبادل با بانک: ۴ به ۱ (با داشتن بندر: ۳ به ۱ یا ۲ به ۱)
+          </div>
+
+          <div class="trade-section-title" data-i18n="getResourceLabel">منبعی که دریافت می‌کنید:</div>
+          <div class="trade-res-selector" id="trade-get-selector">
+            <button class="trade-res-btn" data-res="lumber">
+              <span>🪵</span><span data-i18n="resLumber">چوب</span>
+            </button>
+            <button class="trade-res-btn selected" data-res="brick">
+              <span>🧱</span><span data-i18n="resBrick">آجر</span>
+            </button>
+            <button class="trade-res-btn" data-res="wool">
+              <span>🐑</span><span data-i18n="resWool">گوسفند</span>
+            </button>
+            <button class="trade-res-btn" data-res="grain">
+              <span>🌾</span><span data-i18n="resGrain">گندم</span>
+            </button>
+            <button class="trade-res-btn" data-res="ore">
+              <span>🪨</span><span data-i18n="resOre">سنگ</span>
+            </button>
+          </div>
+
+          <button class="btn-primary" id="btn-execute-bank-trade" style="width:100%; margin-top:8px;">
+            <span data-i18n="confirmTradeBtn">انجام تبادل با بانک</span>
           </button>
         </div>
 
-        <div class="trade-rate-indicator" id="trade-rate-indicator" data-i18n="tradeRateDefault">
-          نرخ تبادل: ۴ به ۱ (با داشتن بندر: ۳ به ۱ یا ۲ به ۱)
-        </div>
+        <!-- Panel 2: Player-to-Player Trade -->
+        <div id="panel-player-trade" style="display:none;">
+          
+          <!-- Incoming / Active Offer View (when an offer is in progress) -->
+          <div id="player-trade-active-offer" style="display:none;" class="trade-status-box">
+            <div id="player-trade-offer-summary" style="font-weight:700; margin-bottom:8px; line-height:1.5;"></div>
+            <div id="player-trade-offer-responses" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;"></div>
+            <div id="player-trade-offer-actions" style="display:flex; gap:8px;"></div>
+          </div>
 
-        <div class="trade-section-title" data-i18n="getResourceLabel">منبعی که دریافت می‌کنید:</div>
-        <div class="trade-res-selector" id="trade-get-selector">
-          <button class="trade-res-btn" data-res="lumber">
-            <span>🪵</span><span data-i18n="resLumber">چوب</span>
-          </button>
-          <button class="trade-res-btn selected" data-res="brick">
-            <span>🧱</span><span data-i18n="resBrick">آجر</span>
-          </button>
-          <button class="trade-res-btn" data-res="wool">
-            <span>🐑</span><span data-i18n="resWool">گوسفند</span>
-          </button>
-          <button class="trade-res-btn" data-res="grain">
-            <span>🌾</span><span data-i18n="resGrain">گندم</span>
-          </button>
-          <button class="trade-res-btn" data-res="ore">
-            <span>🪨</span><span data-i18n="resOre">سنگ</span>
-          </button>
-        </div>
+          <!-- Propose New Trade Form -->
+          <div id="player-trade-create-form">
+            <div class="trade-columns-grid">
+              <div class="trade-col">
+                <div class="trade-section-title" data-i18n="tradeYouGive">منابعی که می‌دهید:</div>
+                <div class="trade-counters-list" id="trade-give-counters">
+                  <!-- Lumber, Brick, Wool, Grain, Ore +/- counters -->
+                </div>
+              </div>
+              <div class="trade-col">
+                <div class="trade-section-title" data-i18n="tradeYouWant">منابعی که می‌خواهید:</div>
+                <div class="trade-counters-list" id="trade-want-counters">
+                  <!-- Lumber, Brick, Wool, Grain, Ore +/- counters -->
+                </div>
+              </div>
+            </div>
 
-        <button class="btn-primary" id="btn-execute-bank-trade" style="width:100%; margin-top:8px;">
-          <span data-i18n="confirmTradeBtn">انجام تبادل</span>
-        </button>
+            <div class="form-group" style="margin-top:10px;">
+              <label class="form-label" data-i18n="tradeTargetLabel">طرف معامله:</label>
+              <select id="trade-target-select" class="form-input">
+                <option value="all" data-i18n="tradeTargetAll">همه بازیکنان (پیشنهاد عمومی)</option>
+              </select>
+            </div>
+
+            <button class="btn-primary" id="btn-propose-player-trade" style="width:100%; margin-top:10px;">
+              <span data-i18n="proposeTradeBtn">ارسال پیشنهاد معامله</span>
+            </button>
+          </div>
+
+        </div>
 
       </div>
     </div>
   </div>
 
+
   <!-- Development Cards Modal -->
   <div class="modal-overlay" id="modal-devcards">
-    <div class="modal-card">
+    <div class="modal-card devcards-modal-card" style="max-width: 520px;">
       <div class="modal-header">
-        <h2 data-i18n="myDevsTitle">🃏 کارت‌های شانس شما</h2>
+        <h2 data-i18n="myDevsTitle">🃏 کارت‌های شانس</h2>
         <button class="btn-modal-close" id="btn-close-devs">&times;</button>
       </div>
       <div class="modal-body">
+        
+        <!-- Dev Cards Tabs (Hand vs Played) -->
+        <div class="dev-modal-tabs">
+          <button type="button" class="dev-modal-tab-btn active" id="tab-devs-hand">
+            <span>🃏 کارت‌های در دست</span>
+            <span class="tab-badge" id="badge-hand-count">0</span>
+          </button>
+          <button type="button" class="dev-modal-tab-btn" id="tab-devs-played">
+            <span>✨ استفاده‌شده‌ها</span>
+            <span class="tab-badge" id="badge-played-count">0</span>
+          </button>
+        </div>
+
+        <!-- Dev Cards List (Hand) -->
         <div class="dev-cards-list" id="my-dev-cards-list">
           <!-- Populated dynamically -->
+        </div>
+
+        <!-- Played Dev Cards List -->
+        <div class="dev-cards-list" id="my-played-devs-list" style="display:none;">
+          <!-- Populated dynamically -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Monopoly Modal -->
+  <div class="modal-overlay" id="modal-monopoly">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2>💰 کارت انحصار (Monopoly)</h2>
+        <button class="btn-modal-close" id="btn-close-monopoly">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+          یک منبع را انتخاب کنید تا تمام کارت‌های آن منبع از دست تمام حریفان گرفته شده و به شما داده شود:
+        </p>
+        <div class="monopoly-cards-grid" id="monopoly-cards-grid">
+          <button type="button" class="monopoly-res-card" data-res="lumber">
+            <span class="mono-icon">🪵</span>
+            <span class="mono-name" data-i18n="resLumber">چوب</span>
+          </button>
+          <button type="button" class="monopoly-res-card" data-res="brick">
+            <span class="mono-icon">🧱</span>
+            <span class="mono-name" data-i18n="resBrick">آجر</span>
+          </button>
+          <button type="button" class="monopoly-res-card" data-res="wool">
+            <span class="mono-icon">🐑</span>
+            <span class="mono-name" data-i18n="resWool">گوسفند</span>
+          </button>
+          <button type="button" class="monopoly-res-card" data-res="grain">
+            <span class="mono-icon">🌾</span>
+            <span class="mono-name" data-i18n="resGrain">گندم</span>
+          </button>
+          <button type="button" class="monopoly-res-card" data-res="ore">
+            <span class="mono-icon">🪨</span>
+            <span class="mono-name" data-i18n="resOre">سنگ</span>
+          </button>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+          <button type="button" class="btn-secondary" id="btn-cancel-monopoly" data-i18n="cancelBtn">انصراف</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Year of Plenty Modal -->
+  <div class="modal-overlay" id="modal-yop">
+    <div class="modal-card" style="max-width: 460px;">
+      <div class="modal-header">
+        <h2>🌾 کارت وفور نعمت (Year of Plenty)</h2>
+        <button class="btn-modal-close" id="btn-close-yop">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+          ۲ کارت منبع دلخواه از بانک انتخاب کنید (موجودی بانک نمایش داده شده است):
+        </p>
+        <div class="yop-counters-list" id="yop-counters-list">
+          <!-- Populated dynamically with +/- counters and remaining bank stock -->
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <span id="yop-selection-status" style="font-weight:700; color:var(--gold-primary); font-size:0.9rem;">انتخاب شده: ۰ از ۲</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary" id="btn-cancel-yop" data-i18n="cancelBtn">انصراف</button>
+            <button class="btn-primary" id="btn-confirm-yop" disabled data-i18n="confirmYopBtn">دریافت منابع (۰/۲)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incoming Trade Proposal Modal (Bots & Players) -->
+  <div class="modal-overlay" id="modal-trade-offer">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 id="trade-offer-title">🤝 پیشنهاد معامله جدید</h3>
+        <button class="btn-modal-close" id="btn-close-trade-offer">&times;</button>
+      </div>
+      <div class="modal-body trade-offer-body" id="trade-offer-body">
+        <div class="trade-offer-proposer" id="trade-offer-proposer"></div>
+        <div class="trade-offer-exchange">
+          <div class="offer-side give">
+            <span class="offer-label">پیشنهاد حریف به شما:</span>
+            <div class="offer-res-pills" id="trade-offer-gives"></div>
+          </div>
+          <div class="offer-arrow">⇄</div>
+          <div class="offer-side want">
+            <span class="offer-label">درخواست از موجودی شما:</span>
+            <div class="offer-res-pills" id="trade-offer-wants"></div>
+          </div>
+        </div>
+        <div class="trade-offer-actions" style="display:flex; gap:10px; margin-top:14px; width:100%;">
+          <button type="button" class="btn-primary" id="btn-accept-trade-offer" style="flex:1;">✅ قبول معامله</button>
+          <button type="button" class="btn-secondary" id="btn-decline-trade-offer" style="flex:1;">❌ رد پیشنهاد</button>
         </div>
       </div>
     </div>
@@ -503,6 +1487,7 @@
     </div>
   </div>
 
+
   <!-- Steal Resource Modal (When robber moved) -->
   <div class="modal-overlay" id="modal-steal">
     <div class="modal-card">
@@ -520,27 +1505,49 @@
     </div>
   </div>
 
+
   <!-- Game Over Modal -->
   <div class="modal-overlay" id="modal-gameover">
-    <div class="modal-card" style="text-align:center;">
-      <div class="modal-header">
-        <h2 id="gameover-title" style="margin:0 auto;" data-i18n="gameOverTitle">🎉 پایان بازی کاتان</h2>
+    <div class="modal-card gameover-modal-card">
+      <div class="modal-header" style="justify-content: center;">
+        <h2 id="gameover-title" data-i18n="gameOverTitle">🎉 پایان بازی کاتان</h2>
       </div>
-      <div class="modal-body" style="align-items:center;">
-        <div style="font-size:3.5rem; margin-bottom:4px;" id="gameover-icon">🏆</div>
-        <div style="font-size:1.35rem; font-weight:800; color:#fff;" id="gameover-message"></div>
-        <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:12px;" id="gameover-sub" data-i18n="gameOverSub">با کسب ۱۰ امتیاز پیروزی، فاتح جزیره کاتان شد.</div>
+      <div class="modal-body gameover-modal-body">
+        <div class="gameover-trophy-badge" id="gameover-icon">🏆</div>
+        
+        <div class="gameover-winner-banner" id="gameover-winner-banner">
+          <div class="winner-crown">👑</div>
+          <div class="gameover-winner-name" id="gameover-message"></div>
+          <div class="gameover-winner-sub" id="gameover-sub" data-i18n="gameOverSub">با کسب ۱۰ امتیاز پیروزی، فاتح بلامنازع جزیره کاتان شد.</div>
+        </div>
 
-        <div style="display:flex; gap:10px; width:100%;">
-          <button class="btn-secondary" id="btn-gameover-menu" style="flex:1;" data-i18n="mainMenuTitle">منوی اصلی</button>
-          <button class="btn-primary" id="btn-gameover-rematch" style="flex:2;">
-            <span>🔄</span>
+        <!-- Full Match Scoreboard Table -->
+        <div class="gameover-scoreboard-wrapper">
+          <div class="scoreboard-title">📊 جدول نهایی امتیازات جزیره کاتان</div>
+          <div class="gameover-scoreboard-table" id="gameover-scoreboard-table">
+            <!-- Dynamically populated in app.js -->
+          </div>
+        </div>
+
+        <!-- Action Buttons: Rematch, Catan Menu, Game Hub Lobby -->
+        <div class="gameover-actions-grid">
+          <button type="button" class="btn-primary" id="btn-gameover-rematch">
+            <span class="btn-icon">🔄</span>
             <span data-i18n="rematchBtn">بازی مجدد</span>
           </button>
+          <button type="button" class="btn-secondary" id="btn-gameover-menu">
+            <span class="btn-icon">🏝️</span>
+            <span data-i18n="mainMenuTitle">منوی کاتان</span>
+          </button>
+          <a href="/" class="btn-secondary btn-hub-exit" id="btn-gameover-hub">
+            <span class="btn-icon">🚪</span>
+            <span>خروج به هاب</span>
+          </a>
         </div>
       </div>
     </div>
   </div>
+
 
   <!-- Rules Modal -->
   <div class="modal-overlay" id="modal-rules">
@@ -554,6 +1561,7 @@
       </div>
     </div>
   </div>
+
 
   <!-- Chat Drawer -->
   <div class="chat-drawer" id="chat-drawer">
@@ -577,5 +1585,140 @@
   <script src="logic.js"></script>
   <script src="sound.js"></script>
   <script src="app.js"></script>
+
+  <!-- Development Card Detail View Modal -->
+  <div class="modal-overlay" id="modal-card-detail">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2 id="card-detail-title">کارت شانس</h2>
+        <button class="btn-modal-close" id="btn-close-card-detail">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="card-detail-art-container" id="card-detail-art">
+          <svg class="card-detail-svg" viewBox="0 0 48 48">
+            <use id="card-detail-svg-use" href="#card-knight"/>
+          </svg>
+        </div>
+        <div class="card-detail-type-badge" id="card-detail-type">کارت شوالیه</div>
+        <p class="card-detail-rules-text" id="card-detail-rules">
+          راهزن را به یک خانه جدید منتقل کنید و یک کارت تصادفی بدزدید.
+        </p>
+        <div class="card-detail-state-pill" id="card-detail-state">قابل بازی</div>
+        <div class="card-detail-reason" id="card-detail-reason" style="display:none;"></div>
+        <div class="card-detail-actions" style="margin-top:16px;">
+          <button class="btn-primary" id="btn-play-card-confirm" style="width:100%;">بازی کردن این کارت</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Custom Map Editor Modal -->
+  <div class="modal-overlay" id="modal-map-editor">
+    <div class="modal-box map-editor-box" style="max-width: 900px; width: 95vw;">
+      <div class="modal-header">
+        <h2>🎨 <span data-i18n="mapEditorTitle">ویرایشگر و طراح نقشه کاتان</span></h2>
+        <button class="btn-modal-close" id="btn-close-editor">&times;</button>
+      </div>
+      <div class="editor-main-layout">
+        <!-- Editor Controls Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-group">
+            <label class="form-label" data-i18n="editorTemplateLabel">قالب نقشه:</label>
+            <select class="form-select" id="editor-template-select">
+              <option value="base">استاندارد (۱۹ خانه - ۳ تا ۴ نفره)</option>
+              <option value="extended">افزونه بزرگ (۳۰ خانه - ۵ تا ۶ نفره)</option>
+            </select>
+          </div>
+
+          <!-- Tools Palette -->
+          <div class="toolbar-group">
+            <label class="form-label" data-i18n="editorToolLabel">ابزار قلم مو:</label>
+            <div class="editor-brush-palette">
+              <button class="brush-btn active" data-brush="forest" title="جنگل (چوب)">
+                <svg class="brush-icon"><use href="#icon-lumber"/></svg> جنگل
+              </button>
+              <button class="brush-btn" data-brush="hills" title="تپه (آجر)">
+                <svg class="brush-icon"><use href="#icon-brick"/></svg> تپه
+              </button>
+              <button class="brush-btn" data-brush="pasture" title="چمنزار (گوسفند)">
+                <svg class="brush-icon"><use href="#icon-wool"/></svg> چمنزار
+              </button>
+              <button class="brush-btn" data-brush="fields" title="گندمزار (گندم)">
+                <svg class="brush-icon"><use href="#icon-grain"/></svg> گندمزار
+              </button>
+              <button class="brush-btn" data-brush="mountains" title="کوهستان (سنگ)">
+                <svg class="brush-icon"><use href="#icon-ore"/></svg> کوهستان
+              </button>
+              <button class="brush-btn" data-brush="desert" title="بیابان (راهزن)">
+                <svg class="brush-icon"><use href="#tile-desert"/></svg> بیابان
+              </button>
+            </div>
+          </div>
+
+          <!-- Token Picker -->
+          <div class="toolbar-group">
+            <label class="form-label" data-i18n="editorTokenLabel">تغییر توکن شماره:</label>
+            <div class="editor-token-palette" id="editor-token-palette">
+              <button class="token-btn" data-token="2">2</button>
+              <button class="token-btn" data-token="3">3</button>
+              <button class="token-btn" data-token="4">4</button>
+              <button class="token-btn" data-token="5">5</button>
+              <button class="token-btn high-prob" data-token="6">6</button>
+              <button class="token-btn high-prob" data-token="8">8</button>
+              <button class="token-btn" data-token="9">9</button>
+              <button class="token-btn" data-token="10">10</button>
+              <button class="token-btn" data-token="11">11</button>
+              <button class="token-btn" data-token="12">12</button>
+              <button class="token-btn" data-token="null">حذف</button>
+            </div>
+          </div>
+
+          <!-- History & Actions -->
+          <div class="toolbar-group">
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-secondary" id="btn-editor-undo" title="Undo"><svg class="ui-icon-svg"><use href="#icon-undo"/></svg></button>
+              <button type="button" class="btn-secondary" id="btn-editor-redo" title="Redo"><svg class="ui-icon-svg"><use href="#icon-redo"/></svg></button>
+              <button type="button" class="btn-secondary" id="btn-editor-autofix" data-i18n="editorAutoFix">✨ اصلاح خودکار</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor SVG Board Canvas -->
+        <div class="editor-canvas-container">
+          <svg class="editor-board-svg" id="editor-board-svg" viewBox="-50 0 540 480">
+            <g id="editor-svg-ocean"></g>
+            <g id="editor-svg-tiles"></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Live Validation & Map Stats -->
+      <div class="editor-validation-bar" id="editor-validation-bar">
+        <div class="validation-status" id="editor-val-status">بررسی نقشه...</div>
+        <div class="editor-stats-summary" id="editor-stats-summary"></div>
+      </div>
+
+      <div class="editor-footer-actions">
+        <button class="btn-secondary" id="btn-editor-save-draft" data-i18n="editorSaveDraft">💾 ذخیره پیش‌نویس</button>
+        <button class="btn-secondary" id="btn-editor-duplicate" data-i18n="editorDuplicate">📋 کپی کردن نقشه</button>
+        <button class="btn-primary" id="btn-editor-play-map" data-i18n="editorPlayMap">🎮 بازی با این نقشه</button>
+        <button class="btn-secondary" id="btn-editor-close" data-i18n="closeBtn">بستن</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Board Summary Text Alternative Modal -->
+  <div class="modal-overlay" id="modal-board-summary">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 data-i18n="boardSummaryTitle">📋 گزارش متنی کامل جزیره کاتان</h2>
+        <button class="btn-modal-close" id="btn-close-summary">&times;</button>
+      </div>
+      <div class="modal-body" id="board-summary-content" style="max-height: 480px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
 </body>
 </html>

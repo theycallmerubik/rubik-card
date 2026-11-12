@@ -3073,9 +3073,14 @@ class OnlineCatanRoom {
     this.turnTimer = null;
     this.turnStartTime = null;
 
-    this.playerCount = Math.max(2, Math.min(4, parseInt(settings && settings.playerCount, 10) || 3));
+    this.playerCount = Math.max(2, Math.min(8, parseInt(settings && settings.playerCount, 10) || 3));
     this.timeControl = settings && settings.timeControl !== undefined ? parseInt(settings.timeControl, 10) : 60;
-    this.difficulty = (settings && settings.difficulty) || 'medium';
+    this.difficulty = (settings && settings.difficulty) || 'normal';
+    this.ruleProfile = (settings && settings.ruleProfile) || (this.playerCount > 6 ? 'custom' : (this.playerCount > 4 ? 'extended' : 'base'));
+    this.mapSettings = (settings && settings.mapSettings) || {
+      seed: settings && settings.seed,
+      customMap: settings && settings.customMap
+    };
 
     this.seats = [];
     for (let i = 0; i < this.playerCount; i++) {
@@ -3095,6 +3100,7 @@ class OnlineCatanRoom {
           name: `Bot ${i + 1}`,
           originalName: `Bot ${i + 1}`,
           isBot: true,
+          difficulty: this.difficulty,
           socketId: null,
           connected: true,
           ready: true,
@@ -3175,10 +3181,13 @@ class OnlineCatanRoom {
           gameType: this.gameType,
           isHost,
           yourSeat,
+          ruleProfile: this.ruleProfile,
+          mapSettings: this.mapSettings,
           seats: this.seats.map((s, idx) => ({
             seat: idx,
             name: s.name,
             isBot: s.isBot,
+            difficulty: s.difficulty || this.difficulty,
             connected: s.connected,
             ready: s.ready,
             isHost: s.socketId === this.hostSocketId,
@@ -3187,21 +3196,96 @@ class OnlineCatanRoom {
           })),
           settings: {
             playerCount: this.playerCount,
-            timeControl: this.timeControl
+            timeControl: this.timeControl,
+            ruleProfile: this.ruleProfile,
+            difficulty: this.difficulty,
+            mapSettings: this.mapSettings
           }
         }));
       }
     }
   }
 
+  handleConfigUpdate(ws, config) {
+    if (this.status !== 'LOBBY' || ws.id !== this.hostSocketId) return;
+
+    if (config.ruleProfile && catanLogic.RULE_PROFILES[config.ruleProfile.toUpperCase()]) {
+      this.ruleProfile = config.ruleProfile;
+    }
+    if (config.playerCount !== undefined) {
+      const pCount = Math.max(3, Math.min(8, parseInt(config.playerCount, 10) || 3));
+      const valid = catanLogic.validateProfilePlayerCount(this.ruleProfile, pCount);
+      if (valid.valid) {
+        this.playerCount = pCount;
+        while (this.seats.length < this.playerCount) {
+          const idx = this.seats.length;
+          this.seats.push({
+            name: `Bot ${idx + 1}`,
+            originalName: `Bot ${idx + 1}`,
+            isBot: true,
+            difficulty: this.difficulty,
+            socketId: null,
+            connected: true,
+            ready: true,
+            consecutiveAfkTurns: 0,
+            isAfk: false
+          });
+        }
+        while (this.seats.length > this.playerCount) {
+          this.seats.pop();
+        }
+      }
+    }
+    if (config.timeControl !== undefined) {
+      this.timeControl = Math.max(0, parseInt(config.timeControl, 10) || 0);
+    }
+    if (config.difficulty) {
+      this.difficulty = config.difficulty;
+      this.seats.forEach(s => {
+        if (s.isBot) s.difficulty = this.difficulty;
+      });
+    }
+    if (config.mapSettings) {
+      this.mapSettings = { ...this.mapSettings, ...config.mapSettings };
+    }
+    if (Array.isArray(config.seats)) {
+      config.seats.forEach((seatConfig, idx) => {
+        if (this.seats[idx] && (this.seats[idx].socketId !== this.hostSocketId)) {
+          if (seatConfig.isBot !== undefined) this.seats[idx].isBot = seatConfig.isBot;
+          if (seatConfig.difficulty) this.seats[idx].difficulty = seatConfig.difficulty;
+          if (seatConfig.name) this.seats[idx].name = seatConfig.name;
+        }
+      });
+    }
+
+    this.broadcastLobby();
+  }
+
   broadcastGameState() {
-    this.broadcast({
-      type: 'CATAN_STATE_UPDATE',
-      state: this.gameState,
-      lastDice: this.gameState ? this.gameState.lastDice : null,
-      seats: this.seats.map(s => ({ name: s.name, isBot: s.isBot, connected: s.connected })),
-      timeControl: this.timeControl
-    });
+    if (!this.gameState) return;
+
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        const viewerSeat = yourSeat !== -1 ? yourSeat : null;
+        const projected = catanLogic.getStateForPlayer(this.gameState, viewerSeat);
+
+        ws.send(JSON.stringify({
+          type: 'CATAN_STATE_UPDATE',
+          state: projected,
+          yourSeat,
+          lastDice: this.gameState ? this.gameState.lastDice : null,
+          seats: this.seats.map((s, idx) => ({
+            name: s.name,
+            isBot: s.isBot,
+            connected: s.connected,
+            isAfk: !!s.isAfk,
+            isMe: idx === yourSeat
+          })),
+          timeControl: this.timeControl
+        }));
+      }
+    }
   }
 
   clearTurnTimer() {
@@ -3234,26 +3318,34 @@ class OnlineCatanRoom {
 
     // Auto-resolve current phase so game never freezes on timeout
     if (this.gameState.phase.startsWith('SETUP')) {
-      const move = catanLogic.chooseBotSetupMove(this.gameState, currentSeat);
-      if (move) {
-        if (move.action === 'BUILD_SETTLEMENT') {
-          catanLogic.buildSettlement(this.gameState, currentSeat, move.vertexId, true);
-        } else if (move.action === 'BUILD_ROAD') {
-          catanLogic.buildRoad(this.gameState, currentSeat, move.edgeId, true);
+      setTimeout(() => {
+        if (!this.gameState || !this.gameState.phase.startsWith('SETUP') || this.gameState.activePlayer !== currentSeat) return;
+        const move = catanLogic.chooseBotSetupMove(this.gameState, currentSeat);
+        if (move) {
+          if (move.action === 'BUILD_SETTLEMENT') {
+            catanLogic.buildSettlement(this.gameState, currentSeat, move.vertexId, true);
+          } else if (move.action === 'BUILD_ROAD') {
+            catanLogic.buildRoad(this.gameState, currentSeat, move.edgeId, true);
+          }
         }
-      }
-      this.broadcastGameState();
-      this.startTurnTimer();
-      this.checkTurn();
+        this.broadcastGameState();
+        this.startTurnTimer();
+        setTimeout(() => { this.checkTurn(); }, 700);
+      }, 900);
       return;
     }
 
     if (this.gameState.phase === 'ROLL_DICE') {
-      const rollRes = catanLogic.rollDice(this.gameState, currentSeat);
-      if (rollRes && rollRes.sum === 7) {
-        this.processBotDiscards();
-      }
-      this.broadcastGameState();
+      setTimeout(() => {
+        if (!this.gameState || this.gameState.phase !== 'ROLL_DICE' || this.gameState.activePlayer !== currentSeat) return;
+        const rollRes = catanLogic.rollDice(this.gameState);
+        if (rollRes && rollRes.sum === 7) {
+          this.processBotDiscards();
+        }
+        this.broadcastGameState();
+        setTimeout(() => { this.checkTurn(); }, 1200);
+      }, 1000);
+      return;
     }
 
     if (this.gameState.phase === 'ROBBER_DISCARD') {
@@ -3281,6 +3373,8 @@ class OnlineCatanRoom {
         catanLogic.stealResource(this.gameState, currentSeat, robRes.candidates[0]);
       }
       this.broadcastGameState();
+      setTimeout(() => { this.checkTurn(); }, 1000);
+      return;
     }
 
     if (this.gameState.phase === 'ROBBER_STEAL') {
@@ -3290,21 +3384,67 @@ class OnlineCatanRoom {
         this.gameState.phase = 'PLAYING_TURN';
       }
       this.broadcastGameState();
+      setTimeout(() => { this.checkTurn(); }, 800);
+      return;
     }
 
     if (this.gameState.phase === 'PLAYING_TURN') {
-      catanLogic.endTurn(this.gameState, currentSeat);
-      this.broadcastGameState();
-      this.startTurnTimer();
+      setTimeout(() => {
+        if (!this.gameState || this.gameState.phase !== 'PLAYING_TURN' || this.gameState.activePlayer !== currentSeat) return;
+
+        // Execute bot actions with deliberate pacing
+        const decision = catanLogic.chooseBotTurn(this.gameState, currentSeat, 'normal');
+        let didAct = false;
+
+        if (decision) {
+          if (decision.action === 'BUILD_CITY') {
+            const r = catanLogic.buildCity(this.gameState, currentSeat, decision.vertexId);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUILD_SETTLEMENT') {
+            const r = catanLogic.buildSettlement(this.gameState, currentSeat, decision.vertexId, false);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUILD_ROAD') {
+            const r = catanLogic.buildRoad(this.gameState, currentSeat, decision.edgeId, false);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BUY_DEV_CARD') {
+            const r = catanLogic.buyDevCard(this.gameState, currentSeat);
+            if (r && r.valid) didAct = true;
+          } else if (decision.action === 'BANK_TRADE') {
+            const r = catanLogic.bankTrade(this.gameState, currentSeat, decision.giveResource, decision.getResource);
+            if (r && r.valid) didAct = true;
+          }
+        }
+
+        if (didAct) {
+          this.broadcastGameState();
+          setTimeout(() => { this.handleBotTurn(currentSeat); }, 1200);
+        } else {
+          catanLogic.endTurn(this.gameState, currentSeat);
+          this.broadcastGameState();
+          this.startTurnTimer();
+          setTimeout(() => { this.checkTurn(); }, 800);
+        }
+      }, 1000);
+      return;
     }
 
     this.checkTurn();
   }
 
   startGame() {
+    const val = catanLogic.validateProfilePlayerCount(this.ruleProfile, this.playerCount);
+    if (!val.valid) {
+      this.broadcast({ type: 'CHAT', sender: 'System', text: val.error || 'Invalid configuration for selected rule profile.' });
+      return;
+    }
+
     this.status = 'PLAYING';
     const playerNames = this.seats.map(s => s.name);
-    this.gameState = catanLogic.createInitialState(this.playerCount, playerNames);
+    this.gameState = catanLogic.createInitialState(this.playerCount, playerNames, {
+      ruleProfile: this.ruleProfile,
+      seed: this.mapSettings && this.mapSettings.seed,
+      customMap: this.mapSettings && this.mapSettings.customMap
+    });
 
     for (const ws of this.clients) {
       if (ws.readyState === WebSocket.OPEN) {
@@ -3314,6 +3454,7 @@ class OnlineCatanRoom {
           gameType: 'catan',
           yourSeat,
           playerCount: this.playerCount,
+          ruleProfile: this.ruleProfile,
           timeControl: this.timeControl
         }));
       }
@@ -3347,6 +3488,35 @@ class OnlineCatanRoom {
 
   checkTurn() {
     if (this.status !== 'PLAYING' || !this.gameState) return;
+
+    // Check Special Building Phase for bots
+    if (this.gameState.phase === 'SPECIAL_BUILDING') {
+      const spTurn = this.gameState.specialBuildingTurn;
+      const spSeat = this.seats[spTurn];
+      if (spSeat && (spSeat.isBot || spSeat.isAfk)) {
+        setTimeout(() => {
+          if (this.status !== 'PLAYING' || !this.gameState) return;
+          if (this.gameState.phase !== 'SPECIAL_BUILDING' || this.gameState.specialBuildingTurn !== spTurn) return;
+          const decision = catanLogic.chooseBotTurn(this.gameState, spTurn, spSeat.difficulty || this.difficulty);
+          if (decision && decision.action === 'BUILD_CITY') {
+            catanLogic.buildCity(this.gameState, spTurn, decision.vertexId);
+          } else if (decision && decision.action === 'BUILD_SETTLEMENT') {
+            catanLogic.buildSettlement(this.gameState, spTurn, decision.vertexId, false);
+          } else if (decision && decision.action === 'BUILD_ROAD') {
+            catanLogic.buildRoad(this.gameState, spTurn, decision.edgeId, false);
+          } else if (decision && decision.action === 'BUY_DEV_CARD') {
+            catanLogic.buyDevCard(this.gameState, spTurn);
+          } else {
+            catanLogic.passSpecialBuilding(this.gameState, spTurn);
+          }
+          this.broadcastGameState();
+          this.checkTurn();
+        }, 500);
+        return;
+      }
+      return;
+    }
+
     const activeSeatIdx = this.gameState.activePlayer;
     const seat = this.seats[activeSeatIdx];
 
@@ -3355,9 +3525,11 @@ class OnlineCatanRoom {
         if (this.status !== 'PLAYING' || !this.gameState) return;
         if (this.gameState.activePlayer !== activeSeatIdx) return;
 
+        const diff = seat.difficulty || this.difficulty || 'normal';
+
         // Bot setup
         if (this.gameState.phase.startsWith('SETUP')) {
-          const move = catanLogic.chooseBotSetupMove(this.gameState, activeSeatIdx);
+          const move = catanLogic.chooseBotSetupMove(this.gameState, activeSeatIdx, diff);
           if (move) {
             if (move.action === 'BUILD_SETTLEMENT') {
               catanLogic.buildSettlement(this.gameState, activeSeatIdx, move.vertexId, true);
@@ -3372,7 +3544,7 @@ class OnlineCatanRoom {
 
         // Bot Roll Dice
         if (this.gameState.phase === 'ROLL_DICE') {
-          const rollRes = catanLogic.rollDice(this.gameState, activeSeatIdx);
+          const rollRes = catanLogic.rollDice(this.gameState);
           if (rollRes && rollRes.sum === 7) {
             this.processBotDiscards();
             if (this.gameState.phase === 'ROBBER_DISCARD') {
@@ -3380,23 +3552,32 @@ class OnlineCatanRoom {
               return; // Wait for connected human player to discard cards
             }
             // Move robber
-            const available = this.gameState.tiles.filter(t => t.id !== this.gameState.robberHexId).map(t => t.id);
-            const pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
+            const robberDec = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
+            const pickHex = (robberDec && robberDec.hexId !== undefined) ? robberDec.hexId : 0;
             const robRes = catanLogic.moveRobber(this.gameState, activeSeatIdx, pickHex);
             if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
-              catanLogic.stealResource(this.gameState, activeSeatIdx, robRes.candidates[0]);
+              const stealDec = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
+              const victim = (stealDec && stealDec.victimId !== undefined) ? stealDec.victimId : robRes.candidates[0];
+              catanLogic.stealResource(this.gameState, activeSeatIdx, victim);
             }
           }
           this.broadcastGameState();
+          // Natural delay after dice roll so players observe the roll and resources
+          setTimeout(() => {
+            this.checkTurn();
+          }, 900);
+          return;
         }
 
         // Bot Robber Move (if discarded or deferred)
         if (this.gameState.phase === 'ROBBER_MOVE') {
-          const available = this.gameState.tiles.filter(t => t.id !== this.gameState.robberHexId).map(t => t.id);
-          const pickHex = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : 0;
+          const robberDec = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
+          const pickHex = (robberDec && robberDec.hexId !== undefined) ? robberDec.hexId : 0;
           const robRes = catanLogic.moveRobber(this.gameState, activeSeatIdx, pickHex);
           if (robRes && robRes.canSteal && robRes.candidates && robRes.candidates.length > 0) {
-            catanLogic.stealResource(this.gameState, activeSeatIdx, robRes.candidates[0]);
+            const stealDec = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
+            const victim = (stealDec && stealDec.victimId !== undefined) ? stealDec.victimId : robRes.candidates[0];
+            catanLogic.stealResource(this.gameState, activeSeatIdx, victim);
           }
           this.broadcastGameState();
         }
@@ -3404,7 +3585,9 @@ class OnlineCatanRoom {
         // Bot Robber Steal (if in ROBBER_STEAL phase)
         if (this.gameState.phase === 'ROBBER_STEAL') {
           if (this.gameState.stealCandidates && this.gameState.stealCandidates.length > 0) {
-            catanLogic.stealResource(this.gameState, activeSeatIdx, this.gameState.stealCandidates[0]);
+            const stealDec = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
+            const victim = (stealDec && stealDec.victimId !== undefined) ? stealDec.victimId : this.gameState.stealCandidates[0];
+            catanLogic.stealResource(this.gameState, activeSeatIdx, victim);
           } else {
             this.gameState.phase = 'PLAYING_TURN';
           }
@@ -3414,7 +3597,7 @@ class OnlineCatanRoom {
         // Bot playing actions
         let safety = 0;
         while (this.gameState.phase === 'PLAYING_TURN' && safety++ < 6) {
-          const decision = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx);
+          const decision = catanLogic.chooseBotTurn(this.gameState, activeSeatIdx, diff);
           if (!decision || decision.action === 'END_TURN') {
             break;
           }
@@ -3448,7 +3631,9 @@ class OnlineCatanRoom {
           this.clearTurnTimer();
         } else {
           this.startTurnTimer();
-          this.checkTurn();
+          setTimeout(() => {
+            this.checkTurn();
+          }, 800);
         }
       }, 700);
     }
@@ -3459,7 +3644,7 @@ class OnlineCatanRoom {
     const seatIdx = this.getSeatIndexForSocket(ws.id);
     if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'ROLL_DICE') return;
 
-    const rollRes = catanLogic.rollDice(this.gameState, seatIdx);
+    const rollRes = catanLogic.rollDice(this.gameState);
     if (rollRes && rollRes.sum === 7) {
       this.processBotDiscards();
     }
@@ -3484,7 +3669,7 @@ class OnlineCatanRoom {
     const seatIdx = this.getSeatIndexForSocket(ws.id);
     if (seatIdx !== this.gameState.activePlayer) return;
 
-    const res = catanLogic.buildRoad(this.gameState, seatIdx, data.edgeId, !!data.isSetup);
+    const res = catanLogic.buildRoad(this.gameState, seatIdx, data.edgeId, !!data.isFree);
     if (res.valid) {
       this.broadcastGameState();
       this.checkTurn();
@@ -3518,41 +3703,120 @@ class OnlineCatanRoom {
   handlePlayDev(ws, data) {
     if (this.status !== 'PLAYING' || !this.gameState) return;
     const seatIdx = this.getSeatIndexForSocket(ws.id);
-    if (seatIdx !== this.gameState.activePlayer || this.gameState.phase !== 'PLAYING_TURN' || this.gameState.devCardPlayedThisTurn) return;
+    if (seatIdx !== this.gameState.activePlayer) return;
 
-    const p = this.gameState.players[seatIdx];
-    const cardIdx = data.cardIdx;
-    const card = p.devCards[cardIdx];
-    if (!card) return;
-    if (card.turnBought !== undefined && card.turnBought >= (this.gameState.turnCount || 0)) return;
-
-    p.devCards.splice(cardIdx, 1);
-    this.gameState.devCardPlayedThisTurn = true;
-
-    if (card.type === 'knight') {
-      p.playedKnights = (p.playedKnights || 0) + 1;
-      catanLogic.checkLargestArmy(this.gameState);
-      this.gameState.phase = 'ROBBER_MOVE';
-    } else if (card.type === 'road_building') {
-      p.resources.lumber = (p.resources.lumber || 0) + 2;
-      p.resources.brick = (p.resources.brick || 0) + 2;
-    } else if (card.type === 'year_of_plenty') {
-      p.resources.grain = (p.resources.grain || 0) + 1;
-      p.resources.ore = (p.resources.ore || 0) + 1;
-    } else if (card.type === 'monopoly') {
-      let totalClaimed = 0;
-      this.gameState.players.forEach(otherP => {
-        if (otherP.id !== seatIdx && (otherP.resources.grain || 0) > 0) {
-          totalClaimed += otherP.resources.grain;
-          otherP.resources.grain = 0;
-        }
+    const res = catanLogic.playDevCard(this.gameState, seatIdx, data);
+    if (res.valid) {
+      const playerName = this.seats[seatIdx] ? this.seats[seatIdx].name : `Player ${seatIdx + 1}`;
+      let logMsg = `🃏 ${playerName} played ${res.cardType}`;
+      if (res.cardType === catanLogic.DEV_CARD_TYPES.MONOPOLY) {
+        logMsg = `🪙 ${playerName} monopolized ${res.targetResource} (+${res.totalTaken})!`;
+      } else if (res.cardType === catanLogic.DEV_CARD_TYPES.YEAR_OF_PLENTY) {
+        logMsg = `🌾 ${playerName} took ${res.taken.join(', ')} from the bank!`;
+      } else if (res.cardType === catanLogic.DEV_CARD_TYPES.KNIGHT) {
+        logMsg = `⚔️ ${playerName} played a Knight and summoned the robber!`;
+      }
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: logMsg
       });
-      p.resources.grain = (p.resources.grain || 0) + totalClaimed;
-    }
 
-    catanLogic.recalculateVictoryPoints(this.gameState);
+      catanLogic.recalculateVictoryPoints(this.gameState);
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleProposeTrade(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.proposeTrade(this.gameState, seatIdx, data);
+    if (res.valid) {
+      const playerName = this.seats[seatIdx] ? this.seats[seatIdx].name : `Player ${seatIdx + 1}`;
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: `🤝 ${playerName} proposed a resource trade.`
+      });
+      this.broadcastGameState();
+      this.processBotTradeResponses();
+    }
+  }
+
+  handleRespondTrade(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+
+    const res = catanLogic.respondTrade(this.gameState, seatIdx, data.offerId, data.accept);
+    if (res.valid) {
+      const responderName = this.seats[seatIdx] ? this.seats[seatIdx].name : `Player ${seatIdx + 1}`;
+      if (data.accept) {
+        this.broadcast({
+          type: 'CHAT',
+          sender: 'System',
+          text: `✅ ${responderName} accepted the trade proposal!`
+        });
+      }
+      this.broadcastGameState();
+    }
+  }
+
+  handleConfirmTrade(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    const res = catanLogic.confirmTrade(this.gameState, seatIdx, data.offerId, data.partnerId);
+    if (res.valid) {
+      const p1 = this.seats[seatIdx] ? this.seats[seatIdx].name : `Player ${seatIdx + 1}`;
+      const p2 = this.seats[data.partnerId] ? this.seats[data.partnerId].name : `Player ${data.partnerId + 1}`;
+      this.broadcast({
+        type: 'CHAT',
+        sender: 'System',
+        text: `🎉 Trade successfully executed between ${p1} and ${p2}!`
+      });
+      this.broadcastGameState();
+      this.checkTurn();
+    }
+  }
+
+  handleCancelTrade(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx !== this.gameState.activePlayer) return;
+
+    catanLogic.cancelTrade(this.gameState, seatIdx);
     this.broadcastGameState();
-    this.checkTurn();
+  }
+
+  processBotTradeResponses() {
+    if (!this.gameState || !this.gameState.tradeOffer) return;
+    const offer = this.gameState.tradeOffer;
+
+    for (let i = 0; i < this.playerCount; i++) {
+      const seat = this.seats[i];
+      if (i !== offer.fromPlayer && (seat.isBot || seat.isAfk)) {
+        if (offer.targetPlayer !== null && offer.targetPlayer !== i) continue;
+        const bot = this.gameState.players[i];
+        let hasAll = true;
+        for (const [r, count] of Object.entries(offer.receive || {})) {
+          if ((bot.resources[r] || 0) < count + 1) { // Keeps at least 1 for itself
+            hasAll = false;
+            break;
+          }
+        }
+        if (hasAll) {
+          catanLogic.respondTrade(this.gameState, i, offer.id, true);
+        } else {
+          catanLogic.respondTrade(this.gameState, i, offer.id, false);
+        }
+      }
+    }
+    this.broadcastGameState();
   }
 
   handleBankTrade(ws, data) {
@@ -3614,6 +3878,32 @@ class OnlineCatanRoom {
     catanLogic.endTurn(this.gameState, seatIdx);
     this.broadcastGameState();
     this.startTurnTimer();
+    this.checkTurn();
+  }
+
+  handleSpecialBuild(ws, data) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1 || this.gameState.phase !== 'SPECIAL_BUILDING') return;
+    if (this.gameState.specialBuildingTurn !== seatIdx) return;
+
+    if (data.buildType === 'city') catanLogic.buildCity(this.gameState, seatIdx, data.vertexId);
+    else if (data.buildType === 'settlement') catanLogic.buildSettlement(this.gameState, seatIdx, data.vertexId, false);
+    else if (data.buildType === 'road') catanLogic.buildRoad(this.gameState, seatIdx, data.edgeId, false);
+    else if (data.buildType === 'dev') catanLogic.buyDevCard(this.gameState, seatIdx);
+
+    this.broadcastGameState();
+    this.checkTurn();
+  }
+
+  handlePassSpecialBuild(ws) {
+    if (this.status !== 'PLAYING' || !this.gameState) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1 || this.gameState.phase !== 'SPECIAL_BUILDING') return;
+    if (this.gameState.specialBuildingTurn !== seatIdx) return;
+
+    catanLogic.passSpecialBuilding(this.gameState, seatIdx);
+    this.broadcastGameState();
     this.checkTurn();
   }
 
@@ -4281,7 +4571,7 @@ function handleClientMessage(ws, data) {
         }
         room.addClient(ws);
 
-        if (room.gameType === 'chess' && room.disconnectTimers && room.disconnectTimers[rejoinSeatIdx]) {
+        if ((room.gameType === 'chess' || room.gameType === 'catan') && room.disconnectTimers && room.disconnectTimers[rejoinSeatIdx]) {
           clearTimeout(room.disconnectTimers[rejoinSeatIdx]);
           room.disconnectTimers[rejoinSeatIdx] = null;
         }
@@ -4923,6 +5213,38 @@ function handleClientMessage(ws, data) {
     return;
   }
 
+  if (type === 'CATAN_PROPOSE_TRADE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleProposeTrade(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_RESPOND_TRADE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleRespondTrade(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_CONFIRM_TRADE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleConfirmTrade(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_CANCEL_TRADE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleCancelTrade(ws, data);
+    return;
+  }
+
   if (type === 'CATAN_MOVE_ROBBER') {
     if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
     const room = rooms.get(ws.roomCode);
@@ -4931,7 +5253,7 @@ function handleClientMessage(ws, data) {
     return;
   }
 
-  if (type === 'CATAN_STEAL') {
+  if (type === 'CATAN_STEAL' || type === 'CATAN_STEAL_RESOURCE') {
     if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'catan') return;
@@ -4960,6 +5282,30 @@ function handleClientMessage(ws, data) {
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'catan') return;
     room.handleResign(ws);
+    return;
+  }
+
+  if (type === 'CATAN_CONFIG_UPDATE') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleConfigUpdate(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_SPECIAL_BUILD') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handleSpecialBuild(ws, data);
+    return;
+  }
+
+  if (type === 'CATAN_PASS_SPECIAL_BUILD') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'catan') return;
+    room.handlePassSpecialBuild(ws);
     return;
   }
 
