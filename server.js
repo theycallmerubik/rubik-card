@@ -17,6 +17,7 @@ const dotsAndBoxesLogic = require('./public/games/dots-and-boxes/logic.js');
 const catanLogic = require('./public/games/catan/logic.js');
 const bughouseLogic = require('./public/games/bughouse-chess/logic.js');
 const ludoLogic = require('./public/games/ludo/logic.js');
+const rootLogic = require('./public/games/root/logic.js');
 
 function getLocalIpAddress() {
   const interfaces = os.networkInterfaces();
@@ -68,6 +69,8 @@ const server = http.createServer((req, res) => {
   if (reqPath === '/dots-and-boxes' || reqPath === '/dots-and-boxes/' || reqPath === '/dots' || reqPath === '/dots/') reqPath = '/games/dots-and-boxes/index.html';
   if (reqPath === '/catan' || reqPath === '/catan/') reqPath = '/games/catan/index.html';
   if (reqPath === '/bughouse' || reqPath === '/bughouse/' || reqPath === '/bughouse-chess' || reqPath === '/bughouse-chess/') reqPath = '/games/bughouse-chess/index.html';
+  if (reqPath === '/ludo' || reqPath === '/ludo/') reqPath = '/games/ludo/index.html';
+  if (reqPath === '/root' || reqPath === '/root/') reqPath = '/games/root/index.html';
 
   if (reqPath === '/api/server-info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -80,6 +83,33 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ exists: !!room, gameType: room ? room.gameType : null }));
     return;
+  }
+  if (reqPath === '/api/user/profile') {
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const profile = JSON.parse(body);
+          if (profile && profile.userId) {
+            userProfilesStore.set(profile.userId, { ...profile, serverUpdated: Date.now() });
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    } else {
+      const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      const userId = urlObj.searchParams.get('userId');
+      const profile = userId ? userProfilesStore.get(userId) : null;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, profile: profile || null }));
+      return;
+    }
   }
 
   const safePath = path.normalize(reqPath).replace(/^(\.\.[/\\])+/, '');
@@ -114,6 +144,8 @@ const wss = new WebSocketServer({ server });
 
 // Room Store: Map<roomCode, Room>
 const rooms = new Map();
+// User Profiles & Identity Cache Store: Map<userId, Profile>
+const userProfilesStore = new Map();
 
 function generateRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -4473,6 +4505,272 @@ class OnlineLudoRoom {
   }
 }
 
+// 10. Online Root Strategy Board Game Room
+class OnlineRootRoom {
+  constructor(code, hostWs, hostName = 'Host', settings = {}) {
+    this.code = code;
+    this.gameType = 'root';
+    this.hostSocketId = hostWs.id;
+    this.status = 'LOBBY';
+    this.turnTimer = null;
+    this.game = null;
+
+    const factions = ['marquise', 'eyrie', 'alliance', 'vagabond'];
+    this.seats = factions.map((fId, idx) => {
+      if (idx === 0) {
+        return {
+          seat: idx,
+          faction: fId,
+          name: hostName,
+          originalName: hostName,
+          isBot: false,
+          difficulty: 'normal',
+          socketId: hostWs.id,
+          connected: true,
+          ready: true
+        };
+      } else {
+        return {
+          seat: idx,
+          faction: fId,
+          name: `Bot ${rootLogic.FACTIONS[fId].name.en}`,
+          originalName: `Bot ${rootLogic.FACTIONS[fId].name.en}`,
+          isBot: true,
+          difficulty: (settings && settings.difficulty) || 'normal',
+          socketId: null,
+          connected: true,
+          ready: true
+        };
+      }
+    });
+
+    this.clients = new Set();
+    this.addClient(hostWs);
+  }
+
+  addClient(ws) {
+    this.clients.add(ws);
+    ws.roomCode = this.code;
+  }
+
+  removeClient(ws) {
+    this.clients.delete(ws);
+    const seatIdx = this.seats.findIndex(s => s.socketId === ws.id);
+    if (seatIdx !== -1) {
+      const seat = this.seats[seatIdx];
+      seat.connected = false;
+      if (this.status === 'LOBBY') {
+        seat.socketId = null;
+        seat.isBot = true;
+        seat.name = `Bot ${rootLogic.FACTIONS[seat.faction].name.en}`;
+        if (this.hostSocketId === ws.id) {
+          const nextHuman = this.seats.find(s => s.socketId && s.connected && !s.isBot);
+          if (nextHuman) this.hostSocketId = nextHuman.socketId;
+        }
+        this.broadcastLobby();
+      }
+    }
+
+    if (this.clients.size === 0) {
+      if (this.turnTimer) clearTimeout(this.turnTimer);
+      rooms.delete(this.code);
+    }
+  }
+
+  getSeatIndexForSocket(socketId) {
+    return this.seats.findIndex(s => s.socketId === socketId);
+  }
+
+  broadcast(message) {
+    const payload = JSON.stringify(message);
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(payload);
+      }
+    }
+  }
+
+  broadcastLobby() {
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const yourSeat = this.getSeatIndexForSocket(ws.id);
+        const isHost = (ws.id === this.hostSocketId);
+        ws.send(JSON.stringify({
+          type: 'LOBBY_UPDATE',
+          roomCode: this.code,
+          gameType: 'root',
+          hostId: this.hostSocketId,
+          isHost,
+          yourSeat,
+          status: this.status,
+          seats: this.seats.map(s => ({
+            seat: s.seat,
+            faction: s.faction,
+            name: s.name,
+            isBot: s.isBot,
+            difficulty: s.difficulty,
+            isOccupied: s.socketId !== null,
+            isOnline: s.isBot ? true : s.connected,
+            isHost: s.socketId === this.hostSocketId,
+            isMe: s.socketId === ws.id,
+            ready: s.ready
+          }))
+        }));
+      }
+    }
+  }
+
+  startMatch() {
+    if (this.status === 'PLAYING') return;
+    this.status = 'PLAYING';
+
+    this.game = rootLogic.createInitialState({
+      seed: Date.now() & 0xFFFFFF,
+      factions: this.seats.map(s => s.faction),
+      playerNames: this.seats.map(s => s.name),
+      bots: this.seats.map(s => s.isBot),
+      difficulties: this.seats.map(s => s.difficulty)
+    });
+
+    this.broadcast({ type: 'GAME_STARTED', roomCode: this.code });
+    this.broadcastGameState();
+    this.checkBotTurn();
+  }
+
+  broadcastGameState() {
+    if (!this.game) return;
+    for (const ws of this.clients) {
+      if (ws.readyState === WebSocket.OPEN) {
+        const seat = this.getSeatIndexForSocket(ws.id);
+        const projection = rootLogic.getStateForPlayer(this.game, seat);
+        ws.send(JSON.stringify({
+          type: 'STATE_UPDATE',
+          roomCode: this.code,
+          state: projection,
+          yourSeat: seat,
+          isHost: (ws.id === this.hostSocketId)
+        }));
+      }
+    }
+  }
+
+  handleIntent(ws, action) {
+    if (this.status !== 'PLAYING' || !this.game) return;
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+
+    // Validate authority: must be active player or target of pending decision
+    if (this.game.activePlayerIndex !== seatIdx && !this.game.pendingDecision) {
+      return;
+    }
+
+    this.applyAction(action);
+    this.broadcastGameState();
+    this.checkBotTurn();
+  }
+
+  applyAction(action) {
+    if (!this.game) return;
+
+    if (action.type === 'ADVANCE_PHASE') {
+      if (this.game.phase === 'BIRDSONG') {
+        this.game.phase = 'DAYLIGHT';
+      } else if (this.game.phase === 'DAYLIGHT') {
+        this.game.phase = 'EVENING';
+      } else if (this.game.phase === 'EVENING') {
+        this.game.phase = 'BIRDSONG';
+        this.game.activePlayerIndex = (this.game.activePlayerIndex + 1) % this.game.players.length;
+      }
+    } else if (action.type === 'MARQUISE_PLACE_WOOD') {
+      const cl = this.game.clearings.find(c => c.id === action.clearingId);
+      if (cl) {
+        for (let i = 0; i < action.count; i++) {
+          cl.pieces.tokens.push({ type: 'wood', faction: 'marquise' });
+          this.game.factionData.marquise.woodInSupply--;
+        }
+      }
+    } else if (action.type === 'MARQUISE_BUILD') {
+      const cl = this.game.clearings.find(c => c.id === action.clearingId);
+      if (cl) {
+        cl.pieces.buildings.push({ type: action.buildingType, faction: 'marquise' });
+        this.game.factionData.marquise[`${action.buildingType}sRemaining`]--;
+        const track = rootLogic.MARQUISE_TRACKS[action.buildingType];
+        const vp = track.vps[6 - this.game.factionData.marquise[`${action.buildingType}sRemaining`]];
+        this.game.players[0].score += vp;
+        this.game.factionData.marquise.actionsRemaining--;
+      }
+    } else if (action.type === 'MOVE') {
+      const fromCl = this.game.clearings.find(c => c.id === action.from);
+      const toCl = this.game.clearings.find(c => c.id === action.to);
+      const faction = this.game.players[this.game.activePlayerIndex].faction;
+      if (fromCl && toCl) {
+        fromCl.pieces[faction] -= action.count;
+        toCl.pieces[faction] = (toCl.pieces[faction] || 0) + action.count;
+        if (faction === 'marquise') this.game.factionData.marquise.actionsRemaining--;
+      }
+    } else if (action.type === 'BATTLE') {
+      const result = rootLogic.resolveBattle(this.game, action.clearingId, action.attackerFaction, action.defenderFaction);
+      this.broadcast({ type: 'BATTLE_RESULT', data: result });
+      if (action.attackerFaction === 'marquise') this.game.factionData.marquise.actionsRemaining--;
+    } else if (action.type === 'ALLIANCE_SPREAD_SYMPATHY') {
+      const cl = this.game.clearings.find(c => c.id === action.clearingId);
+      if (cl) {
+        cl.pieces.tokens.push({ type: 'sympathy', faction: 'alliance' });
+        this.game.factionData.alliance.sympathyRemaining--;
+        this.game.factionData.alliance.supporters.splice(0, action.cost);
+        const vp = rootLogic.ALLIANCE_SYMPATHY_VPS[10 - this.game.factionData.alliance.sympathyRemaining];
+        const p = this.game.players.find(pl => pl.faction === 'alliance');
+        if (p) p.score += vp;
+      }
+    } else if (action.type === 'VAGABOND_MOVE') {
+      this.game.factionData.vagabond.currentLocation = action.toId;
+      this.game.factionData.vagabond.locationType = 'clearing';
+      const boot = this.game.factionData.vagabond.items.find(i => i.type === 'boot' && i.state === 'ready');
+      if (boot) boot.state = 'exhausted';
+    }
+
+    rootLogic.checkVictory(this.game);
+  }
+
+  checkBotTurn() {
+    if (this.status !== 'PLAYING' || !this.game || this.game.status !== 'PLAYING') return;
+    const activePlayer = this.game.players[this.game.activePlayerIndex];
+    if (activePlayer && activePlayer.isBot) {
+      if (this.turnTimer) clearTimeout(this.turnTimer);
+      this.turnTimer = setTimeout(() => {
+        if (this.status !== 'PLAYING' || !this.game) return;
+        const legal = rootLogic.getLegalActions(this.game, this.game.activePlayerIndex);
+        if (legal.length > 0) {
+          const choice = legal.find(a => a.type === 'BATTLE') ||
+                         legal.find(a => a.type === 'MARQUISE_BUILD') ||
+                         legal.find(a => a.type === 'ALLIANCE_SPREAD_SYMPATHY') ||
+                         legal.find(a => a.type === 'MOVE') ||
+                         legal.find(a => a.type === 'ADVANCE_PHASE') ||
+                         legal[0];
+          this.applyAction(choice);
+          this.broadcastGameState();
+          this.checkBotTurn();
+        }
+      }, 650);
+    }
+  }
+
+  handleResign(ws) {
+    const seatIdx = this.getSeatIndexForSocket(ws.id);
+    if (seatIdx === -1) return;
+    const seat = this.seats[seatIdx];
+    seat.isBot = true;
+    seat.name = `${seat.originalName} (AI)`;
+    this.broadcast({
+      type: 'CHAT',
+      sender: 'System',
+      text: `${seat.originalName} resigned. AI has taken over the faction.`
+    });
+    this.broadcastLobby();
+    this.checkBotTurn();
+  }
+}
+
 let socketIdCounter = 1;
 
 wss.on('connection', (ws) => {
@@ -4519,6 +4817,8 @@ function handleClientMessage(ws, data) {
       room = new OnlineBughouseRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else if (gameType === 'ludo') {
       room = new OnlineLudoRoom(code, ws, data.playerName || 'Player 1', data.settings);
+    } else if (gameType === 'root') {
+      room = new OnlineRootRoom(code, ws, data.playerName || 'Player 1', data.settings);
     } else {
       room = new OnlineRoom(code, ws, data.playerName || 'Player 1');
     }
@@ -5354,6 +5654,30 @@ function handleClientMessage(ws, data) {
     const room = rooms.get(ws.roomCode);
     if (room.gameType !== 'ludo') return;
     room.handleMoveToken(ws, data);
+    return;
+  }
+
+  if (type === 'ROOT_START_MATCH') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'root') return;
+    room.startMatch();
+    return;
+  }
+
+  if (type === 'ROOT_INTENT') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'root') return;
+    room.handleIntent(ws, data.action);
+    return;
+  }
+
+  if (type === 'ROOT_RESIGN') {
+    if (!ws.roomCode || !rooms.has(ws.roomCode)) return;
+    const room = rooms.get(ws.roomCode);
+    if (room.gameType !== 'root') return;
+    room.handleResign(ws);
     return;
   }
 

@@ -739,23 +739,27 @@
     }
   }
 
-  // --- Pure UTF-8 Card HTML Generator ---
+  // --- Pure SVG & UTF-8 Card HTML Generator ---
   function createCardElement(card, isPlayable = true, onClick = null) {
     const el = document.createElement('div');
     el.className = `card ${card.color} ${isPlayable ? 'playable' : 'unplayable'}`;
     el.dataset.id = card.id;
 
-    el.innerHTML = `
-      <div class="card-corner-top">
-        <span class="card-rank">${card.label}</span>
-        <span class="card-suit-sm">${card.symbol}</span>
-      </div>
-      <div class="card-center-suit">${card.symbol}</div>
-      <div class="card-corner-bottom">
-        <span class="card-rank">${card.label}</span>
-        <span class="card-suit-sm">${card.symbol}</span>
-      </div>
-    `;
+    if (typeof RubikCardsSVG !== 'undefined' && typeof RubikCardsSVG.generateCardInnerHtml === 'function') {
+      el.innerHTML = RubikCardsSVG.generateCardInnerHtml(card);
+    } else {
+      el.innerHTML = `
+        <div class="card-corner-top">
+          <span class="card-rank">${card.label}</span>
+          <span class="card-suit-sm">${card.symbol}</span>
+        </div>
+        <div class="card-center-suit">${card.symbol}</div>
+        <div class="card-corner-bottom">
+          <span class="card-rank">${card.label}</span>
+          <span class="card-suit-sm">${card.symbol}</span>
+        </div>
+      `;
+    }
 
     if (onClick) {
       el.addEventListener('click', () => {

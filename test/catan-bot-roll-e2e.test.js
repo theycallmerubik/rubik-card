@@ -5,25 +5,44 @@ const catanLogic = require('../public/games/catan/logic.js');
 
 const TEST_PORT = 3891;
 
-function waitForMessage(ws, filterFn, timeoutMs = 8000) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      ws.off('message', onMsg);
-      reject(new Error(`Timeout waiting for message matching criteria (${timeoutMs}ms)`));
-    }, timeoutMs);
+const wsQueues = new WeakMap();
 
-    function onMsg(data) {
+function getWsQueue(ws) {
+  let q = wsQueues.get(ws);
+  if (!q) {
+    q = { messages: [], waiters: [] };
+    ws.on('message', data => {
       try {
         const msg = JSON.parse(data.toString());
-        if (filterFn(msg)) {
-          clearTimeout(timer);
-          ws.off('message', onMsg);
-          resolve(msg);
+        for (let i = 0; i < q.waiters.length; i++) {
+          if (q.waiters[i].filterFn(msg)) {
+            const w = q.waiters.splice(i, 1)[0];
+            clearTimeout(w.timer);
+            w.resolve(msg);
+            return;
+          }
         }
+        q.messages.push(msg);
       } catch (_) {}
-    }
+    });
+    wsQueues.set(ws, q);
+  }
+  return q;
+}
 
-    ws.on('message', onMsg);
+function waitForMessage(ws, filterFn, timeoutMs = 8000) {
+  const q = getWsQueue(ws);
+  const idx = q.messages.findIndex(filterFn);
+  if (idx !== -1) {
+    return Promise.resolve(q.messages.splice(idx, 1)[0]);
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const wIdx = q.waiters.findIndex(w => w.resolve === resolve);
+      if (wIdx !== -1) q.waiters.splice(wIdx, 1);
+      reject(new Error(`Timeout waiting for message matching criteria (${timeoutMs}ms)`));
+    }, timeoutMs);
+    q.waiters.push({ filterFn, resolve, reject, timer });
   });
 }
 
@@ -107,7 +126,12 @@ async function testBotRollsAndPlays() {
     if (st.state.phase === 'ROBBER_MOVE') {
       const targetHex = st.state.tiles.find(t => t.id !== st.state.robberHexId).id;
       ws.send(JSON.stringify({ type: 'CATAN_MOVE_ROBBER', hexId: targetHex }));
-      st = await waitForMessage(ws, m => m.type === 'CATAN_STATE_UPDATE' && m.state.phase === 'PLAYING_TURN');
+      st = await waitForMessage(ws, m => m.type === 'CATAN_STATE_UPDATE' && (m.state.phase === 'PLAYING_TURN' || m.state.phase === 'ROBBER_STEAL'));
+      if (st.state.phase === 'ROBBER_STEAL') {
+        const victim = (st.state.stealCandidates && st.state.stealCandidates.length > 0) ? st.state.stealCandidates[0] : 1;
+        ws.send(JSON.stringify({ type: 'CATAN_STEAL_RESOURCE', victimId: victim }));
+        st = await waitForMessage(ws, m => m.type === 'CATAN_STATE_UPDATE' && m.state.phase === 'PLAYING_TURN');
+      }
     }
     console.log('✓ Alice rolled dice. Now Alice ends turn to pass to Bot 2...');
 

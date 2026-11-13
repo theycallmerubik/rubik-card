@@ -9,25 +9,44 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function waitForMessage(ws, filterFn, timeoutMs = 6000) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      ws.off('message', onMsg);
-      reject(new Error(`Timeout waiting for message matching criteria (${timeoutMs}ms)`));
-    }, timeoutMs);
+const wsQueues = new WeakMap();
 
-    function onMsg(data) {
+function getWsQueue(ws) {
+  let q = wsQueues.get(ws);
+  if (!q) {
+    q = { messages: [], waiters: [] };
+    ws.on('message', data => {
       try {
         const msg = JSON.parse(data.toString());
-        if (filterFn(msg)) {
-          clearTimeout(timer);
-          ws.off('message', onMsg);
-          resolve(msg);
+        for (let i = 0; i < q.waiters.length; i++) {
+          if (q.waiters[i].filterFn(msg)) {
+            const w = q.waiters.splice(i, 1)[0];
+            clearTimeout(w.timer);
+            w.resolve(msg);
+            return;
+          }
         }
+        q.messages.push(msg);
       } catch (_) {}
-    }
+    });
+    wsQueues.set(ws, q);
+  }
+  return q;
+}
 
-    ws.on('message', onMsg);
+function waitForMessage(ws, filterFn, timeoutMs = 6000) {
+  const q = getWsQueue(ws);
+  const idx = q.messages.findIndex(filterFn);
+  if (idx !== -1) {
+    return Promise.resolve(q.messages.splice(idx, 1)[0]);
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const wIdx = q.waiters.findIndex(w => w.resolve === resolve);
+      if (wIdx !== -1) q.waiters.splice(wIdx, 1);
+      reject(new Error(`Timeout waiting for message matching criteria (${timeoutMs}ms)`));
+    }, timeoutMs);
+    q.waiters.push({ filterFn, resolve, reject, timer });
   });
 }
 
@@ -257,11 +276,15 @@ async function runMultiplayerTest() {
 
       if (rolledStateMsg.state.phase === 'ROBBER_MOVE') {
         const boardGraph = catanLogic.getBoardGraph(latestState);
-        const targetHex = boardGraph.hexes.find(h => h.id !== rolledStateMsg.state.robberHex);
+        const currentRobber = rolledStateMsg.state.robberHexId !== undefined ? rolledStateMsg.state.robberHexId : rolledStateMsg.state.robberHex;
+        const targetHex = boardGraph.hexes.find(h => h.id !== currentRobber);
         activeWs.send(JSON.stringify({ type: 'CATAN_MOVE_ROBBER', hexId: targetHex.id }));
         const afterRobber = await waitForMessage(ws1, m => m.type === 'CATAN_STATE_UPDATE' && (m.state.phase === 'PLAYING_TURN' || m.state.phase === 'ROBBER_STEAL'));
         if (afterRobber.state.phase === 'ROBBER_STEAL') {
-          activeWs.send(JSON.stringify({ type: 'CATAN_STEAL_RESOURCE', victimId: 1 }));
+          const victim = (afterRobber.state.stealCandidates && afterRobber.state.stealCandidates.length > 0)
+            ? afterRobber.state.stealCandidates[0]
+            : 1;
+          activeWs.send(JSON.stringify({ type: 'CATAN_STEAL_RESOURCE', victimId: victim }));
           await waitForMessage(ws1, m => m.type === 'CATAN_STATE_UPDATE' && m.state.phase === 'PLAYING_TURN');
         }
       }
