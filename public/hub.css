@@ -1166,3 +1166,120 @@ body[dir="rtl"] .btn-join-room:hover .btn-arrow {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   USER PROFILE WIDGET & CACHE MODAL
+   ========================================================================== */
+.hub-btn-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+.hub-btn-profile:hover {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: #d4af37;
+}
+.user-avatar-badge {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.profile-modal-box {
+  max-width: 460px;
+}
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+.profile-current-avatar {
+  font-size: 2.4rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212, 175, 55, 0.15);
+  border: 2px solid #d4af37;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+.profile-avatars-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.avatar-pick-btn {
+  font-size: 1.25rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.avatar-pick-btn:hover, .avatar-pick-btn.selected {
+  background: rgba(212, 175, 55, 0.3);
+  border-color: #d4af37;
+  transform: scale(1.1);
+}
+.profile-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.profile-input-group label {
+  font-size: 0.82rem;
+  color: #d4af37;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.profile-input-group input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.profile-stats-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.stats-chip {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stats-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.stats-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.profile-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}

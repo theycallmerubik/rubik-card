@@ -1019,7 +1019,9 @@
     el.className = `card ${card.color} ${isPlayable ? 'playable' : 'unplayable'} ${isJoker ? 'joker-card' : ''}`;
     el.dataset.id = `${card.suit}-${card.rank}`;
 
-    if (isJoker) {
+    if (typeof RubikCardsSVG !== 'undefined' && typeof RubikCardsSVG.generateCardInnerHtml === 'function') {
+      el.innerHTML = RubikCardsSVG.generateCardInnerHtml(card);
+    } else if (isJoker) {
       el.innerHTML = `
         <div class="card-corner-top">
           <span class="card-rank" style="font-size:0.65rem;">JKR</span>

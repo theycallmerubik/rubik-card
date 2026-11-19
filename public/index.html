@@ -53,6 +53,10 @@
     </div>
 
     <div class="header-actions">
+      <button class="hub-btn-casino hub-btn-profile" id="btn-hub-profile" title="Player Profile & Settings">
+        <span class="user-avatar-badge" id="hub-header-avatar">👑</span>
+        <span id="hub-header-username">Player</span>
+      </button>
       <button class="hub-btn-casino" id="btn-hub-sound" title="Toggle Audio Feedback">
         <span class="casino-btn-icon">🔊</span>
         <span data-i18n="soundOn">Sound: ON</span>
@@ -183,6 +187,52 @@
     </div>
   </div>
 
+  <!-- User Profile & Cache Modal -->
+  <div class="modal-overlay" id="modal-profile">
+    <div class="modal-content-box profile-modal-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">👤</span>
+          <div>
+            <div class="modal-sys-label">// CASINO IDENTITY & CACHE //</div>
+            <div class="modal-title" data-i18n="profileTitle">Player Profile</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-profile" title="Close">&times;</button>
+      </div>
+      <div class="modal-body profile-modal-body">
+        <div class="profile-avatar-row">
+          <div class="profile-current-avatar" id="profile-current-avatar">👑</div>
+          <div class="profile-avatars-grid" id="profile-avatars-picker">
+            <!-- Avatars injected via hub.js -->
+          </div>
+        </div>
+        <div class="profile-input-group">
+          <label for="input-profile-username" data-i18n="profileUsernameLabel">Player Username:</label>
+          <input type="text" id="input-profile-username" maxlength="20" class="input-room-code" placeholder="Enter username...">
+        </div>
+        <div class="profile-stats-summary">
+          <div class="stats-chip">
+            <span class="stats-label" data-i18n="statsTotalGames">Total Games:</span>
+            <span class="stats-val" id="profile-stat-games">0</span>
+          </div>
+          <div class="stats-chip">
+            <span class="stats-label" data-i18n="statsTotalWins">Total Wins:</span>
+            <span class="stats-val gold-bright" id="profile-stat-wins">0</span>
+          </div>
+          <div class="stats-chip">
+            <span class="stats-label" data-i18n="statsWinRate">Win Rate:</span>
+            <span class="stats-val emerald-glow" id="profile-stat-rate">0%</span>
+          </div>
+        </div>
+        <div class="profile-modal-actions">
+          <button type="button" class="btn-casino-primary" id="btn-save-profile" data-i18n="saveProfileBtn">Save Profile</button>
+          <button type="button" class="btn-casino-secondary" id="btn-reset-stats" data-i18n="resetStatsBtn">Reset Stats</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Classic Casino Footer -->
   <footer class="hub-footer">
     <div class="footer-grid-top">
@@ -204,6 +254,7 @@
     </div>
   </footer>
 
+  <script src="user-cache.js"></script>
   <script src="hub.js"></script>
 </body>
 </html>

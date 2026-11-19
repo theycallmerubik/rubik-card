@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Root: A Game of Woodland Might & Right | Rubik Club</title>
+  <meta name="description" content="Play the official asymmetric woodland strategy digital adaptation of Root by Leder Games. Complete base-game factions (Marquise, Eyrie, Alliance, Vagabond), smart AI, live multiplayer, and responsive tabletop board.">
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="root-theme">
+
+  <!-- Audio Sprites & SVG Symbols included via fetch / inline -->
+  <div id="svg-assets-container" style="display:none;"></div>
+
+  <!-- Background Woodland Vignette & Parchment Texture -->
+  <div class="woodland-bg-vignette" aria-hidden="true"></div>
+
+  <!-- Top Tabletop HUD -->
+  <header class="root-top-hud">
+    <div class="hud-left">
+      <a href="/" class="btn-woodland-hub" title="Return to Casino Lounge">
+        <span class="hub-arrow">➔</span>
+        <span class="hub-text" data-i18n="backToHub">Hub</span>
+      </a>
+      <div class="game-brand-group">
+        <span class="game-brand-icon">🌲⚔️</span>
+        <div class="brand-titles">
+          <h1 class="game-title">ROOT</h1>
+          <span class="game-subtitle" data-i18n="woodlandSubtitle">Woodland Might & Right</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Turn & Phase Tracker -->
+    <div class="hud-center-phase">
+      <div class="turn-faction-badge" id="hud-active-faction-badge">
+        <span class="faction-dot" id="hud-faction-dot"></span>
+        <span id="hud-active-faction-name">Marquise de Cat</span>
+      </div>
+      <div class="phase-stepper">
+        <span class="phase-step active" id="phase-step-birdsong" data-i18n="phaseBirdsong">Birdsong</span>
+        <span class="phase-arrow">➔</span>
+        <span class="phase-step" id="phase-step-daylight" data-i18n="phaseDaylight">Daylight</span>
+        <span class="phase-arrow">➔</span>
+        <span class="phase-step" id="phase-step-evening" data-i18n="phaseEvening">Evening</span>
+      </div>
+    </div>
+
+    <!-- Right Actions: Scoreboard, Audio, Lang, Help -->
+    <div class="hud-right">
+      <div class="score-pills-bar" id="score-pills-bar">
+        <!-- Injected via app.js -->
+      </div>
+      <button class="btn-woodland-icon" id="btn-toggle-sound" title="Toggle Sound">🔊</button>
+      <button class="btn-woodland-icon" id="btn-toggle-lang" title="Toggle Language">🌐</button>
+      <button class="btn-woodland-icon" id="btn-open-rules" title="How to Play / Rules">📜</button>
+      <button class="btn-woodland-primary" id="btn-open-lobby" title="Lobby & Match Settings">⚙️ <span data-i18n="btnMatch">Match</span></button>
+    </div>
+  </header>
+
+  <!-- Main Tabletop Workspace -->
+  <main class="root-tabletop-container">
+    
+    <!-- LEFT PANEL: Faction Board (Marquise, Eyrie, Alliance, Vagabond) -->
+    <aside class="panel-drawer drawer-left" id="drawer-faction">
+      <div class="drawer-header">
+        <span class="drawer-title" id="faction-board-title">Faction Dashboard</span>
+        <button class="btn-collapse-drawer" id="btn-collapse-left" title="Toggle Panel">◀</button>
+      </div>
+      <div class="drawer-content" id="faction-board-content">
+        <!-- Rendered dynamically by app.js based on viewing player's faction -->
+      </div>
+    </aside>
+
+    <!-- CENTER: Woodland Interactive Board -->
+    <section class="woodland-board-viewport" id="board-viewport">
+      <!-- Zoom & Pan Controls -->
+      <div class="board-floating-toolbar">
+        <button class="btn-tool" id="btn-zoom-in" title="Zoom In">➕</button>
+        <button class="btn-tool" id="btn-zoom-out" title="Zoom Out">➖</button>
+        <button class="btn-tool" id="btn-zoom-reset" title="Reset View">🎯</button>
+      </div>
+
+      <!-- Highlights Legend -->
+      <div class="highlights-legend" id="highlights-legend">
+        <span class="leg-item leg-move">🟢 <span data-i18n="legMove">Move</span></span>
+        <span class="leg-item leg-battle">🔴 <span data-i18n="legBattle">Battle</span></span>
+        <span class="leg-item leg-build">🟡 <span data-i18n="legBuild">Placement</span></span>
+      </div>
+
+      <!-- SVG Interactive Woodland Board -->
+      <div class="board-canvas-layer" id="board-canvas-layer">
+        <svg id="woodland-board-svg" viewBox="0 0 1000 800" class="woodland-svg">
+          <!-- Background Forest Texture -->
+          <rect x="0" y="0" width="1000" height="800" fill="#2d572c" rx="16"/>
+          
+          <!-- Forest Glades & Pathways Pattern -->
+          <g id="svg-paths-layer" class="board-paths-layer"></g>
+          <g id="svg-river-layer" class="board-river-layer"></g>
+          <g id="svg-clearings-layer" class="board-clearings-layer"></g>
+          <g id="svg-highlights-layer" class="board-highlights-layer"></g>
+          <g id="svg-pieces-layer" class="board-pieces-layer"></g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Action Hub, Clearing Inspector & Log -->
+    <aside class="panel-drawer drawer-right" id="drawer-actions">
+      <div class="drawer-header">
+        <span class="drawer-title" data-i18n="actionPanelTitle">Command & Inspector</span>
+        <button class="btn-collapse-drawer" id="btn-collapse-right" title="Toggle Panel">▶</button>
+      </div>
+      <div class="drawer-content">
+        <!-- Clearing Inspector -->
+        <div class="inspector-card" id="clearing-inspector-box">
+          <div class="inspector-header">
+            <span class="inspector-title" id="inspector-cl-name">Select a clearing</span>
+            <span class="inspector-suit-badge" id="inspector-cl-suit"></span>
+          </div>
+          <div class="inspector-body" id="inspector-cl-body">
+            <p class="empty-hint" data-i18n="tapClearingHint">Click any clearing or path on the map to inspect pieces and legal actions.</p>
+          </div>
+        </div>
+
+        <!-- Available Actions & Decision Bar -->
+        <div class="action-commands-box">
+          <div class="commands-header">
+            <span class="commands-label" data-i18n="legalActionsLabel">Available Actions:</span>
+          </div>
+          <div class="commands-list" id="commands-list">
+            <!-- Injected via app.js based on getLegalActions -->
+          </div>
+        </div>
+
+        <!-- Action Log -->
+        <div class="action-log-box">
+          <div class="log-header">
+            <span class="log-label" data-i18n="matchLogLabel">Woodland Chronicle:</span>
+          </div>
+          <div class="log-entries" id="match-log-entries"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- BOTTOM CARD TRAY: Hand of Cards, Draw & Discard Piles -->
+  <footer class="root-bottom-tray">
+    <div class="tray-decks-zone">
+      <!-- Draw Deck -->
+      <div class="deck-pile draw-pile" id="draw-pile-btn" title="Woodland Draw Deck">
+        <div class="deck-card-back">
+          <span class="deck-emblem">🌲</span>
+          <span class="deck-count-badge" id="draw-deck-count">40</span>
+        </div>
+        <span class="deck-label" data-i18n="drawDeckLabel">Deck</span>
+      </div>
+
+      <!-- Discard Pile (Inspectable) -->
+      <div class="deck-pile discard-pile" id="discard-pile-btn" title="Inspect Discarded Cards">
+        <div class="discard-card-top" id="discard-top-card">
+          <span class="deck-emblem">🍂</span>
+          <span class="deck-count-badge" id="discard-deck-count">0</span>
+        </div>
+        <span class="deck-label" data-i18n="discardLabel">Discard</span>
+      </div>
+    </div>
+
+    <!-- Hand Cards Carousel / Fan -->
+    <div class="tray-hand-zone">
+      <div class="hand-header">
+        <span class="hand-label" data-i18n="yourHandLabel">Your Hand</span>
+        <span class="hand-capacity-badge" id="hand-count-badge">3 Cards</span>
+      </div>
+      <div class="hand-cards-row" id="player-hand-row">
+        <!-- Cards rendered via app.js -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- COMBAT RESOLUTION MODAL -->
+  <div class="modal-overlay" id="modal-combat">
+    <div class="modal-content-box combat-modal-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">⚔️</span>
+          <div>
+            <div class="modal-sys-label">// WOODLAND SKIRMISH //</div>
+            <div class="modal-title" id="combat-modal-title">Battle in Clearing</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-combat">&times;</button>
+      </div>
+      <div class="modal-body combat-modal-body" id="combat-modal-body">
+        <!-- Rendered by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCARD PILE INSPECTOR MODAL -->
+  <div class="modal-overlay" id="modal-discard">
+    <div class="modal-content-box discard-modal-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">🍂</span>
+          <div>
+            <div class="modal-sys-label">// PUBLIC INFORMATION //</div>
+            <div class="modal-title" data-i18n="discardInspectorTitle">Discard Pile Archive</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-discard">&times;</button>
+      </div>
+      <div class="modal-body" id="discard-modal-cards-grid"></div>
+    </div>
+  </div>
+
+  <!-- LOBBY & MATCH SETTINGS MODAL -->
+  <div class="modal-overlay" id="modal-lobby">
+    <div class="modal-content-box lobby-modal-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">⚙️</span>
+          <div>
+            <div class="modal-sys-label">// MATCH CONFIGURATION //</div>
+            <div class="modal-title" data-i18n="lobbyTitle">Root Match Room</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-lobby">&times;</button>
+      </div>
+      <div class="modal-body lobby-modal-body">
+        <div class="lobby-room-code-banner">
+          <span class="code-label" data-i18n="roomCodeLabel">TABLE ROOM CODE:</span>
+          <span class="code-val" id="lobby-room-code">----</span>
+          <button class="btn-copy-code" id="btn-copy-code" title="Copy Invite Link">📋</button>
+        </div>
+
+        <div class="lobby-seats-list" id="lobby-seats-list">
+          <!-- 4 Seats injected via app.js (Human, Bot, Difficulty, Faction selection) -->
+        </div>
+
+        <div class="lobby-modal-actions">
+          <button type="button" class="btn-woodland-secondary" id="btn-start-offline" data-i18n="btnSoloAI">Play Solo vs AI</button>
+          <button type="button" class="btn-woodland-primary" id="btn-start-match" data-i18n="btnStartMatch">Start Multiplayer Match</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES / HOW TO PLAY MODAL -->
+  <div class="modal-overlay" id="modal-rules">
+    <div class="modal-content-box rules-modal-box">
+      <div class="modal-tech-header">
+        <div class="modal-title-wrap">
+          <span class="modal-glitch-icon">📜</span>
+          <div>
+            <div class="modal-sys-label">// OFFICIAL WOODLAND CODEX //</div>
+            <div class="modal-title" data-i18n="rulesModalTitle">The Law of Root — Guide</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-rules">&times;</button>
+      </div>
+      <div class="modal-body rules-modal-body" id="rules-modal-body">
+        <!-- Detailed original guide -->
+      </div>
+    </div>
+  </div>
+
+  <!-- VICTORY OVERLAY MODAL -->
+  <div class="modal-overlay" id="modal-victory">
+    <div class="modal-content-box victory-modal-box">
+      <div class="victory-crown-icon">👑</div>
+      <h2 class="victory-heading" id="victory-title">Faction Victorious!</h2>
+      <p class="victory-desc" id="victory-desc"></p>
+      <div class="victory-scores-grid" id="victory-scores-grid"></div>
+      <div class="victory-actions">
+        <a href="/" class="btn-woodland-secondary" data-i18n="returnHubBtn">Return to Hub</a>
+        <button type="button" class="btn-woodland-primary" id="btn-rematch" data-i18n="rematchBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/user-cache.js"></script>
+  <script src="logic.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

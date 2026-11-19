@@ -516,6 +516,62 @@
           <p>مهره‌ها پس از دور کامل وارد دالان هم‌رنگ خود می‌شوند. ورود به مثلث پایانی نیازمند تاس دقیق است. اولین بازیکنی که هر ۴ مهره را به مقصد برساند برنده است!</p>
         `
       }
+    },
+    {
+      id: 'root',
+      icon: '🌲⚔️',
+      suits: '🦊 🐰 🐭 🦅',
+      status: 'available',
+      title: {
+        en: 'Root',
+        fa: 'بازی روت (Root: نبرد جنگل)'
+      },
+      subtitle: {
+        en: 'Asymmetric Woodland Strategy & Might',
+        fa: 'شاهکار استراتژی نامتقارن، نبرد قدرت و سیاست در جنگل'
+      },
+      players: {
+        en: '2 to 4 Players',
+        fa: '۲ تا ۴ نفره (نامتقارن)'
+      },
+      tags: {
+        en: ['Asymmetric Factions', 'Woodland Map', 'Dice Combat', 'Crafting & Items', 'Marquise, Eyrie, Alliance, Vagabond', 'Smart AI & Online'],
+        fa: ['جناح‌های کاملاً نامتقارن', 'نقشه جنگل ۱۲ منطقه‌ای', 'نبرد تاس و کمین', 'ساخت کارت و آیتم‌ها', 'گربه، شاهین، اتحاد جنگل و راکون', 'هوش مصنوعی و آنلاین']
+      },
+      desc: {
+        en: 'The award-winning asymmetric forest warfare board game by Leder Games. Lead the industrial Marquise de Cat, decree your rule with the Eyrie Dynasties, spark a popular uprising with the Woodland Alliance, or quest for fame and fortune as the lone Vagabond.',
+        fa: 'برترین بازی رومیزی استراتژی نامتقارن جهان. فرماندهی امپراتوری صنعتی گربه‌ها، تصویب احکام سخت‌گیرانه شاهین‌ها برای حفظ تاج‌وتخت، برپایی شورش‌های مردمی با اتحاد جنگل، یا ماجراجویی انفرادی و جمع‌آوری آیتم‌ها با راکون سرگردان. هر جناح دارای قوانین، اهداف و صفحه بازی اختصاصی است.'
+      },
+      playUrl: '/games/root/',
+      onlineUrl: '/games/root/#online',
+      rules: {
+        en: `
+          <h4>1. Objective & Victory</h4>
+          <p>The first player to reach 30 Victory Points (VP) immediately wins. Players can also claim victory by playing Dominance cards (controlling required clearings at the start of Birdsong) or via Vagabond Coalition.</p>
+          <h4>2. The Four Asymmetric Factions</h4>
+          <p>• <strong>Marquise de Cat (Industrialists)</strong>: Controls wood mills, workshops, and recruiters. Expands across clearings and spends actions on military marches, recruiting, and constructing buildings.<br>
+          • <strong>Eyrie Dynasties (The Old Order)</strong>: Governed by the Decree (Recruit, Move, Battle, Build). Must execute all programmed actions in the Decree or collapse into Turmoil with point penalties!<br>
+          • <strong>Woodland Alliance (The Insurgents)</strong>: Spreads sympathy tokens in secret, collects supporters, revolts to overthrow occupiers and establish bases, and wages guerrilla warfare.<br>
+          • <strong>Vagabond (The Lone Adventurer)</strong>: A single pawn navigating clearings and deep forests. Manages item inventory (Boots, Swords, Crossbows, Torches, Hammers), completes quests, explores ruins, and crafts alliances or strikes hostiles for Infamy points.</p>
+          <h4>3. Woodland Map & Rule</h4>
+          <p>The forest has 12 clearings across 3 suits (Fox 🦊, Rabbit 🐰, Mouse 🐭). The faction with the most combined warriors and buildings rules the clearing (Eyrie wins ties). Movement requires ruling either the origin or destination.</p>
+          <h4>4. Combat Resolution</h4>
+          <p>Two 0-3 dice are rolled. Attacker takes the higher die, defender takes the lower. Hits are capped by warriors present. Defenseless clearings take +1 extra hit. Ambushes can be sprung before dice roll.</p>
+        `,
+        fa: `
+          <h4>۱. هدف و شرایط پیروزی</h4>
+          <p>اولین بازیکنی که به ۳۰ امتیاز پیروزی برسد بلافاصله برنده می‌شود. بازیکنان همچنین می‌توانند با کارت‌های سیطره (کنترل ۳ منطقه هم‌خال در ابتدای نوبت) یا ائتلاف راکون به پیروزی برسند.</p>
+          <h4>۲. چهار جناح کاملاً نامتقارن</h4>
+          <p>• <strong>مارکی دو کت (گربه‌های صنعت‌گر)</strong>: دارای کارخانه‌های چوب‌بری، کارگاه و پایگاه‌های جذب نیرو. با مدیریت منابع چوب، ساخت سازه‌ها و ارتش بزرگ جنگل را کنترل می‌کند.<br>
+          • <strong>سلسله شاهین‌ها (فرمانروایان باستانی)</strong>: با کارت‌های فرمان (حکم) در ۴ ستون هدایت می‌شود. اگر حتی یکی از اقدامات فرمان در نوبت اجرا نشود، حکومت به آشوب کشیده شده و امتیاز از دست می‌دهد!<br>
+          • <strong>اتحاد جنگل (شورشیان مردمی)</strong>: با کارت‌های هوادار در خفا توکن همدلی پخش می‌کند، علیه حاکمان شورش برپا کرده و از جنگ‌های چریکی بهره می‌برد.<br>
+          • <strong>راکون سرگردان (ماجراجوی تنها)</strong>: یک مهره انفرادی در میان مناطق و جنگل‌های انبوه. مدیریت آیتم‌ها (چکمه، شمشیر، مشعل، چکش، سکه)، انجام ماموریت‌ها و کشف آثار باستانی ویرانه‌ها.</p>
+          <h4>۳. نقشه جنگل و حکومت بر مناطق</h4>
+          <p>نقشه شامل ۱۲ منطقه در ۳ خال روباه 🦊، خرگوش 🐰 و موش 🐭 است. جناحی که بیشترین مجموع نیرو و ساختمان را داشته باشد حاکم منطقه است. حرکت نیازمند حاکم بودن بر مبدا یا مقصد است.</p>
+          <h4>۴. سازوکار نبرد</h4>
+          <p>دو تاس ۰ تا ۳ ریخته می‌شود؛ مهاجم تاس بزرگتر و مدافع تاس کوچکتر را برمی‌دارد. تعداد ضربات به تعداد سربازان حاضر محدود است و مناطق بدون مدافع ۱ ضربه اضافه می‌خورند.</p>
+        `
+      }
     }
   ];
 
@@ -554,7 +610,14 @@
       footerText: 'Pure Native Web Stack — HTML5, CSS3, & Web Audio API. Zero dependencies, ultra-fast 60FPS performance across desktop and mobile browsers.',
       closeModal: 'Close',
       roomNotFound: 'Please enter a valid room code (3-6 characters).',
-      redirectingRoom: 'Joining table {code}...'
+      redirectingRoom: 'Joining table {code}...',
+      profileTitle: 'Player Profile',
+      profileUsernameLabel: 'Player Username:',
+      statsTotalGames: 'Total Games:',
+      statsTotalWins: 'Total Wins:',
+      statsWinRate: 'Win Rate:',
+      saveProfileBtn: 'Save Profile',
+      resetStatsBtn: 'Reset Stats'
     },
     fa: {
       siteTitle: 'باشگاه روبیک // بازی‌های اصیل',
@@ -587,7 +650,14 @@
       footerText: 'پیاده‌سازی سبک با استک بومی وب — HTML5، CSS3 و Web Audio API بدون کتابخانه‌های سنگین، با اجرای روان و فوق‌سریع روی تمامی پلتفرم‌ها.',
       closeModal: 'بستن',
       roomNotFound: 'لطفاً یک کد اتاق معتبر (۳ الی ۶ کاراکتر) وارد کنید.',
-      redirectingRoom: 'در حال اتصال به میز {code}...'
+      redirectingRoom: 'در حال اتصال به میز {code}...',
+      profileTitle: 'مشخصات و آمار بازیکن',
+      profileUsernameLabel: 'نام مستعار بازیکن:',
+      statsTotalGames: 'کل بازی‌ها:',
+      statsTotalWins: 'پیروزی‌ها:',
+      statsWinRate: 'درصد برد:',
+      saveProfileBtn: 'ذخیره مشخصات',
+      resetStatsBtn: 'بازنشانی آمار'
     }
   };
 
@@ -859,6 +929,10 @@
         window.location.href = `/games/catan/#${code}`;
       } else if (data && data.gameType === 'bughouse-chess') {
         window.location.href = `/games/bughouse-chess/#${code}`;
+      } else if (data && data.gameType === 'root') {
+        window.location.href = `/games/root/#${code}`;
+      } else if (data && data.gameType === 'ludo') {
+        window.location.href = `/games/ludo/#${code}`;
       } else {
         window.location.href = `/games/hokm/#${code}`;
       }
@@ -908,6 +982,94 @@
   }
 
   // =========================================================================
+  // 6.5. USER PROFILE & CACHE MODAL
+  // =========================================================================
+  let selectedAvatar = '👑';
+
+  function renderProfileWidget() {
+    if (typeof RubikUserCache === 'undefined') return;
+    const profile = RubikUserCache.getProfile();
+    const avatarEl = document.getElementById('hub-header-avatar');
+    const userEl = document.getElementById('hub-header-username');
+    if (avatarEl) avatarEl.textContent = profile.avatar || '👑';
+    if (userEl) userEl.textContent = profile.username || 'Player';
+  }
+
+  function openProfileModal() {
+    playSound('click');
+    if (typeof RubikUserCache === 'undefined') return;
+    const profile = RubikUserCache.getProfile();
+    selectedAvatar = profile.avatar || '👑';
+
+    const modal = document.getElementById('modal-profile');
+    const inputName = document.getElementById('input-profile-username');
+    const curAvatar = document.getElementById('profile-current-avatar');
+    const picker = document.getElementById('profile-avatars-picker');
+    const statGames = document.getElementById('profile-stat-games');
+    const statWins = document.getElementById('profile-stat-wins');
+    const statRate = document.getElementById('profile-stat-rate');
+
+    if (inputName) inputName.value = profile.username || 'Player';
+    if (curAvatar) curAvatar.textContent = selectedAvatar;
+
+    if (picker) {
+      picker.innerHTML = '';
+      const avatars = RubikUserCache.getAvatars();
+      avatars.forEach(av => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `avatar-pick-btn ${av === selectedAvatar ? 'selected' : ''}`;
+        btn.textContent = av;
+        btn.addEventListener('click', () => {
+          selectedAvatar = av;
+          if (curAvatar) curAvatar.textContent = av;
+          document.querySelectorAll('.avatar-pick-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          playSound('click');
+        });
+        picker.appendChild(btn);
+      });
+    }
+
+    const total = (profile.stats && profile.stats.totalGames) || 0;
+    const wins = (profile.stats && profile.stats.totalWins) || 0;
+    const rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+    if (statGames) statGames.textContent = total;
+    if (statWins) statWins.textContent = wins;
+    if (statRate) statRate.textContent = `${rate}%`;
+
+    if (modal) modal.classList.add('active');
+  }
+
+  function closeProfileModal() {
+    playSound('click');
+    const modal = document.getElementById('modal-profile');
+    if (modal) modal.classList.remove('active');
+  }
+
+  function saveProfileChanges() {
+    playSound('success');
+    if (typeof RubikUserCache === 'undefined') return;
+    const inputName = document.getElementById('input-profile-username');
+    const newName = (inputName ? inputName.value : '').trim();
+    if (newName) RubikUserCache.setUsername(newName);
+    if (selectedAvatar) RubikUserCache.setAvatar(selectedAvatar);
+    renderProfileWidget();
+    closeProfileModal();
+  }
+
+  function handleResetStats() {
+    if (confirm(currentLang === 'fa' ? 'آیا از بازنشانی آمار بازی‌ها اطمینان دارید؟' : 'Reset all game statistics?')) {
+      playSound('click');
+      if (typeof RubikUserCache !== 'undefined') {
+        RubikUserCache.resetStats();
+        openProfileModal();
+        renderProfileWidget();
+      }
+    }
+  }
+
+  // =========================================================================
   // 7. INITIALIZATION
   // =========================================================================
   function init() {
@@ -923,11 +1085,35 @@
     const btnCloseRules = document.getElementById('btn-close-rules');
     if (btnCloseRules) btnCloseRules.addEventListener('click', closeRulesModal);
 
+    const btnProfile = document.getElementById('btn-hub-profile');
+    if (btnProfile) btnProfile.addEventListener('click', openProfileModal);
+
+    const btnCloseProfile = document.getElementById('btn-close-profile');
+    if (btnCloseProfile) btnCloseProfile.addEventListener('click', closeProfileModal);
+
+    const btnSaveProfile = document.getElementById('btn-save-profile');
+    if (btnSaveProfile) btnSaveProfile.addEventListener('click', saveProfileChanges);
+
+    const btnResetStats = document.getElementById('btn-reset-stats');
+    if (btnResetStats) btnResetStats.addEventListener('click', handleResetStats);
+
     const modalRules = document.getElementById('modal-rules');
     if (modalRules) {
       modalRules.addEventListener('click', (e) => {
         if (e.target === modalRules) closeRulesModal();
       });
+    }
+
+    const modalProfile = document.getElementById('modal-profile');
+    if (modalProfile) {
+      modalProfile.addEventListener('click', (e) => {
+        if (e.target === modalProfile) closeProfileModal();
+      });
+    }
+
+    if (typeof RubikUserCache !== 'undefined') {
+      RubikUserCache.onProfileChange(renderProfileWidget);
+      renderProfileWidget();
     }
 
     // Attach sound to elements with data-sound

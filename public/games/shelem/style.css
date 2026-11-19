@@ -842,20 +842,26 @@ main.table-container {
 
 /* Top Corner (Rank + Suit) */
 .card-corner-top {
+  position: absolute;
+  top: 4px;
+  left: 5px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  line-height: 0.92;
+  align-items: center;
+  line-height: 1;
   font-size: var(--card-font-sm);
   font-weight: 800;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .card-rank {
   letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .card-suit-sm {
-  font-size: calc(var(--card-font-sm) * 0.9);
+  font-size: calc(var(--card-font-sm) * 0.85);
   line-height: 1;
 }
 
@@ -873,13 +879,18 @@ main.table-container {
 
 /* Bottom Inverted Corner */
 .card-corner-bottom {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  line-height: 0.92;
+  align-items: center;
+  line-height: 1;
   font-size: var(--card-font-sm);
   font-weight: 800;
   transform: rotate(180deg);
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* South Player Interactive Hand Fan */
@@ -3602,3 +3613,211 @@ body[dir="rtl"] .btn-setting-chip {
   font-size: 0.9rem;
 }
 
+
+/* ==========================================================================
+   SVG CARD FACES & PIPS (Ace Large Symbol, 2-10 Pips, J/Q/K Court Art)
+   ========================================================================== */
+.card-center-body {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Suit Corner SVGs */
+.suit-corner-svg {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  line-height: 1;
+  margin-top: 1.5px;
+}
+
+.suit-svg-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Ace: One Big Symbol */
+.card-ace-hero {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.22));
+}
+
+/* Pips Grid (2 to 10) */
+.card-pips-grid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+}
+
+.pip-cell {
+  width: 10.5px;
+  height: 10.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pip-cell.inverted {
+  transform: rotate(180deg);
+}
+
+.card-pips-grid.count-2 .pip-cell,
+.card-pips-grid.count-3 .pip-cell {
+  width: 11.5px;
+  height: 11.5px;
+}
+
+.card-pips-grid.count-4 .pip-cell,
+.card-pips-grid.count-5 .pip-cell,
+.card-pips-grid.count-6 .pip-cell {
+  width: 10px;
+  height: 10px;
+}
+
+.card-pips-grid.count-7 .pip-cell,
+.card-pips-grid.count-8 .pip-cell {
+  width: 9px;
+  height: 9px;
+}
+
+.card-pips-grid.count-9 .pip-cell,
+.card-pips-grid.count-10 .pip-cell {
+  width: 8px;
+  height: 8px;
+}
+
+.pip-col-pair {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.pip-col-single {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Court Figures (J, Q, K) */
+.card-court-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.court-figure-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 38px;
+  max-height: 64px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+
+@media (max-width: 1024px) {
+  .card-center-body {
+    top: 8px;
+    bottom: 8px;
+    left: 17px;
+    right: 17px;
+  }
+  .court-figure-svg {
+    max-width: 30px;
+    max-height: 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-corner-top {
+    top: 2.5px;
+    left: 3px;
+  }
+  .card-corner-bottom {
+    bottom: 2.5px;
+    right: 3px;
+  }
+  .card-center-body {
+    top: 6px;
+    bottom: 6px;
+    left: 13.5px;
+    right: 13.5px;
+  }
+  .suit-corner-svg {
+    width: 8px;
+    height: 8px;
+    margin-top: 1px;
+  }
+  .card-ace-hero {
+    width: 22px;
+    height: 22px;
+  }
+  .pip-cell {
+    width: 7.5px;
+    height: 7.5px;
+  }
+  .card-pips-grid.count-2 .pip-cell,
+  .card-pips-grid.count-3 .pip-cell {
+    width: 8.5px;
+    height: 8.5px;
+  }
+  .card-pips-grid.count-4 .pip-cell,
+  .card-pips-grid.count-5 .pip-cell,
+  .card-pips-grid.count-6 .pip-cell {
+    width: 7.5px;
+    height: 7.5px;
+  }
+  .card-pips-grid.count-7 .pip-cell,
+  .card-pips-grid.count-8 .pip-cell {
+    width: 6.8px;
+    height: 6.8px;
+  }
+  .card-pips-grid.count-9 .pip-cell,
+  .card-pips-grid.count-10 .pip-cell {
+    width: 6px;
+    height: 6px;
+  }
+  .court-figure-svg {
+    max-width: 24px;
+    max-height: 48px;
+  }
+}
+
+@media (max-width: 360px) {
+  .card-center-body {
+    top: 5px;
+    bottom: 5px;
+    left: 12px;
+    right: 12px;
+  }
+  .suit-corner-svg {
+    width: 7px;
+    height: 7px;
+  }
+  .card-ace-hero {
+    width: 19px;
+    height: 19px;
+  }
+  .court-figure-svg {
+    max-width: 21px;
+    max-height: 42px;
+  }
+}
